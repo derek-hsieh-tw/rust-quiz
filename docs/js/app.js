@@ -40,11 +40,11 @@ const App = (() => {
     document.getElementById("content").innerHTML = `
       <div class="welcome">
         <div class="welcome-logo">🦀</div>
-        <h1>Rust Lesson</h1>
-        <p>以選擇題深入學習 Rust 的基礎與進階語法,<br>
-           每題附完整詳解與 C# 特性對照。</p>
-        <p class="start-hint">從左側 <span class="kbd">EXPLORER</span> 選擇一課開始 →
-           建議由 <span class="kbd">lesson1-1.rs</span> 依序往下</p>
+        <h1>Rust Tutorial</h1>
+        <p>Learn Rust fundamentals and advanced syntax through multiple-choice questions,<br>
+           each with a detailed explanation and a C# comparison.</p>
+        <p class="start-hint">Pick a lesson from the <span class="kbd">EXPLORER</span> on the left →
+           start with <span class="kbd">lesson1-1.rs</span> and work your way down</p>
       </div>`;
     Sidebar.render(null);
     document.getElementById("status-lesson").textContent = "";
