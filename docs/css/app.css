@@ -1,0 +1,225 @@
+/* ===== Sidebar 課程樹 ===== */
+.tree-category {
+  cursor: pointer;
+  padding: 3px 12px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 13px;
+}
+.tree-category:hover { background: var(--vsc-list-hover); }
+.tree-category .arrow { width: 12px; font-size: 10px; color: var(--vsc-fg-dim); }
+.tree-category .cat-count { margin-left: auto; font-size: 11px; color: var(--vsc-fg-dim); }
+
+.tree-items { display: block; }
+.tree-items.collapsed { display: none; }
+
+.tree-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 8px 3px 30px;
+  font-size: 13px;
+  cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+}
+.tree-item:hover { background: var(--vsc-list-hover); }
+.tree-item.active { background: var(--vsc-list-active); }
+.tree-item .file-icon { color: #ce9178; font-size: 11px; flex-shrink: 0; }
+.tree-item .file-name { font-family: var(--font-code); font-size: 12px; flex-shrink: 0; }
+.tree-item .file-title {
+  color: var(--vsc-fg-dim);
+  font-size: 12px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.tree-item .done-mark { margin-left: auto; color: var(--vsc-green); flex-shrink: 0; }
+.tree-item.unavailable { opacity: 0.4; cursor: default; }
+
+/* ===== Tab ===== */
+.tab {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 12px;
+  background: var(--vsc-tab-active-bg);
+  border-right: 1px solid var(--vsc-border);
+  border-top: 1px solid var(--vsc-accent);
+  font-size: 13px;
+  font-family: var(--font-code);
+}
+.tab .tab-close { color: var(--vsc-fg-dim); font-size: 14px; }
+
+/* ===== 課程內容 ===== */
+.lesson-header { margin-bottom: 20px; }
+.lesson-header h1 {
+  font-size: 22px;
+  font-weight: 600;
+  color: #e8e8e8;
+  margin-bottom: 6px;
+}
+.lesson-header .lesson-goal {
+  color: var(--vsc-fg-dim);
+  font-size: 13px;
+  border-left: 3px solid var(--vsc-accent);
+  padding-left: 10px;
+}
+
+/* ===== 題目卡 ===== */
+.question-card {
+  background: #232323;
+  border: 1px solid var(--vsc-border);
+  border-radius: 4px;
+  padding: 16px 20px;
+  margin-bottom: 20px;
+}
+.question-title {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 10px;
+  color: #e8e8e8;
+  line-height: 1.7;
+  white-space: pre-wrap;
+}
+.question-title .q-no { color: var(--vsc-accent); margin-right: 6px; }
+
+pre.code-block {
+  background: var(--vsc-code-bg);
+  border: 1px solid var(--vsc-code-border);
+  border-radius: 3px;
+  padding: 10px 14px;
+  overflow-x: auto;
+  margin: 8px 0 12px;
+}
+pre.code-block code {
+  font-family: var(--font-code);
+  font-size: 13px;
+  line-height: 1.55;
+  background: transparent;
+  padding: 0;
+}
+
+/* 選項 */
+.option {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  border: 1px solid var(--vsc-border);
+  border-radius: 4px;
+  padding: 8px 12px;
+  margin-bottom: 8px;
+  cursor: pointer;
+  transition: border-color 0.1s, background 0.1s;
+}
+.option:hover { background: var(--vsc-list-hover); border-color: var(--vsc-fg-dim); }
+.option .option-label {
+  font-family: var(--font-code);
+  color: var(--vsc-fg-dim);
+  padding-top: 2px;
+  flex-shrink: 0;
+}
+.option .option-body { flex: 1; min-width: 0; }
+.option .option-body pre.code-block { margin: 0; border: none; padding: 4px 0; }
+.option .option-text { line-height: 1.6; padding-top: 2px; white-space: pre-wrap; }
+
+.option.correct {
+  border-color: var(--vsc-green);
+  background: rgba(78, 201, 176, 0.08);
+}
+.option.correct .option-label { color: var(--vsc-green); }
+.option.wrong {
+  border-color: var(--vsc-red);
+  background: rgba(244, 135, 113, 0.08);
+}
+.option.wrong .option-label { color: var(--vsc-red); }
+.question-card.answered .option { cursor: default; }
+.question-card.answered .option:hover { background: transparent; }
+.question-card.answered .option.correct:hover { background: rgba(78, 201, 176, 0.08); }
+.question-card.answered .option.wrong:hover { background: rgba(244, 135, 113, 0.08); }
+
+.answer-feedback { font-size: 13px; margin: 4px 0 8px; font-weight: 600; }
+.answer-feedback.ok { color: var(--vsc-green); }
+.answer-feedback.ng { color: var(--vsc-red); }
+
+/* 詳解 */
+.explanation {
+  display: none;
+  border-top: 1px dashed var(--vsc-border);
+  margin-top: 10px;
+  padding-top: 10px;
+  font-size: 13px;
+  line-height: 1.8;
+}
+.explanation.show { display: block; }
+.explanation .exp-label {
+  color: var(--vsc-yellow);
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+.explanation .exp-body { white-space: pre-wrap; color: #d4d4d4; }
+.csharp-compare {
+  margin-top: 10px;
+  background: rgba(86, 156, 214, 0.07);
+  border-left: 3px solid var(--vsc-blue);
+  padding: 8px 12px;
+  border-radius: 0 3px 3px 0;
+}
+.csharp-compare .cs-label { color: var(--vsc-blue); font-weight: 700; margin-bottom: 4px; }
+.csharp-compare .cs-body { white-space: pre-wrap; color: #d4d4d4; line-height: 1.8; }
+
+/* ===== 課程底部 ===== */
+.lesson-footer {
+  display: flex;
+  gap: 12px;
+  margin-top: 28px;
+  padding-top: 16px;
+  border-top: 1px solid var(--vsc-border);
+}
+.btn {
+  background: #3a3d41;
+  border: 1px solid var(--vsc-border);
+  color: var(--vsc-fg);
+  padding: 7px 16px;
+  border-radius: 3px;
+  font-size: 13px;
+  font-family: var(--font-ui);
+  cursor: pointer;
+}
+.btn:hover { background: #45494e; }
+.btn.primary { background: var(--vsc-accent); border-color: var(--vsc-accent); color: #fff; }
+.btn.primary:hover { background: #0e639c; }
+.btn.done { background: #1f6b4f; border-color: #1f6b4f; color: #fff; }
+.btn.danger { color: var(--vsc-red); }
+.btn.danger:hover { background: rgba(244, 135, 113, 0.12); border-color: var(--vsc-red); }
+
+/* ===== 歡迎頁 ===== */
+.welcome { max-width: 720px; margin: 40px auto; text-align: center; }
+.welcome .welcome-logo { font-size: 56px; margin-bottom: 16px; }
+.welcome h1 { font-size: 26px; font-weight: 300; color: #e8e8e8; margin-bottom: 8px; }
+.welcome p { color: var(--vsc-fg-dim); line-height: 1.9; margin-bottom: 20px; }
+.welcome .start-hint { font-size: 13px; }
+.welcome .kbd {
+  font-family: var(--font-code);
+  background: #3a3d41;
+  padding: 1px 6px;
+  border-radius: 3px;
+  font-size: 12px;
+}
+
+.notice { color: var(--vsc-fg-dim); padding: 40px; text-align: center; line-height: 2; }
+
+/* ==================== RWD ==================== */
+@media (max-width: 800px) {
+  .question-card { padding: 12px 14px; }
+  pre.code-block { padding: 8px 10px; }
+  pre.code-block code { font-size: 12px; }
+  .option { padding: 8px 10px; gap: 8px; }
+  .lesson-header h1 { font-size: 18px; }
+
+  /* 底部按鈕改直排、加大觸控面積 */
+  .lesson-footer { flex-direction: column; }
+  .btn { padding: 12px 16px; width: 100%; }
+
+  .welcome { margin: 24px auto; padding: 0 8px; }
+}
