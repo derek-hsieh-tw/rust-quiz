@@ -88,16 +88,54 @@ pre.code-block {
   background: var(--vsc-code-bg);
   border: 1px solid var(--vsc-code-border);
   border-radius: 3px;
-  padding: 10px 14px;
+  padding: 8px 0;
   overflow-x: auto;
   margin: 8px 0 12px;
 }
 pre.code-block code {
+  display: block;
   font-family: var(--font-code);
   font-size: 13px;
-  line-height: 1.55;
+  line-height: 1.6;
   background: transparent;
   padding: 0;
+}
+
+/* ---- 編輯器行(行號 / 縮排線 / 整行 hover)---- */
+.code-line {
+  display: flex;
+  width: max-content;
+  min-width: 100%;
+  min-height: 1.6em; /* 空白行也保持行高 */
+}
+.code-line:hover { background: #2a2a2a; } /* VS Code 當前行高亮 */
+
+.line-no {
+  position: sticky; /* 長行橫向捲動時行號固定 */
+  left: 0;
+  z-index: 1;
+  flex-shrink: 0;
+  text-align: right;
+  padding: 0 14px 0 12px;
+  color: #858585;
+  background: var(--vsc-code-bg);
+  user-select: none; /* 選取複製程式碼時不會夾帶行號 */
+}
+.code-line:hover .line-no { color: #c6c6c6; background: #2a2a2a; }
+
+.line-content {
+  position: relative; /* 縮排線的定位基準 */
+  flex: 1;
+  white-space: pre;
+  padding-right: 16px;
+}
+.ig { /* indent guide:縮排線 */
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: #404040;
+  pointer-events: none;
 }
 
 /* 選項 */
@@ -214,6 +252,11 @@ pre.code-block code {
   .question-card { padding: 12px 14px; }
   pre.code-block { padding: 8px 10px; }
   pre.code-block code { font-size: 12px; }
+
+  /* 手機版:編輯器外觀降級為純程式碼區塊(無行號/縮排線/整行 hover) */
+  .line-no, .ig { display: none; }
+  .code-line { width: auto; min-width: 0; }
+  .code-line:hover { background: transparent; }
   .option { padding: 8px 10px; gap: 8px; }
   .lesson-header h1 { font-size: 18px; }
 

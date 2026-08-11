@@ -9,8 +9,75 @@ const Quiz = (() => {
       .replace(/"/g, "&quot;");
   }
 
+  /* ---- 編輯器風格程式碼區塊(行號 / 縮排線 / 整行 hover;手機版由 CSS 降級成純區塊) ---- */
+
+  function highlightCode(code, lang) {
+    if (window.hljs && hljs.getLanguage(lang)) {
+      try {
+        return hljs.highlight(code, { language: lang }).value;
+      } catch { /* 失敗就退回純文字 */ }
+    }
+    return escapeHtml(code);
+  }
+
+  /* 把 highlight.js 的輸出逐行切開。
+   * 上色的 <span> 可能跨行(多行字串/註解),切行時要先關閉所有未閉合的
+   * span,下一行再重新展開,每行才是獨立合法的 HTML。 */
+  function splitHighlightedLines(html) {
+    const lines = [];
+    const openTags = [];
+    let current = "";
+    let i = 0;
+    while (i < html.length) {
+      const ch = html[i];
+      if (ch === "<") {
+        const end = html.indexOf(">", i);
+        const tag = html.slice(i, end + 1);
+        if (tag[1] === "/") openTags.pop();
+        else openTags.push(tag);
+        current += tag;
+        i = end + 1;
+      } else if (ch === "\n") {
+        lines.push(current + "</span>".repeat(openTags.length));
+        current = openTags.join("");
+        i++;
+      } else {
+        current += ch;
+        i++;
+      }
+    }
+    lines.push(current + "</span>".repeat(openTags.length));
+    return lines;
+  }
+
+  /* 縮排線:依該行前導空白,每 4 格畫一條垂直線(空白行不畫) */
+  function indentGuides(rawLine) {
+    if (!rawLine.trim()) return "";
+    const leading = (rawLine.match(/^ +/) || [""])[0].length;
+    let guides = "";
+    for (let col = 0; col + 4 <= leading; col += 4) {
+      guides += `<span class="ig" style="left:${col}ch"></span>`;
+    }
+    return guides;
+  }
+
   function codeBlock(code, lang) {
-    return `<pre class="code-block"><code class="language-${lang || "rust"}">${escapeHtml(code)}</code></pre>`;
+    const language = lang || "rust";
+    const rawLines = code.split("\n");
+    const htmlLines = splitHighlightedLines(highlightCode(code, language));
+    const gutterWidth = String(rawLines.length).length; // 行號位數
+
+    const rows = htmlLines.map((lineHtml, i) => {
+      const guides = indentGuides(rawLines[i] || "");
+      return (
+        `<span class="code-line">` +
+        `<span class="line-no" style="min-width:${gutterWidth}ch">${i + 1}</span>` +
+        `<span class="line-content">${guides}${lineHtml}</span>` +
+        `</span>`
+      );
+    });
+
+    return `<pre class="code-block"><code class="hljs language-${language}">${rows.join("")}</code></pre>`;
   }
 
   const LABELS = ["A", "B", "C", "D", "E", "F"];
@@ -61,7 +128,6 @@ const Quiz = (() => {
     });
 
     content.appendChild(buildFooter(lesson));
-    highlightAll(content);
     updateLessonStatus(lesson);
   }
 
@@ -185,12 +251,6 @@ const Quiz = (() => {
     const correct = answered.filter(q => Progress.getAnswer(q.id) === q.answer).length;
     document.getElementById("status-lesson").textContent =
       `本課答對 ${correct}/${answered.length}(共 ${lesson.questions.length} 題)`;
-  }
-
-  function highlightAll(root) {
-    if (window.hljs) {
-      root.querySelectorAll("pre code").forEach(el => hljs.highlightElement(el));
-    }
   }
 
   return { renderLesson };
