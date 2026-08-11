@@ -2,7 +2,7 @@
 const App = (() => {
   window.RUST_LESSONS = window.RUST_LESSONS || {};
 
-  const GITHUB_REPO_URL = "https://github.com/"; // TODO: 換成實際 repo 網址
+  const GITHUB_REPO_URL = "https://github.com/derek-hsieh-tw/rust-quiz";
 
   function findLesson(id) {
     for (const cat of RUST_INDEX.categories) {

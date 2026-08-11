@@ -1,0 +1,50 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [master]
+  workflow_dispatch: # 允許在 Actions 頁面手動觸發
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# 同時只跑一個部署;新 push 會取消進行中的舊部署
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: JS 語法檢查
+        run: |
+          find docs/js docs/data -name '*.js' -print0 | while IFS= read -r -d '' f; do
+            node --check "$f"
+            echo "OK: $f"
+          done
+      - name: 題目資料完整性驗證
+        run: node scripts/validate-data.js
+
+  deploy:
+    needs: validate # 驗證失敗就不部署,線上永遠是通過檢查的版本
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/configure-pages@v5
+      - name: 上傳網站(docs 目錄)
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: docs
+      - name: 部署到 GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
