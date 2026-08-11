@@ -41,6 +41,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/configure-pages@v5
+        with:
+          enablement: true # 首次執行自動啟用 GitHub Pages(Source = GitHub Actions)
       - name: 上傳網站(docs 目錄)
         uses: actions/upload-pages-artifact@v3
         with:
