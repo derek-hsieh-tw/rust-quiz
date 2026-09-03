@@ -1,5 +1,7 @@
-/* 出題慣例:answer 一律為 0(正確答案寫在第一個選項),顯示順序由 quiz.js 依題目 id 洗牌。
- * 詳解禁止用「選項 A/B/C」字母指涉,必須直接描述選項內容。 */
+/* 出題慣例見專案根目錄 AUTHORING.md:
+ *   - answer 一律為 0(正確答案寫在第一個選項),顯示順序由 quiz.js 依題目 id 洗牌
+ *   - 詳解禁止用「選項 A/B/C」字母指涉,必須直接描述選項內容
+ *   - 有程式碼的題目一律附 walkthrough(逐行說明);反面案例必須同時附上 ✅ 正確寫法 */
 window.RUST_LESSONS = window.RUST_LESSONS || {};
 window.RUST_LESSONS["lesson1-12"] = {
   id: "lesson1-12",
@@ -18,6 +20,36 @@ window.RUST_LESSONS["lesson1-12"] = {
       answer: 0,
       explanation: `三段式:trait 區塊宣告方法簽名(分號結尾,不給實作);struct 正常定義;impl Summary for Article 把兩者接起來——語序是「為 Article 實作 Summary」,for 後面接型別。
 interface 關鍵字與冒號繼承是 C# 語法;impl Article for Summary 把 trait 和型別寫反了(變成「為 Summary 實作 Article」);trait 裡的方法簽名也必須是完整的 fn 語法。`,
+      walkthrough: [
+        {
+          label: "✅ 正確寫法逐行說明",
+          lines: [
+            { code: "trait Summary {", note: "trait 定義一組「共享行為」,角色接近 C# 的 interface。" },
+            { code: "    fn summarize(&self) -> String;", note: "只宣告方法簽名,用分號結尾、不給實作——實作者必須自己補上。" },
+            { code: "}", note: "trait 定義結束。" },
+            { code: "", note: "" },
+            { code: "struct Article {", note: "型別照常定義,完全不需要在這裡提到 Summary。" },
+            { code: "    title: String,", note: "欄位。" },
+            { code: "}", note: "struct 定義結束。" },
+            { code: "", note: "" },
+            { code: "impl Summary for Article {", note: "獨立的 impl 區塊把兩者接起來。語序念成「為 Article 實作 Summary」——for 後面接的是型別。" },
+            { code: "    fn summarize(&self) -> String {", note: "實作 trait 宣告的方法,簽名必須完全一致。" },
+            { code: "        format!(\"文章:{}\", self.title)", note: "這裡才看得到具體型別的欄位。" },
+            { code: "    }", note: "方法結束。" },
+            { code: "}", note: "impl 結束。" },
+          ],
+        },
+        {
+          label: "❌ 三個錯誤寫法錯在哪",
+          lines: [
+            { code: "interface Summary {", note: "Rust 沒有 interface 關鍵字,共享行為一律用 trait。" },
+            { code: "struct Article : Summary {", note: "冒號繼承是 C# 語法;Rust 的型別定義裡不會提到 trait,兩者靠獨立的 impl 區塊接起來。" },
+            { code: "impl Article for Summary {", note: "⛔ 寫反了:這句話的意思是「為 Summary 實作 Article」。for 後面必須是型別、前面必須是 trait。" },
+            { code: "    summarize(): String;", note: "trait 裡的方法簽名也必須是完整的 fn 語法,不能省略 fn 或用冒號標回傳型別。" },
+          ],
+          outro: "最大的結構差異:C# 在「定義型別時」就得列出所有介面;Rust 的 impl 獨立於型別定義之外,型別寫完之後任何時候都能再補實作——這是下面孤兒規則那題的伏筆。",
+        },
+      ],
       csharp: `對照 C# 的 interface + class Article : ISummary。最大結構差異:C# 在「定義型別時」就得列出所有介面;Rust 的 impl 是獨立區塊,型別定義完之後,任何時候(甚至任何人,見孤兒規則那題)都能再補實作——型別與行為徹底解耦。`,
     },
     {
@@ -33,6 +65,30 @@ interface 關鍵字與冒號繼承是 C# 語法;impl Article for Summary 把 tra
       answer: 0,
       explanation: `trait 方法可以附帶預設實作(有本體);實作者沒覆寫就直接繼承,所以空的 impl 完全合法,輸出預設的 (Read more...)。實作者也可以覆寫,呼叫時用覆寫版。
 預設實作看不見具體型別的欄位(它只認識 trait 自己),要用欄位資料得透過「呼叫 trait 的其他方法」的模式組合(預設方法呼叫必須實作的方法)。`,
+      walkthrough: {
+        label: "🔍 題目程式碼逐行說明(可正常執行)",
+        lines: [
+          { code: "trait Summary {", note: "定義 trait。" },
+          { code: "    fn summarize(&self) -> String {", note: "注意這個方法「有本體」——這叫預設實作,實作者沒覆寫就直接繼承。" },
+          { code: "        String::from(\"(Read more...)\")", note: "預設行為。它只認識 trait 自己,看不見任何具體型別的欄位。" },
+          { code: "    }", note: "預設方法結束。" },
+          { code: "}", note: "trait 定義結束。" },
+          { code: "", note: "" },
+          { code: "struct Tweet {", note: "定義型別。" },
+          { code: "    content: String,", note: "欄位。" },
+          { code: "}", note: "struct 定義結束。" },
+          { code: "", note: "" },
+          { code: "impl Summary for Tweet {}", note: "空的 impl 完全合法:trait 的每個方法都有預設實作,不必覆寫任何東西。這一行的意義是「宣告 Tweet 具備 Summary 這個能力」。" },
+          { code: "", note: "" },
+          { code: "fn main() {", note: "程式進入點。" },
+          { code: "    let t = Tweet {", note: "建立實例。" },
+          { code: "        content: String::from(\"hello\"),", note: "欄位值。" },
+          { code: "    };", note: "實例建立完成。" },
+          { code: "    println!(\"{}\", t.summarize());", note: "呼叫到的是預設實作,印出 (Read more...) 而不是 hello。" },
+          { code: "}", note: "main 結束。" },
+        ],
+        outro: "要讓預設實作用到具體型別的資料,慣用手法是「預設方法呼叫另一個必須實作的方法」:trait 裡宣告 fn author(&self) -> String;(無本體),預設的 summarize 裡呼叫 self.author()。標準庫的 Iterator 就是極致範例——70 多個方法,實作者只需提供 next 一個。",
+      },
       csharp: `C# 8 的 default interface methods 是同一個概念,但生態使用率低,而且透過類別呼叫預設實作有轉型限制。Rust 的預設方法從第一天就是核心機制,標準庫大量使用——Iterator 有 70 多個方法,實作者只需提供 next 一個,其餘全是預設方法。`,
     },
     {
@@ -47,6 +103,25 @@ interface 關鍵字與冒號繼承是 C# 語法;impl Article for Summary 把 tra
       answer: 0,
       explanation: `impl Trait 參數就是「trait bound 泛型」的語法糖:&impl Summary 與 <T: Summary>(item: &T) 編譯出同樣的單態化程式碼。糖版簡短,泛型版能表達更多(兩個參數同型別、回傳 T 等)。
 裸寫 &Summary 是被淘汰的舊語法(現代 Rust 要寫 &dyn Summary,而且那是動態分派,語意不同——進階課);trait 不能直接當參數型別按值收;where Summary: T 把約束方向寫反了(變成要求 trait 實作型別)。`,
+      walkthrough: [
+        {
+          label: "✅ 等價的兩種寫法",
+          lines: [
+            { code: "fn notify(item: &impl Summary) { }", note: "impl Trait 參數:讀作「收一個實作了 Summary 的東西的參考」。簡短,適合單一參數。" },
+            { code: "// 等價於", note: "以下這行與上面那行編譯結果完全相同。" },
+            { code: "fn notify<T: Summary>(item: &T) { }", note: "trait bound 泛型版:兩者編譯出完全相同的單態化程式碼。泛型版能表達更多——例如要求兩個參數是「同一個」型別,或把 T 用在回傳型別上。" },
+          ],
+        },
+        {
+          label: "❌ 另外三個寫法錯在哪",
+          lines: [
+            { code: "fn notify(item: &Summary) { }", note: "裸寫 trait 名是被淘汰的舊語法,現代 Rust 要寫 &dyn Summary——而且那是「動態分派」(執行期查 vtable),語意與零成本的泛型不同。" },
+            { code: "fn notify(item: Summary) { }", note: "⛔ trait 不能直接當按值參數的型別:trait 沒有固定大小(不同實作者大小不同),編譯器不知道要在 stack 上留多少空間。" },
+            { code: "fn notify<T>(item: &T) where Summary: T { }", note: "⛔ 約束方向寫反了:where 的左邊是被約束的型別、右邊是要求的能力,應該寫成 where T: Summary。" },
+          ],
+          outro: "對照 C#:<T: Summary> 對應 void Notify<T>(T item) where T : ISummary;而 C# 最常寫的 void Notify(ISummary item) 其實對應 Rust 的 &dyn Summary。C# 的習慣寫法在 Rust 是「進階選項」,Rust 預設走零成本的泛型路線。",
+        },
+      ],
       csharp: `<T: Summary> 對應 C# 的 void Notify<T>(T item) where T : ISummary(泛型、可能特化);而 C# 最常寫的 void Notify(ISummary item) 其實對應 Rust 的 &dyn Summary(介面參考、虛擬呼叫)。C# 的習慣寫法在 Rust 是「進階選項」,Rust 預設走零成本的泛型路線。`,
     },
     {
@@ -62,6 +137,40 @@ interface 關鍵字與冒號繼承是 C# 語法;impl Article for Summary 把 tra
       answer: 0,
       explanation: `Rust 的運算子背後都是 trait:== 走 PartialEq。自訂型別預設什麼都沒有——不能比較、不能印、不能複製,要哪個能力就 derive 哪個:#[derive(PartialEq)] 自動生成「逐欄位比較」的實作,之後 a == b 得到 true。
 常用 derive 清單:Debug(能 {:?})、Clone(能 .clone())、Copy(賦值複製)、PartialEq(能 ==)、Default(能 ::default())——每個能力都是顯式選擇,不存在「預設用位址比較」這種隱含行為。`,
+      walkthrough: [
+        {
+          label: "❌ 題目程式碼(無法編譯)",
+          lines: [
+            { code: "struct Point {", note: "⛔ 問題所在:沒有任何 derive,這個型別預設什麼能力都沒有——不能比較、不能印、不能複製。" },
+            { code: "    x: i32,", note: "欄位。" },
+            { code: "    y: i32,", note: "欄位。" },
+            { code: "}", note: "struct 定義結束。" },
+            { code: "", note: "" },
+            { code: "fn main() {", note: "程式進入點。" },
+            { code: "    let a = Point { x: 1, y: 2 };", note: "建立第一個實例。" },
+            { code: "    let b = Point { x: 1, y: 2 };", note: "建立第二個實例。" },
+            { code: "    println!(\"{}\", a == b);", note: "⛔ 編譯失敗:binary operation `==` cannot be applied to type `Point`。Rust 的運算子背後都是 trait,== 走 PartialEq,而 Point 沒有實作它。注意這不是「預設比記憶體位址」——根本沒有預設行為。" },
+            { code: "}", note: "main 結束。" },
+          ],
+        },
+        {
+          label: "✅ 正確寫法(derive 需要的能力)",
+          lines: [
+            { code: "#[derive(PartialEq, Debug)]", note: "改動處:PartialEq 自動生成「逐欄位比較」的實作,== 就能用了;順手加 Debug 讓 {:?} 也能印。" },
+            { code: "struct Point {", note: "struct 定義本身不變。" },
+            { code: "    x: i32,", note: "欄位。" },
+            { code: "    y: i32,", note: "欄位。" },
+            { code: "}", note: "struct 定義結束。" },
+            { code: "", note: "" },
+            { code: "fn main() {", note: "程式進入點。" },
+            { code: "    let a = Point { x: 1, y: 2 };", note: "第一個實例。" },
+            { code: "    let b = Point { x: 1, y: 2 };", note: "第二個實例。" },
+            { code: "    println!(\"{} {:?}\", a == b, a);", note: "逐欄位比較後印出 true,以及 Point { x: 1, y: 2 }。" },
+            { code: "}", note: "main 結束。" },
+          ],
+          outro: "常用 derive 清單:Debug(能 {:?})、Clone(能 .clone())、Copy(賦值即複製)、PartialEq(能 ==)、Default(能 ::default())。每個能力都是顯式選擇,讀型別定義就知道它會什麼。",
+        },
+      ],
       csharp: `C# 的 == 對 class 預設比參考、對 struct 的 Equals 預設逐欄位反射比較——各有隱含行為,record 又是另一套(值語意)。Rust 一律「沒說就沒有」:行為全部來自看得見的 derive 或手寫 impl,讀型別定義就知道它會什麼。`,
     },
     {
@@ -77,6 +186,31 @@ interface 關鍵字與冒號繼承是 C# 語法;impl Article for Summary 把 tra
       answer: 0,
       explanation: `impl Trait 回傳型別 = 「我回傳某個實作了 Summary 的東西,具體是誰不告訴你」。編譯器知道真身(零成本),但呼叫端的合約只有 Summary——只能呼叫 summarize(),碰 .content 是編譯錯誤。這是刻意的抽象:實作可以換,呼叫端不受影響。
 限制:函式所有路徑必須回傳「同一個」具體型別——if 分支回 Tweet、else 回 Article 是編譯錯誤(那需要 Box<dyn Summary>,進階課)。這個語法最重要的舞台是閉包與迭代器(型別寫不出名字,只能 impl Fn / impl Iterator)。`,
+      walkthrough: {
+        label: "🔍 題目程式碼逐行說明(合法)",
+        lines: [
+          { code: "trait Summary {", note: "定義 trait。" },
+          { code: "    fn summarize(&self) -> String;", note: "宣告方法。" },
+          { code: "}", note: "trait 定義結束。" },
+          { code: "", note: "" },
+          { code: "struct Tweet {", note: "一個具體型別。" },
+          { code: "    content: String,", note: "欄位。" },
+          { code: "}", note: "struct 定義結束。" },
+          { code: "", note: "" },
+          { code: "impl Summary for Tweet {", note: "為它實作 trait。" },
+          { code: "    fn summarize(&self) -> String {", note: "實作方法。" },
+          { code: "        self.content.clone()", note: "回傳內容的複本。" },
+          { code: "    }", note: "方法結束。" },
+          { code: "}", note: "impl 結束。" },
+          { code: "", note: "" },
+          { code: "fn make_summary() -> impl Summary {", note: "回傳型別是 impl Summary:「我回傳某個實作了 Summary 的東西,具體是誰不告訴你」。編譯器知道真身(所以是零成本),但呼叫端的合約只有 Summary。" },
+          { code: "    Tweet {", note: "實際回傳的是 Tweet。" },
+          { code: "        content: String::from(\"hi\"),", note: "欄位值。" },
+          { code: "    }", note: "沒有分號 = 回傳值。" },
+          { code: "}", note: "函式結束。呼叫端拿到的值只能呼叫 summarize(),碰 .content 會編譯失敗——這是刻意的抽象,實作換了呼叫端也不受影響。" },
+        ],
+        outro: "限制:函式「所有路徑」必須回傳同一個具體型別——if 回 Tweet、else 回 Article 會編譯失敗(那需要 Box<dyn Summary>,進階課)。這個語法最重要的舞台是閉包與迭代器,它們的型別根本寫不出名字,只能寫 impl Fn / impl Iterator。",
+      },
       csharp: `C# 回傳 ISummary 什麼型別都能裝(執行期多型);Rust 的 impl Trait 是編譯期單一型別的「匿名化」。習慣上的對應反而是回傳介面但文件註明「實際上都是同一種」——Rust 把這個約定變成編譯器保證。`,
     },
     {
@@ -92,6 +226,28 @@ interface 關鍵字與冒號繼承是 C# 語法;impl Article for Summary 把 tra
       answer: 0,
       explanation: `where 子句是 bound 的「換行版」:語意與寫在角括號裡完全相同,約束多的時候簽名不會擠成一團,慣例上兩個以上的約束就搬到 where。多重能力用 + 串接(T: Display + Clone)。
 where 裡用等號、把 + 串接寫成逗號(變成宣告了叫 Clone、Debug 的型別參數!)、把 trait 直接當參數型別,都不是合法語法。`,
+      walkthrough: [
+        {
+          label: "✅ 等價且合法的 where 版本",
+          lines: [
+            { code: "fn stats<T, U>(t: &T, u: &U) -> i32", note: "角括號裡只宣告型別參數,不放約束,簽名保持清爽。" },
+            { code: "where", note: "約束搬到 where 子句,語意與寫在角括號裡完全相同。" },
+            { code: "    T: Display + Clone,", note: "一個型別參數一行;多個能力用 + 串接。" },
+            { code: "    U: Clone + Debug,", note: "第二個型別參數的約束,用逗號分隔。" },
+            { code: "{", note: "函式本體開始。" },
+            { code: "    42", note: "回傳值。" },
+            { code: "}", note: "函式結束。慣例上兩個以上的約束就搬到 where。" },
+          ],
+        },
+        {
+          label: "❌ 三個錯誤寫法錯在哪",
+          lines: [
+            { code: "where T = Display + Clone,", note: "⛔ where 裡用的是冒號不是等號:等號在型別層面代表「關聯型別等於某型別」,不是約束。" },
+            { code: "fn stats<T: Display, Clone, U: Clone, Debug>(...)", note: "⛔ 把 + 串接誤寫成逗號,結果變成宣告了四個型別參數:T、Clone、U、Debug——後兩個是型別參數名而不是約束,函式體立刻對不上。" },
+            { code: "fn stats(t: &(Display + Clone), ...)", note: "⛔ trait 不能直接當參數型別,而且這個寫法連 dyn 都沒寫。要寫成 &(impl Display + Clone) 或 &(dyn Display)。" },
+          ],
+        },
+      ],
       csharp: `C# 的 where T : IComparable, ICloneable 位置與精神都一樣——這是 Rust 從 C#/Haskell 這脈語言直接繼承的設計,遷移零成本。差別:C# 每個型別參數一個 where 子句,Rust 一個 where 裡逗號分隔多條。`,
     },
     {
@@ -106,6 +262,32 @@ where 裡用等號、把 + 串接寫成逗號(變成宣告了叫 Clone、Debug �
       answer: 0,
       explanation: `孤兒規則:impl 要合法,trait「或」型別至少一個得是你 crate 的。Display(std 的)配 Vec(std 的)——兩個都是外人,禁止;其餘三個:自己的型別配外部 trait、外部型別配自己的 trait、全自家,都合法。
 為什麼禁止:若兩個相依套件都幫 Vec<i32> 實作了 Display,用到它們的程式該聽誰的?孤兒規則從根源保證全世界不會出現衝突的實作。突圍方法就是選項中的 Wrapper(newtype 模式,lesson1-7 的 tuple struct 再就業)。`,
+      walkthrough: [
+        {
+          label: "❌ 不被允許的那一個",
+          lines: [
+            { code: "use std::fmt::Display;", note: "Display 定義在標準函式庫,對你的 crate 來說是「外部 trait」。" },
+            { code: "", note: "" },
+            { code: "impl Display for Vec<i32> {", note: "⛔ 編譯失敗:only traits defined in the current crate can be implemented for types defined outside of the crate。孤兒規則要求 trait「或」型別至少一個是你自己的,這裡兩個都是外人。" },
+            { code: "    // ...", note: "方法實作內容不重要,簽名這一行就已經被拒絕。" },
+            { code: "}", note: "impl 結束。" },
+          ],
+          outro: "為什麼要禁止:若兩個相依套件都幫 Vec<i32> 實作了 Display,用到它們的程式該聽誰的?孤兒規則從根源保證全世界不會出現衝突的實作。",
+        },
+        {
+          label: "✅ 三種合法的情況",
+          lines: [
+            { code: "struct Wrapper(Vec<i32>);", note: "情況一(newtype 突圍法):自己定義一個薄薄的包裝型別,它是「你的」型別。" },
+            { code: "impl Display for Wrapper { /* ... */ }", note: "合法:trait 是外部的,但型別是自己的。這是想為外部型別加外部 trait 時的標準解法,也是 lesson1-7 tuple struct 的再就業。" },
+            { code: "", note: "" },
+            { code: "trait Pretty { fn pretty(&self) -> String; }", note: "情況二:自己定義一個 trait。" },
+            { code: "impl Pretty for Vec<i32> { /* ... */ }", note: "合法:型別是外部的,但 trait 是自己的。實作之後 Vec<i32> 就能傳給任何要求 T: Pretty 的泛型函式——這是 trait 系統超越 C# 介面的關鍵能力。" },
+            { code: "", note: "" },
+            { code: "struct Point { x: i32 }", note: "情況三:全自家。" },
+            { code: "impl Pretty for Point { /* ... */ }", note: "合法:trait 與型別都是自己的,毫無疑問。" },
+          ],
+        },
+      ],
       csharp: `注意「為外部型別實作自己的 trait」這件事:C# 的擴充方法只能加方法,不能讓 List<int> 事後「成為某個介面的實作」;Rust 可以——impl Pretty for Vec<i32> 之後,Vec 就能傳給任何要求 T: Pretty 的泛型函式。這是 trait 系統超越 interface 的關鍵能力。`,
     },
     {
@@ -121,6 +303,39 @@ where 裡用等號、把 + 串接寫成逗號(變成宣告了叫 Clone、Debug �
       answer: 0,
       explanation: `greet 是泛型函式(impl Trait 參數 = trait bound 泛型),兩次呼叫各自單態化:greet::<English> 與 greet::<Chinese> 是兩份獨立程式碼,各呼叫各的 hello——這就是「編譯期多型」,輸出 Hello 與你好。
 參數型別「不一致」不是問題,那正是泛型的意義;單態化是每個型別一份,不會「以第一次為準」;unit struct(English、Chinese 這種無欄位 struct)是完整的型別,實作 trait 毫無問題,English 這個運算式本身就是它的實例。`,
+      walkthrough: {
+        label: "🔍 題目程式碼逐行說明(可正常執行)",
+        lines: [
+          { code: "trait Greet {", note: "定義共享行為。" },
+          { code: "    fn hello(&self) -> String;", note: "宣告方法。" },
+          { code: "}", note: "trait 定義結束。" },
+          { code: "", note: "" },
+          { code: "struct English;", note: "unit struct:沒有任何欄位的型別。它是完整的型別,實作 trait 毫無問題;English 這個運算式本身就是它唯一的實例。" },
+          { code: "struct Chinese;", note: "第二個 unit struct。" },
+          { code: "", note: "" },
+          { code: "impl Greet for English {", note: "為第一個型別實作。" },
+          { code: "    fn hello(&self) -> String {", note: "實作方法。" },
+          { code: "        String::from(\"Hello\")", note: "英文問候。" },
+          { code: "    }", note: "方法結束。" },
+          { code: "}", note: "impl 結束。" },
+          { code: "", note: "" },
+          { code: "impl Greet for Chinese {", note: "為第二個型別實作同一個 trait。" },
+          { code: "    fn hello(&self) -> String {", note: "實作方法。" },
+          { code: "        String::from(\"你好\")", note: "中文問候。" },
+          { code: "    }", note: "方法結束。" },
+          { code: "}", note: "impl 結束。" },
+          { code: "", note: "" },
+          { code: "fn greet(g: &impl Greet) {", note: "這其實是泛型函式(impl Trait 參數 = trait bound 泛型的語法糖)。" },
+          { code: "    println!(\"{}\", g.hello());", note: "呼叫 trait 方法。" },
+          { code: "}", note: "函式結束。" },
+          { code: "", note: "" },
+          { code: "fn main() {", note: "程式進入點。" },
+          { code: "    greet(&English);", note: "編譯器單態化出一份 greet::<English>,內聯呼叫英文版的 hello,印出 Hello。" },
+          { code: "    greet(&Chinese);", note: "再單態化出一份 greet::<Chinese>,印出 你好。兩份是獨立程式碼,不會「以第一次為準」。" },
+          { code: "}", note: "main 結束。" },
+        ],
+        outro: "這叫「編譯期多型」:編譯完根本沒有分派這回事。C# 用 interface 參數達成同樣效果,但那是執行期虛擬呼叫。想要 C# 那種執行期動態(集合裡混裝不同型別),Rust 用 dyn Trait——進階課的主角。",
+      },
       csharp: `C# 用 interface 參數達成同樣效果,但那是執行期虛擬呼叫(vtable);Rust 這裡編譯完根本沒有「分派」這回事,兩個呼叫點直接內聯各自的 hello。想要 C# 那種執行期動態(集合裡混裝不同型別),Rust 用 dyn Trait——進階課的主角。`,
     },
     {
@@ -136,6 +351,44 @@ where 裡用等號、把 + 串接寫成逗號(變成宣告了叫 Clone、Debug �
       answer: 0,
       explanation: `derive(Copy) 不是「宣告」而是「申請」:編譯器檢查所有欄位是否都是 Copy——String 擁有 heap 資源(lesson1-4 論證過為什麼它不可能是 Copy),申請被駁回,編譯錯誤指著 name 欄位。
 把 name 換成 u32 之類就能通過。Copy 與 Clone 必須同時 derive(Copy 是 Clone 的子集,語言規定 Copy: Clone);「共享記憶體的複製」正是 Copy 被設計來杜絕的東西。`,
+      walkthrough: [
+        {
+          label: "❌ 題目程式碼(無法編譯)",
+          lines: [
+            { code: "#[derive(Copy, Clone)]", note: "⛔ 編譯失敗:the trait `Copy` cannot be implemented for this type。derive(Copy) 不是「宣告」而是「申請」:編譯器會檢查所有欄位是否都是 Copy。" },
+            { code: "struct User {", note: "定義型別。" },
+            { code: "    name: String,", note: "⛔ 申請被駁回的原因就在這一欄:String 擁有 heap 資源(lesson1-4 論證過為什麼它不可能是 Copy),錯誤訊息會直接指著 this field does not implement `Copy`。" },
+            { code: "    age: u32,", note: "這個欄位本身沒問題。" },
+            { code: "}", note: "struct 定義結束。" },
+            { code: "", note: "" },
+            { code: "fn main() {", note: "程式進入點。" },
+            { code: "    let a = User {", note: "建立實例。" },
+            { code: "        name: String::from(\"derek\"),", note: "欄位值。" },
+            { code: "        age: 30,", note: "欄位值。" },
+            { code: "    };", note: "實例建立完成。" },
+            { code: "    let b = a;", note: "因為 derive 失敗,整個程式編譯不過;若 Copy 成立這裡會是複製,不成立則是 move。" },
+            { code: "    println!(\"{} {}\", a.name, b.age);", note: "因編譯失敗而無法執行。" },
+            { code: "}", note: "main 結束。" },
+          ],
+        },
+        {
+          label: "✅ 兩種修法",
+          lines: [
+            { code: "#[derive(Clone)]", note: "修法一:拿掉 Copy 只留 Clone——複製仍然做得到,但必須明寫 .clone(),成本看得見。" },
+            { code: "struct User {", note: "型別定義不變。" },
+            { code: "    name: String,", note: "String 有實作 Clone,所以 derive(Clone) 沒問題。" },
+            { code: "    age: u32,", note: "欄位。" },
+            { code: "}", note: "struct 定義結束。" },
+            { code: "", note: "" },
+            { code: "fn main() {", note: "程式進入點。" },
+            { code: "    let a = User { name: String::from(\"derek\"), age: 30 };", note: "建立實例。" },
+            { code: "    let b = a.clone();", note: "明寫深複製,a 沒有被 move。" },
+            { code: "    println!(\"{} {}\", a.name, b.age);", note: "兩個實例都有效,印出 derek 30。" },
+            { code: "}", note: "main 結束。" },
+          ],
+          outro: "修法二是把 name 換成 Copy 型別(例如固定長度的 [u8; 16]),原本的 derive(Copy, Clone) 就會通過。另外 Copy 與 Clone 必須「同時」derive——語言規定 Copy: Clone,兩者不衝突;而「共享記憶體的複製」正是 Copy 被設計來杜絕的東西。",
+        },
+      ],
       csharp: `C# 的 struct 含參考型別欄位照樣能複製(欄位複製參考,兩份共享同一物件)——語言不阻止,隱患自負。Rust 的 derive 會遞迴驗證語意成立才放行:「這個型別宣稱能安全按位元複製」是編譯器背書的承諾,不是作者的一廂情願。`,
     },
     {
@@ -150,6 +403,30 @@ where 裡用等號、把 + 串接寫成逗號(變成宣告了叫 Clone、Debug �
       answer: 0,
       explanation: `最本質的差異是「誰能建立實作、什麼時候」:C# 的 class F : IFoo 寫死在型別定義;Rust 的 impl 是獨立區塊——你可以為標準庫的型別實作自己的 trait(本課孤兒規則題),第三方也可以為你的型別實作他們的 trait。型別發布多年後仍能長出新能力,不用改原始碼。
 預設實作兩邊都有(trait 從第一天、C# 8 之後);trait 當然是 Rust 設計 API 抽象的主力(整個標準庫:Iterator、Display、From⋯⋯)。`,
+      walkthrough: {
+        label: "🔍 最本質的差異:實作可以事後補上",
+        lines: [
+          { code: "// 這個型別是標準函式庫寫的,原始碼你改不到", note: "情境:你想讓 Vec<i32> 具備某個新能力。" },
+          { code: "trait Pretty {", note: "你在自己的 crate 裡定義一個 trait。" },
+          { code: "    fn pretty(&self) -> String;", note: "宣告能力。" },
+          { code: "}", note: "trait 定義結束。" },
+          { code: "", note: "" },
+          { code: "impl Pretty for Vec<i32> {", note: "關鍵一行:為「別人的型別」補上「你的 trait」的實作。C# 的 class F : IFoo 寫死在型別定義裡,做不到這件事——擴充方法只能加方法,不能讓 List<int> 事後成為某介面的實作。" },
+          { code: "    fn pretty(&self) -> String {", note: "實作方法。" },
+          { code: "        format!(\"{:?}\", self)", note: "自訂輸出。" },
+          { code: "    }", note: "方法結束。" },
+          { code: "}", note: "impl 結束。" },
+          { code: "", note: "" },
+          { code: "fn show<T: Pretty>(x: &T) {", note: "任何要求 T: Pretty 的泛型函式。" },
+          { code: "    println!(\"{}\", x.pretty());", note: "呼叫能力。" },
+          { code: "}", note: "函式結束。" },
+          { code: "", note: "" },
+          { code: "fn main() {", note: "程式進入點。" },
+          { code: "    show(&vec![1, 2, 3]);", note: "Vec<i32> 現在真的滿足 T: Pretty,可以傳進來——型別發布多年後仍能長出新能力,不用改原始碼。印出 [1, 2, 3]。" },
+          { code: "}", note: "main 結束。" },
+        ],
+        outro: "差異總表:實作位置(定義時 vs 事後)、分派方式(C# 一律虛擬呼叫 vs Rust 預設單態化、dyn 才動態)、能力範圍(方法 vs 方法+運算子+關聯型別)、衝突防護(無 vs 孤兒規則)。至於預設實作,兩邊都有;trait 也當然是 Rust 設計 API 抽象的主力——整個標準庫的 Iterator、Display、From 都是。",
+      },
       csharp: `加上前幾題的差異總表:實作位置(定義時 vs 事後)、分派方式(C# 一律虛擬呼叫 vs Rust 預設單態化、dyn 才動態)、能力範圍(方法 vs 方法+運算子+關聯型別)、衝突防護(無 vs 孤兒規則)。concept 相通、機制深度不同——這是 C# 開發者學 Rust 最划算的一章:直覺能用,上限更高。`,
     },
   ],

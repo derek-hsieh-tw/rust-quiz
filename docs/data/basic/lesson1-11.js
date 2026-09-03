@@ -1,5 +1,7 @@
-/* 出題慣例:answer 一律為 0(正確答案寫在第一個選項),顯示順序由 quiz.js 依題目 id 洗牌。
- * 詳解禁止用「選項 A/B/C」字母指涉,必須直接描述選項內容。 */
+/* 出題慣例見專案根目錄 AUTHORING.md:
+ *   - answer 一律為 0(正確答案寫在第一個選項),顯示順序由 quiz.js 依題目 id 洗牌
+ *   - 詳解禁止用「選項 A/B/C」字母指涉,必須直接描述選項內容
+ *   - 有程式碼的題目一律附 walkthrough(逐行說明);反面案例必須同時附上 ✅ 正確寫法 */
 window.RUST_LESSONS = window.RUST_LESSONS || {};
 window.RUST_LESSONS["lesson1-11"] = {
   id: "lesson1-11",
@@ -18,6 +20,25 @@ window.RUST_LESSONS["lesson1-11"] = {
       answer: 0,
       explanation: `型別參數要先在函式名後的角括號「宣告」(fn first<T>),之後才能在參數與回傳型別使用。沒宣告就用 T,編譯器會問「T 是誰?」(cannot find type T)。
 template 是 C++ 語法。回傳 T(而非 &T)的版本問題更隱晦:list[0] 想把元素「搬出」slice,但 T 不保證是 Copy——cannot move out of index 編譯錯誤;回傳參考 &T 才對任何 T 都成立。`,
+      walkthrough: [
+        {
+          label: "✅ 正確寫法逐行說明",
+          lines: [
+            { code: "fn first<T>(list: &[T]) -> &T {", note: "函式名後的 <T> 是「宣告型別參數」——先宣告,後面的參數與回傳型別才能使用 T。參數收 &[T](slice 的借用),回傳 &T(元素的參考)。" },
+            { code: "    &list[0]", note: "取第一個元素的參考。回傳「參考」而不是值,對任何 T 都成立——不需要 T 是 Copy。" },
+            { code: "}", note: "函式結束。" },
+          ],
+        },
+        {
+          label: "❌ 三個錯誤寫法錯在哪",
+          lines: [
+            { code: "fn first(list: &[T]) -> &T {", note: "⛔ 編譯失敗:cannot find type `T` in this scope。沒有先在函式名後宣告 <T>,編譯器不知道 T 是誰。" },
+            { code: "template<typename T>", note: "這是 C++ 的語法,Rust 沒有 template 關鍵字。" },
+            { code: "fn first<T>(list: &[T]) -> T {", note: "宣告沒問題,問題在回傳型別是 T(值)而不是 &T。" },
+            { code: "    list[0]", note: "⛔ 編譯失敗:cannot move out of index of `[T]`。想把元素「搬出」slice,但 T 不保證是 Copy——這正是所有權系統滲進泛型設計的地方。要回傳值就得加上 T: Copy 或 T: Clone 的約束。" },
+          ],
+        },
+      ],
       csharp: `C# 的 T First<T>(T[] list) 直接回傳 T 沒問題——class 元素複製的是參考,GC 罩著。Rust 的泛型函式必須對「T 可能不可複製」誠實,這是所有權系統滲進泛型設計的第一個例子。`,
     },
     {
@@ -33,6 +54,37 @@ template 是 C++ 語法。回傳 T(而非 &T)的版本問題更隱晦:list[0] �
       answer: 0,
       explanation: `Point<T> 只有「一個」型別參數,x 和 y 必須同型別:x: 5 讓編譯器認定 T 是整數,y: 4.0 是浮點,mismatched types 編譯錯誤。
 想讓兩個欄位型別獨立,得宣告兩個參數:struct Point<T, U>(下一題)。泛型的每個參數在「單一實例」裡只能代表一個具體型別——這是型別推斷的一致性要求,不是限制彈性的 bug。`,
+      walkthrough: [
+        {
+          label: "❌ 題目程式碼(無法編譯)",
+          lines: [
+            { code: "struct Point<T> {", note: "只宣告了「一個」型別參數 T。" },
+            { code: "    x: T,", note: "第一個欄位用 T。" },
+            { code: "    y: T,", note: "第二個欄位「也是」T——同一個參數,代表這兩個欄位在單一實例裡必須是同一個具體型別。" },
+            { code: "}", note: "struct 定義結束。" },
+            { code: "", note: "" },
+            { code: "fn main() {", note: "程式進入點。" },
+            { code: "    let p = Point { x: 5, y: 4.0 };", note: "⛔ 編譯失敗:mismatched types。x: 5 讓編譯器推斷 T 是整數,接著 y: 4.0 是浮點,與已定案的 T 衝突。" },
+            { code: "    println!(\"{} {}\", p.x, p.y);", note: "因上一行失敗而無法執行。" },
+            { code: "}", note: "main 結束。" },
+          ],
+        },
+        {
+          label: "✅ 兩種修法",
+          lines: [
+            { code: "struct Point<T> {", note: "修法一:保持單一型別參數。" },
+            { code: "    x: T,", note: "第一個欄位。" },
+            { code: "    y: T,", note: "第二個欄位,同樣綁 T。" },
+            { code: "}", note: "struct 定義結束。" },
+            { code: "", note: "" },
+            { code: "fn main() {", note: "程式進入點。" },
+            { code: "    let p = Point { x: 5.0, y: 4.0 };", note: "改動處:讓兩個欄位都是浮點,T 統一推斷為 f64。" },
+            { code: "    println!(\"{} {}\", p.x, p.y);", note: "印出 5 4。" },
+            { code: "}", note: "main 結束。" },
+          ],
+          outro: "修法二是宣告兩個型別參數 struct Point<T, U> { x: T, y: U },讓兩個欄位型別各自獨立——正是下一題的主題。泛型參數在「單一實例」裡只能代表一個具體型別,這是型別推斷的一致性要求,不是限制。",
+        },
+      ],
       csharp: `C# 的 class Point<T> 同理:new Point<int> 之後所有 T 位置都是 int。這題兩個語言行為一致——差別只在 Rust 常靠推斷而 C# 常明寫型別參數,推斷讓錯誤訊息第一次看比較費解。`,
     },
     {
@@ -47,6 +99,31 @@ template 是 C++ 語法。回傳 T(而非 &T)的版本問題更隱晦:list[0] �
       answer: 0,
       explanation: `多個型別參數用逗號並列:<T, U>,x 與 y 各綁一個——Point { x: 5, y: 4.0 } 推斷成 Point<i32, f64>,順利編譯。
 T2 沒有被宣告過;| 分隔與 dynamic 關鍵字都不是 Rust 語法(Rust 沒有動態型別逃生門)。參數要幾個有幾個,但超過兩三個通常是重新設計的訊號。`,
+      walkthrough: [
+        {
+          label: "✅ 正確寫法逐行說明",
+          lines: [
+            { code: "struct Point<T, U> {", note: "多個型別參數用逗號並列,兩個都在這裡宣告。" },
+            { code: "    x: T,", note: "第一個欄位綁 T。" },
+            { code: "    y: U,", note: "第二個欄位綁 U——兩者互不相干,可以是不同型別,也可以剛好相同。" },
+            { code: "}", note: "struct 定義結束。" },
+            { code: "", note: "" },
+            { code: "fn main() {", note: "程式進入點。" },
+            { code: "    let p = Point { x: 5, y: 4.0 };", note: "推斷成 Point<i32, f64>,順利編譯。" },
+            { code: "    println!(\"{} {}\", p.x, p.y);", note: "印出 5 4。" },
+            { code: "}", note: "main 結束。" },
+          ],
+        },
+        {
+          label: "❌ 三個錯誤寫法錯在哪",
+          lines: [
+            { code: "    y: T2,", note: "⛔ 編譯失敗:cannot find type `T2`。T2 從來沒有被宣告過,角括號裡只有 T。" },
+            { code: "struct Point<T | U> {", note: "| 分隔型別參數不是 Rust 語法,一律用逗號。" },
+            { code: "struct Point<dynamic> {", note: "Rust 沒有 dynamic 這個動態型別逃生門,泛型參數必須是識別字(慣例用單一大寫字母)。" },
+          ],
+          outro: "型別參數要幾個有幾個,但超過兩三個通常是「該重新設計」的訊號。",
+        },
+      ],
       csharp: `與 C# 的 class Point<T, U> 完全同形。兩個語言在「多型別參數」的語法上幾乎複製貼上,可以直接沿用 C# 的直覺。`,
     },
     {
@@ -61,6 +138,25 @@ T2 沒有被宣告過;| 分隔與 dynamic 關鍵字都不是 Rust 語法(Rust �
       answer: 0,
       explanation: `enum Option<T> { Some(T), None } 與 enum Result<T, E> { Ok(T), Err(E) }——你天天在用的東西就是「泛型 enum」的標準定義,一份定義服務所有型別;Vec<T>、HashMap<K, V> 則是泛型 struct。
 它們沒有編譯器魔法(除了 ? 運算子的語法支援),自己完全寫得出同樣的東西。學到這裡回頭看:前十課其實一直在使用泛型,本課只是揭開名字。`,
+      walkthrough: {
+        label: "🔍 你天天在用的那些型別,定義長這樣",
+        lines: [
+          { code: "enum Option<T> {", note: "泛型 enum:一份定義服務所有型別,不是為每個型別各寫一份。" },
+          { code: "    Some(T),", note: "有值的變體,攜帶一個 T。" },
+          { code: "    None,", note: "沒有值的變體。" },
+          { code: "}", note: "這就是標準函式庫裡 Option 的真實定義,沒有任何編譯器魔法。" },
+          { code: "", note: "" },
+          { code: "enum Result<T, E> {", note: "兩個型別參數:成功值的型別與錯誤值的型別。" },
+          { code: "    Ok(T),", note: "成功變體。" },
+          { code: "    Err(E),", note: "失敗變體。" },
+          { code: "}", note: "同樣是普通的泛型 enum——連「可能失敗」這種控制流概念都不需要特殊機制。" },
+          { code: "", note: "" },
+          { code: "pub struct Vec<T> {", note: "Vec 則是泛型 struct(這裡簡化示意)。" },
+          { code: "    // 指標、長度、容量", note: "內部保存指向 heap 緩衝區的指標與兩個計數。" },
+          { code: "}", note: "HashMap<K, V> 同理,只是有兩個型別參數。" },
+        ],
+        outro: "學到這裡回頭看:前十課其實一直在使用泛型,本課只是揭開名字。唯一沾到編譯器特殊支援的是 ? 運算子的語法,型別本身完全寫得出來。",
+      },
       csharp: `對應 Nullable<T>、List<T>、Dictionary<K,V>——C# 開發者對「標準庫靠泛型撐起來」毫不陌生。Rust 多走一步:連「可能失敗」(Result)這種控制流概念都是普通泛型 enum,沒有 exception 那樣的特殊機制。`,
     },
     {
@@ -75,6 +171,32 @@ T2 沒有被宣告過;| 分隔與 dynamic 關鍵字都不是 Rust 語法(Rust �
       answer: 0,
       explanation: `impl<T> Point<T> 要念成兩段:impl 後面的 <T> 是「宣告型別參數」,Point<T> 是「為哪個型別實作」。少了 impl 後的 <T>,Point<T> 裡的 T 沒有出處(cannot find type T);少了 Point 後的 <T> 則是為不存在的非泛型 Point 實作。
 看似重複寫兩次,其實各有職責——之後你會看到 impl Point<f32>(只為特定具現實作,下一題),那時 impl 後就不需要宣告參數,兩段的分工就清楚了。`,
+      walkthrough: [
+        {
+          label: "✅ 正確寫法逐行說明",
+          lines: [
+            { code: "struct Point<T> {", note: "先有泛型 struct 的定義。" },
+            { code: "    x: T,", note: "欄位。" },
+            { code: "    y: T,", note: "欄位。" },
+            { code: "}", note: "struct 定義結束。" },
+            { code: "", note: "" },
+            { code: "impl<T> Point<T> {", note: "念成兩段:impl 後面的 <T> 是「宣告型別參數」,Point<T> 是「為哪個型別實作」。看似重複,其實各有職責。" },
+            { code: "    fn x(&self) -> &T {", note: "方法可以自由使用已宣告的 T。回傳參考而不是值,對任何 T 都安全。" },
+            { code: "        &self.x", note: "回傳欄位的參考。" },
+            { code: "    }", note: "方法結束。" },
+            { code: "}", note: "impl 區塊結束。這個 impl 適用於「所有」T。" },
+          ],
+        },
+        {
+          label: "❌ 三個錯誤寫法錯在哪",
+          lines: [
+            { code: "impl Point<T> {", note: "⛔ 編譯失敗:cannot find type `T` in this scope。少了 impl 後面的 <T>,這裡的 T 沒有出處。" },
+            { code: "impl<T> Point {", note: "⛔ 編譯失敗:Point 是泛型型別,少了 <T> 等於在為一個不存在的非泛型 Point 實作;而且宣告的 T 沒被用到。" },
+            { code: "fn Point<T>::x(&self) -> &T {", note: "「型別::方法名」的外部定義語法在 Rust 不存在,方法一律寫在 impl 區塊裡。" },
+          ],
+          outro: "為什麼要分兩段?因為還有 impl Point<f64> 這種「只為特定具現實作」的寫法(下一題)——那時 impl 後就不需要宣告參數,兩段的分工立刻清楚。",
+        },
+      ],
       csharp: `C# 方法寫在 class Point<T> 本體內,T 天然在作用域,沒有這個「宣告」步驟。Rust 因為 impl 與 struct 分離,才需要在 impl 上重新宣告——分離的代價,換來的是下一題那種「只為部分具現加方法」的能力。`,
     },
     {
@@ -90,6 +212,38 @@ T2 沒有被宣告過;| 分隔與 dynamic 關鍵字都不是 Rust 語法(Rust �
       answer: 0,
       explanation: `impl Point<f64> 表示「只為 T = f64 的 Point 實作這些方法」——Point { x: 3, y: 4 } 推斷為整數版,身上根本沒有這個方法(method not found)。寫成 x: 3.0, y: 4.0 才能呼叫。
 這是合法且常用的能力:泛型型別可以「部分型別才有某些方法」(標準庫例子:Vec<T> 人人有 push,但 concat 之類的方法要元素滿足特定條件才出現)。Rust 沒有整數到浮點的隱式轉換,自動轉型的說法在 lesson1-2 就出局了。`,
+      walkthrough: [
+        {
+          label: "❌ 題目程式碼(無法編譯)",
+          lines: [
+            { code: "struct Point<T> {", note: "泛型 struct。" },
+            { code: "    x: T,", note: "欄位。" },
+            { code: "    y: T,", note: "欄位。" },
+            { code: "}", note: "struct 定義結束。" },
+            { code: "", note: "" },
+            { code: "impl Point<f64> {", note: "注意 impl 後面沒有 <T>:這代表「只為 T = f64 的那個具現實作」,而不是為所有 T。這是合法且常用的能力。" },
+            { code: "    fn distance_from_origin(&self) -> f64 {", note: "這個方法只存在於 Point<f64> 身上。" },
+            { code: "        (self.x * self.x + self.y * self.y).sqrt()", note: "sqrt 是浮點才有的方法,所以這個 impl 也只能綁在浮點具現上。" },
+            { code: "    }", note: "方法結束。" },
+            { code: "}", note: "impl 結束。" },
+            { code: "", note: "" },
+            { code: "fn main() {", note: "程式進入點。" },
+            { code: "    let p = Point { x: 3, y: 4 };", note: "⛔ 問題所在:字面值沒有小數點,推斷成整數,p 的型別是 Point<i32>。Rust 沒有整數到浮點的隱式轉換。" },
+            { code: "    println!(\"{}\", p.distance_from_origin());", note: "⛔ 編譯失敗:no method named `distance_from_origin` found for struct `Point<{integer}>`。這個方法只長在 Point<f64> 上。" },
+            { code: "}", note: "main 結束。" },
+          ],
+        },
+        {
+          label: "✅ 正確寫法(讓型別對上具現)",
+          lines: [
+            { code: "fn main() {", note: "struct 與 impl 完全不用改。" },
+            { code: "    let p = Point { x: 3.0, y: 4.0 };", note: "改動處:加上小數點,推斷成 Point<f64>,這個具現才擁有 distance_from_origin。" },
+            { code: "    println!(\"{}\", p.distance_from_origin());", note: "印出 5。" },
+            { code: "}", note: "main 結束。" },
+          ],
+          outro: "「泛型型別可以部分具現才有某些方法」是刻意設計的能力,標準函式庫大量使用:Vec<T> 人人有 push,某些方法卻要元素滿足特定條件才出現。搭配下一課的 trait bound 還能寫成「T 滿足某條件才有這方法」。",
+        },
+      ],
       csharp: `C# 做不到「只為 List<double> 加方法」——擴充方法 this List<double> 可以模擬,但那是外掛不是型別的一部分。Rust 的 impl 區塊天生按具現分組,配合 trait bound(下一課)還能寫「T 滿足某條件才有這方法」。`,
     },
     {
@@ -104,6 +258,24 @@ T2 沒有被宣告過;| 分隔與 dynamic 關鍵字都不是 Rust 語法(Rust �
       answer: 0,
       explanation: `單態化 = 編譯期把泛型「展開」:你寫一份 fn largest<T>,程式裡用到 i32 和 char 兩種,編譯器就默默生成 largest_i32 和 largest_char 兩份具體程式碼——執行起來與手寫兩份完全相同,這就是「零成本抽象」:抽象不花執行期的錢。
 沒有執行期型別查詢、沒有裝箱、沒有 runtime 代碼生成。代價在編譯期:用的型別多,編譯變慢、執行檔變大——成本被搬到編譯期一次付清。`,
+      walkthrough: {
+        label: "🔍 你寫的一份,編譯器展開成幾份",
+        lines: [
+          { code: "fn largest<T: PartialOrd>(list: &[T]) -> &T {", note: "原始碼裡只有這一份泛型定義。" },
+          { code: "    let mut m = &list[0];", note: "先假設第一個最大。" },
+          { code: "    for item in list {", note: "走訪所有元素。" },
+          { code: "        if item > m { m = item; }", note: "比較並更新。" },
+          { code: "    }", note: "迴圈結束。" },
+          { code: "    m", note: "回傳最大元素的參考。" },
+          { code: "}", note: "函式定義結束。" },
+          { code: "", note: "" },
+          { code: "fn main() {", note: "程式進入點。" },
+          { code: "    println!(\"{}\", largest(&[1, 5, 3]));", note: "這個呼叫點讓編譯器生成一份專屬的 largest::<i32>。" },
+          { code: "    println!(\"{}\", largest(&['a', 'z']));", note: "這個呼叫點再生成一份 largest::<char>。兩份是獨立的具體程式碼,執行起來與手寫兩份完全相同。" },
+          { code: "}", note: "main 結束。" },
+        ],
+        outro: "這就是「零成本抽象」:抽象不花執行期的錢——沒有型別查詢、沒有裝箱、沒有 runtime 代碼生成。代價在編譯期:用到的型別越多,編譯越慢、執行檔越大,成本一次付清。",
+      },
       csharp: `C# 泛型走中間路線:實值型別由 JIT 為每種生成特化版(近似單態化),參考型別共用一份程式碼(傳遞參考,無需特化)。而 Java 的型別擦除是另一個極端(全部擦成 Object,裝箱伺候)。Rust 選擇全單態化:效能最高,編譯成本也最高。`,
     },
     {
@@ -119,6 +291,36 @@ T2 沒有被宣告過;| 分隔與 dynamic 關鍵字都不是 Rust 語法(Rust �
       answer: 0,
       explanation: `T 是「任意型別」——編譯器只允許你對 T 做「所有型別都保證會」的事,而比較大小不是:自訂 struct 憑什麼能 >?錯誤訊息會直接指路:binary operation > cannot be applied to type &T,並建議加上 T: PartialOrd。
 加了 bound 之後:能傳入的型別縮小到「實作了 PartialOrd 的」,函式體內就能安心用 >。這是泛型與 trait 的接合點:bound 是對呼叫端的要求,也是對函式體的授權——完整展開在下一課。`,
+      walkthrough: [
+        {
+          label: "❌ 題目程式碼(無法編譯)",
+          lines: [
+            { code: "fn largest<T>(list: &[T]) -> &T {", note: "⛔ 問題根源:T 是「任意型別」,編譯器只允許你對它做「所有型別都保證會」的事。" },
+            { code: "    let mut largest = &list[0];", note: "取第一個元素的參考當初始值,這一行沒問題。" },
+            { code: "    for item in list {", note: "走訪 slice,item 的型別是 &T。" },
+            { code: "        if item > largest {", note: "⛔ 編譯失敗:binary operation `>` cannot be applied to type `&T`。自訂 struct 憑什麼能比大小?錯誤訊息會直接建議:consider restricting type parameter `T`: `T: PartialOrd`。" },
+            { code: "            largest = item;", note: "更新最大值。" },
+            { code: "        }", note: "if 結束。" },
+            { code: "    }", note: "迴圈結束。" },
+            { code: "    largest", note: "回傳最大元素的參考。" },
+            { code: "}", note: "函式結束。" },
+          ],
+        },
+        {
+          label: "✅ 正確寫法(加上 trait bound)",
+          lines: [
+            { code: "fn largest<T: PartialOrd>(list: &[T]) -> &T {", note: "改動處:在型別參數上加約束。它同時做兩件事——對呼叫端是「要求」(只有實作了 PartialOrd 的型別才能傳進來),對函式體是「授權」(現在可以用 > 了)。" },
+            { code: "    let mut largest = &list[0];", note: "初始值。" },
+            { code: "    for item in list {", note: "走訪。" },
+            { code: "        if item > largest {", note: "現在合法:bound 保證 T 支援比較。" },
+            { code: "            largest = item;", note: "更新。" },
+            { code: "        }", note: "if 結束。" },
+            { code: "    }", note: "迴圈結束。" },
+            { code: "    largest", note: "回傳最大元素的參考。" },
+            { code: "}", note: "函式結束——這是泛型與 trait 的接合點,完整展開在下一課。" },
+          ],
+        },
+      ],
       csharp: `就是 C# 的 where T : IComparable<T>——概念一對一。差別在檢查的徹底程度:Rust 函式體內「只能」用 bound 授權過的操作,一個不多;C# 的泛型加上 dynamic 或轉型仍有繞過空間。「執行期才發現不能比較」的情況在 Rust 不存在。`,
     },
     {
@@ -134,6 +336,21 @@ T2 沒有被宣告過;| 分隔與 dynamic 關鍵字都不是 Rust 語法(Rust �
       answer: 0,
       explanation: `每個「呼叫點」獨立推斷:第一次 T = i32、第二次 T = &str,單態化各生成一份,互不干擾——「T 被第一次呼叫固定」混淆了「函式定義」與「呼叫實例」。
 turbofish(first::<i32>)只在推斷不出來時才需要(例如 collect 的目標型別),這裡參數型別明擺著,不用寫。回傳值是 &list[0](第一個元素的參考),不會是整個陣列。`,
+      walkthrough: {
+        label: "🔍 題目程式碼逐行說明(可正常執行)",
+        lines: [
+          { code: "fn first<T>(list: &[T]) -> &T {", note: "一份泛型定義。" },
+          { code: "    &list[0]", note: "回傳第一個元素的參考。" },
+          { code: "}", note: "函式結束。" },
+          { code: "", note: "" },
+          { code: "fn main() {", note: "程式進入點。" },
+          { code: "    let numbers = [10, 20, 30];", note: "型別是 [i32; 3]。" },
+          { code: "    let words = [\"hello\", \"world\"];", note: "型別是 [&str; 2]。" },
+          { code: "    println!(\"{} {}\", first(&numbers), first(&words));", note: "每個「呼叫點」獨立推斷:第一次 T = i32、第二次 T = &str,單態化各生成一份程式碼,互不干擾。回傳的是第一個元素的參考,所以印出 10 hello。" },
+          { code: "}", note: "main 結束。" },
+        ],
+        outro: "「T 被第一次呼叫固定」是混淆了「函式定義」與「呼叫實例」。至於 turbofish(first::<i32>(&numbers))只在推斷不出來時才需要——例如 collect 的目標型別;這裡參數型別明擺著,不用寫。",
+      },
       csharp: `C# 同樣支援呼叫點推斷:First(numbers) 不用寫 First<int>(numbers)。這題兩邊手感一致;turbofish ::<> 的怪語法是 Rust 特色(為了跟小於運算子區分),C# 直接用角括號沒有歧義問題。`,
     },
     {
@@ -148,6 +365,25 @@ turbofish(first::<i32>)只在推斷不出來時才需要(例如 collect 的目�
       answer: 0,
       explanation: `兩個記憶點:(1)機制——Rust 一律編譯期單態化,沒有 typeof(T)、沒有執行期反射泛型;C# 泛型保留執行期型別資訊,能 new T[]、能反射。(2)約束——T: PartialOrd + Clone 這種 trait bound 能要求運算子、關聯函式、甚至靜態方法,C# 的 where T : interface 直到 C# 11 的 static abstract members 才追上一部分。
 「執行期解析」說反了;「不支援約束」與上一題直接矛盾。`,
+      walkthrough: {
+        label: "🔍 兩個記憶點:單態化與 trait bound",
+        lines: [
+          { code: "use std::fmt::Display;", note: "引入一個 trait,準備當約束用。" },
+          { code: "", note: "" },
+          { code: "fn show_all<T: Display + Clone>(items: &[T]) {", note: "記憶點二:約束的是「型別的能力」而不是出身。Display 要求「能格式化輸出」、Clone 要求「能深複製」,用 + 串接多個能力;C# 的 where T : interface 直到 static abstract members 出現前都做不到要求運算子或關聯函式。" },
+          { code: "    for item in items {", note: "走訪。" },
+          { code: "        let copy = item.clone();", note: "因為有 Clone 約束,這裡才叫得到 clone()——bound 是對函式體的授權,一個不多。" },
+          { code: "        println!(\"{}\", copy);", note: "因為有 Display 約束,{} 才用得了。" },
+          { code: "    }", note: "迴圈結束。" },
+          { code: "}", note: "函式結束。" },
+          { code: "", note: "" },
+          { code: "fn main() {", note: "程式進入點。" },
+          { code: "    show_all(&[1, 2, 3]);", note: "記憶點一:這個呼叫點在編譯期生成一份 show_all::<i32>,沒有執行期型別資訊、沒有 typeof(T)、沒有反射。" },
+          { code: "    show_all(&[\"a\", \"b\"]);", note: "再生成一份 show_all::<&str>,零執行期額外成本。" },
+          { code: "}", note: "main 結束。" },
+        ],
+        outro: "遷移提示:where T : IComparable<T> → T: PartialOrd;where T : new() → T: Default;where T : class 沒有直接對應(Rust 不分 class/struct,倒有 T: Copy、T: Clone 描述複製能力)。大原則:C# 約束「型別的出身」,Rust 約束「型別的能力」。",
+      },
       csharp: `遷移提示:where T : IComparable<T> → T: PartialOrd;where T : new() → T: Default;where T : class 沒有直接對應(Rust 不分 class/struct,倒有 T: Copy、T: Clone 描述複製能力)。大原則:C# 約束「型別的出身」,Rust 約束「型別的能力」。`,
     },
   ],

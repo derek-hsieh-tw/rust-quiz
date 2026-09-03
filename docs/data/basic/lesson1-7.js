@@ -1,5 +1,7 @@
-/* 出題慣例:answer 一律為 0(正確答案寫在第一個選項),顯示順序由 quiz.js 依題目 id 洗牌。
- * 詳解禁止用「選項 A/B/C」字母指涉,必須直接描述選項內容。 */
+/* 出題慣例見專案根目錄 AUTHORING.md:
+ *   - answer 一律為 0(正確答案寫在第一個選項),顯示順序由 quiz.js 依題目 id 洗牌
+ *   - 詳解禁止用「選項 A/B/C」字母指涉,必須直接描述選項內容
+ *   - 有程式碼的題目一律附 walkthrough(逐行說明);反面案例必須同時附上 ✅ 正確寫法 */
 window.RUST_LESSONS = window.RUST_LESSONS || {};
 window.RUST_LESSONS["lesson1-7"] = {
   id: "lesson1-7",
@@ -18,6 +20,34 @@ window.RUST_LESSONS["lesson1-7"] = {
       answer: 0,
       explanation: `struct 欄位用「逗號」分隔(不是分號),實例化直接寫「型別名 { 欄位: 值 }」,沒有 new 關鍵字,而且每個欄位都必須給值(不存在未初始化的欄位)。
 用分號分隔欄位、new 關鍵字、class 關鍵字都不是 Rust 語法;具名欄位的 struct 實例化時也必須寫欄位名,不能只按順序給值(那是 tuple struct 的行為,後面會考)。`,
+      walkthrough: [
+        {
+          label: "✅ 正確寫法逐行說明",
+          lines: [
+            { code: "struct User {", note: "用 struct 關鍵字定義一個具名欄位的結構體。" },
+            { code: "    username: String,", note: "欄位格式是「名稱: 型別」,結尾用「逗號」分隔(不是分號)。這個欄位擁有一份 heap 字串。" },
+            { code: "    active: bool,", note: "第二個欄位;最後一個欄位後面的逗號可留可不留,慣例會留著方便日後增行。" },
+            { code: "}", note: "struct 定義結束——這裡只描述資料形狀,不含任何行為。" },
+            { code: "", note: "" },
+            { code: "fn main() {", note: "程式進入點。" },
+            { code: "    let u = User {", note: "實例化直接寫「型別名 { ... }」,沒有 new 關鍵字。" },
+            { code: "        username: String::from(\"derek\"),", note: "每個欄位都必須明寫名稱與值;所有權在此交給這個 struct 實例。" },
+            { code: "        active: true,", note: "所有欄位都要給值——Rust 不存在「未初始化的欄位」。" },
+            { code: "    };", note: "實例化結束,u 擁有整個 User。" },
+            { code: "    println!(\"{} {}\", u.username, u.active);", note: "用點語法讀欄位,印出 derek true。" },
+            { code: "}", note: "u 離開作用域,連同 username 的 heap 資料一起釋放。" },
+          ],
+        },
+        {
+          label: "❌ 三個錯誤寫法錯在哪",
+          lines: [
+            { code: "    username: String;", note: "用分號分隔欄位是語法錯誤,Rust 的 struct 欄位一律用逗號。" },
+            { code: "let u = new User(\"derek\", true);", note: "Rust 沒有 new 關鍵字,也沒有建構子語法;而且具名欄位的 struct 實例化必須寫欄位名。" },
+            { code: "class User {", note: "Rust 沒有 class 關鍵字,資料結構一律用 struct 或 enum。" },
+            { code: "struct User(username: String, active: bool);", note: "tuple struct 的正確寫法是 struct User(String, bool); ——括號裡只寫型別、不寫欄位名。而且 User::create 這個關聯函式並不會憑空存在,得自己在 impl 裡定義。" },
+          ],
+        },
+      ],
       csharp: `對照 C# 的物件初始化器 new User { Username = "derek", Active = true }——形狀很像,但 C# 允許漏填(拿預設值),Rust 強制填滿所有欄位,「忘了初始化某欄位」這種 bug 在編譯期就不存在。`,
     },
     {
@@ -33,6 +63,45 @@ window.RUST_LESSONS["lesson1-7"] = {
       answer: 0,
       explanation: `可變性掛在「整個實例」上:let mut user 之後所有欄位都可改;沒有 mut 就全部不可改。Rust 刻意不支援「單一欄位標 mut」——一個值要嘛整個可變、要嘛整個不可變,規則簡單且和借用系統一致(&mut user 能改所有欄位)。
 修法:第一行改成 let mut user = ...。`,
+      walkthrough: [
+        {
+          label: "❌ 題目程式碼(無法編譯)",
+          lines: [
+            { code: "struct User {", note: "定義 struct。" },
+            { code: "    email: String,", note: "欄位定義本身不帶可變性資訊——Rust 沒有「欄位層級的 mut」。" },
+            { code: "    active: bool,", note: "第二個欄位。" },
+            { code: "}", note: "struct 定義結束。" },
+            { code: "", note: "" },
+            { code: "fn main() {", note: "程式進入點。" },
+            { code: "    let user = User {", note: "⛔ 問題所在:沒有 mut,這個實例整個是不可變的。" },
+            { code: "        email: String::from(\"a@example.com\"),", note: "初始化第一個欄位。" },
+            { code: "        active: true,", note: "初始化第二個欄位。" },
+            { code: "    };", note: "實例建立完成。" },
+            { code: "    user.email = String::from(\"b@example.com\");", note: "⛔ 編譯失敗:cannot assign to `user.email`, as `user` is not declared as mutable。可變性掛在「整個實例」上,不是單一欄位。" },
+            { code: "}", note: "main 結束。" },
+          ],
+        },
+        {
+          label: "✅ 正確寫法(把整個實例宣告成 mut)",
+          lines: [
+            { code: "struct User {", note: "struct 定義完全不用改。" },
+            { code: "    email: String,", note: "同樣的欄位。" },
+            { code: "    active: bool,", note: "同樣的欄位。" },
+            { code: "}", note: "struct 定義結束。" },
+            { code: "", note: "" },
+            { code: "fn main() {", note: "程式進入點。" },
+            { code: "    let mut user = User {", note: "改動處:加上 mut,這個實例的所有欄位都變成可改。" },
+            { code: "        email: String::from(\"a@example.com\"),", note: "初始化第一個欄位。" },
+            { code: "        active: true,", note: "初始化第二個欄位。" },
+            { code: "    };", note: "實例建立完成。" },
+            { code: "    user.email = String::from(\"b@example.com\");", note: "合法:重新賦值時舊的 String 會先被 drop,再寫入新值,不會洩漏。" },
+            { code: "    user.active = false;", note: "同一個 mut 也涵蓋其他欄位——要嘛整個可變、要嘛整個不可變。" },
+            { code: "    println!(\"{} {}\", user.email, user.active);", note: "印出 b@example.com false。" },
+            { code: "}", note: "user 離開作用域並釋放。" },
+          ],
+          outro: "Rust 刻意不支援「單一欄位標 mut」:規則簡單,而且和借用系統一致——&mut user 一次就能改所有欄位,不必逐欄位判斷。",
+        },
+      ],
       csharp: `C# 的可變性掛在「型別定義」上:欄位少了 readonly 就永遠可改,init/required 屬性則另有規則,散落在型別各處。Rust 把決定權移到「使用端」:同一個 struct,這裡宣告 mut 就可變、那裡不宣告就唯讀,型別本身不用分成可變/不可變兩個版本。`,
     },
     {
@@ -48,6 +117,28 @@ window.RUST_LESSONS["lesson1-7"] = {
       answer: 0,
       explanation: `參數名與欄位名相同時,可以只寫一次:username 等同 username: username,這是慣用的簡寫。
 寫 username: username 本身合法(編譯器只會提醒可簡寫),但那個版本尾端多了分號——運算式變陳述式,函式拿不到回傳值,編譯錯誤(lesson1-3 的老朋友)。new 關鍵字不存在;把 User 當物件直接賦值欄位更不是 Rust 語法。`,
+      walkthrough: [
+        {
+          label: "✅ 正確且慣用的寫法",
+          lines: [
+            { code: "fn build_user(username: String) -> User {", note: "參數按值收下 String,函式將擁有它並交給新的 struct。" },
+            { code: "    User {", note: "開始建構回傳值。" },
+            { code: "        username,", note: "欄位初始化簡寫:當「參數名」與「欄位名」相同時,只寫一次即可,等同 username: username。" },
+            { code: "        active: true,", note: "名稱不同的欄位照常寫完整。" },
+            { code: "    }", note: "沒有分號 = 這是函式的尾端運算式,也就是回傳值。" },
+            { code: "}", note: "函式結束,新建的 User 連同 username 的所有權一起交給呼叫端。" },
+          ],
+        },
+        {
+          label: "❌ 三個錯誤寫法錯在哪",
+          lines: [
+            { code: "        username: username,", note: "這一行本身完全合法,編譯器只會提醒「可以簡寫」。" },
+            { code: "    };", note: "⛔ 真正的錯誤在這裡:多了分號,運算式變成陳述式,函式沒有回傳值 → mismatched types, expected `User`, found `()`。這是 lesson1-3 的老朋友。" },
+            { code: "    return new User(username, true);", note: "Rust 沒有 new 關鍵字,具名欄位的 struct 也不能按順序給值。" },
+            { code: "    User.username = username;", note: "User 是「型別」不是「實例」,不能對型別賦值欄位;要先建立實例才有欄位可寫。" },
+          ],
+        },
+      ],
       csharp: `C# 沒有這個簡寫(屬性初始化器一定要寫 Username = username),不過 record 的主要建構子 record User(string Username) 解決了同樣的「重複打名字」問題,方向類似。`,
     },
     {
@@ -63,6 +154,57 @@ window.RUST_LESSONS["lesson1-7"] = {
       answer: 0,
       explanation: `..user1 表示「其餘欄位從 user1 搬過來」——搬移遵守各欄位自己的規則:username 是 String(非 Copy)被 move,active 是 bool(Copy)被複製。結果是「部分搬移(partial move)」:user1.username 失效、user1.active 依然可用,整個 user1 則不能再整體使用(不能傳遞或賦值)。
 所以第一個 println(active)合法、第二個(username)編譯錯誤。這題把 lesson1-4 的 Copy/move 規則落到 struct 場景——搬移永遠是逐欄位判定的。`,
+      walkthrough: [
+        {
+          label: "❌ 題目程式碼(最後一行編譯失敗)",
+          lines: [
+            { code: "struct User {", note: "定義 struct。" },
+            { code: "    username: String,", note: "非 Copy 欄位。" },
+            { code: "    email: String,", note: "非 Copy 欄位。" },
+            { code: "    active: bool,", note: "Copy 欄位。" },
+            { code: "}", note: "struct 定義結束。" },
+            { code: "", note: "" },
+            { code: "fn main() {", note: "程式進入點。" },
+            { code: "    let user1 = User {", note: "建立第一個實例。" },
+            { code: "        username: String::from(\"derek\"),", note: "user1 擁有這份字串。" },
+            { code: "        email: String::from(\"a@example.com\"),", note: "user1 擁有這份字串。" },
+            { code: "        active: true,", note: "bool 欄位。" },
+            { code: "    };", note: "user1 建立完成。" },
+            { code: "    let user2 = User {", note: "建立第二個實例。" },
+            { code: "        email: String::from(\"b@example.com\"),", note: "明寫的欄位會覆蓋掉從 user1 來的值——所以 user1.email 其實沒有被搬走。" },
+            { code: "        ..user1", note: "struct 更新語法:其餘欄位「從 user1 搬過來」,而搬移遵守各欄位自己的規則——username 是 String(非 Copy)被 move 走;active 是 bool(Copy)只是複製。結果是「部分搬移」。" },
+            { code: "    };", note: "user2 建立完成。此時 user1 已不完整,不能再整體使用。" },
+            { code: "    println!(\"{}\", user1.active);", note: "合法:bool 是 Copy,這個欄位只是被複製,從未被搬走。印出 true。" },
+            { code: "    println!(\"{}\", user1.username);", note: "⛔ 編譯失敗:use of moved value: `user1.username`——這個欄位的所有權已經在 user2 身上。" },
+            { code: "}", note: "main 結束。" },
+          ],
+        },
+        {
+          label: "✅ 想保留 user1 就先 clone",
+          lines: [
+            { code: "#[derive(Clone)]", note: "改動處:讓 User 可以深複製(每個欄位都會被 clone)。" },
+            { code: "struct User {", note: "struct 定義其餘不變。" },
+            { code: "    username: String,", note: "同上,非 Copy 欄位。" },
+            { code: "    email: String,", note: "同上,非 Copy 欄位。" },
+            { code: "    active: bool,", note: "同上,Copy 欄位。" },
+            { code: "}", note: "struct 定義結束。" },
+            { code: "", note: "" },
+            { code: "fn main() {", note: "程式進入點。" },
+            { code: "    let user1 = User {", note: "建立第一個實例。" },
+            { code: "        username: String::from(\"derek\"),", note: "初始化 name 欄位。" },
+            { code: "        email: String::from(\"a@example.com\"),", note: "初始化 email 欄位。" },
+            { code: "        active: true,", note: "初始化 active 欄位。" },
+            { code: "    };", note: "user1 建立完成。" },
+            { code: "    let user2 = User {", note: "建立第二個實例。" },
+            { code: "        email: String::from(\"b@example.com\"),", note: "覆蓋 email。" },
+            { code: "        ..user1.clone()", note: "改動處:先複製一份 user1 再從複本搬欄位,原本的 user1 完全不受影響。" },
+            { code: "    };", note: "user2 建立完成。" },
+            { code: "    println!(\"{} {}\", user1.username, user2.username);", note: "兩個實例都完整可用,印出 derek derek。" },
+            { code: "}", note: "user1、user2 各自釋放自己的 heap 資料。" },
+          ],
+          outro: "對照 C# record 的 with 運算式:那是「複製一份、改幾個欄位」,原物件完好;Rust 的 .. 語法長得像,做的卻是「搬移」——要 C# 那種行為就得像上面一樣明寫 clone。",
+        },
+      ],
       csharp: `對照 C# record 的 with 運算式:user1 with { Email = "b@..." }——語意是「複製一份、改幾個欄位」,原物件完好。Rust 的 .. 語法長得像,但做的是「搬移」不是「複製」;要 C# 那種行為,得讓 struct derive Clone 再明確 ..user1.clone()。`,
     },
     {
@@ -78,6 +220,20 @@ window.RUST_LESSONS["lesson1-7"] = {
       answer: 0,
       explanation: `tuple struct 是「有名字的 tuple」:欄位沒有名字,用 .0、.1 存取。適合欄位意義不言自明的場景(Point 的 x、y)。
 單欄位的 Meters(i32) 是 newtype 模式:給 i32 一個獨立型別,讓「公尺」和「秒」即使底層都是 i32 也不能混用——編譯器幫你擋掉單位錯誤,零執行期成本。這個模式在 Rust 生態使用頻率很高。`,
+      walkthrough: {
+        label: "🔍 題目程式碼逐行說明(可正常執行)",
+        lines: [
+          { code: "struct Point(i32, i32);", note: "tuple struct:欄位只寫型別、不寫名稱,像是「有名字的 tuple」。適合欄位意義不言自明的場景。" },
+          { code: "struct Meters(i32);", note: "單欄位的 tuple struct = newtype 模式:給 i32 包一層獨立型別,讓「公尺」和「秒」即使底層都是 i32 也不能互相混用。" },
+          { code: "", note: "" },
+          { code: "fn main() {", note: "程式進入點。" },
+          { code: "    let p = Point(3, 4);", note: "實例化像呼叫函式一樣,按順序給值。" },
+          { code: "    let m = Meters(100);", note: "同樣的方式建立 newtype 實例。" },
+          { code: "    println!(\"{} {} {}\", p.0, p.1, m.0);", note: "沒有欄位名,就用位置索引 .0、.1 存取(和 tuple 一樣,從 0 開始)。印出 3 4 100。" },
+          { code: "}", note: "所有值隨 stack frame 消失。" },
+        ],
+        outro: "newtype 的價值:fn walk(d: Meters) 就再也不可能誤傳一個代表秒數的 i32 進來——編譯器幫你擋掉單位錯誤,而且因為只是一層包裝,執行期完全沒有額外成本。",
+      },
       csharp: `C# 沒有直接對應;record struct Meters(int Value) 可模擬 newtype,但欄位一定有名字。以型別區分同底層資料的思路,在 C# 通常靠自訂 struct + 運算子多載達成,Rust 的 tuple struct 一行搞定。`,
     },
     {
@@ -92,6 +248,32 @@ window.RUST_LESSONS["lesson1-7"] = {
       answer: 0,
       explanation: `Rust 把「資料」與「行為」分開:struct 區塊只放欄位,方法寫在獨立的 impl 區塊裡,第一個參數 &self 表示借用實例來讀取。
 方法直接寫進 struct 大括號、用 this 當關鍵字、用「型別.方法名」在外面定義,都不是 Rust 語法。一個型別可以有多個 impl 區塊(常用來分組方法或配合泛型)。`,
+      walkthrough: [
+        {
+          label: "✅ 正確寫法逐行說明",
+          lines: [
+            { code: "struct Rectangle {", note: "struct 區塊「只放資料」,這是 Rust 與 C# class 的第一個結構差異。" },
+            { code: "    width: u32,", note: "欄位。" },
+            { code: "    height: u32,", note: "欄位。" },
+            { code: "}", note: "資料定義結束。" },
+            { code: "", note: "" },
+            { code: "impl Rectangle {", note: "行為寫在獨立的 impl 區塊裡。一個型別可以有多個 impl 區塊(常用來分組方法或配合泛型)。" },
+            { code: "    fn area(&self) -> u32 {", note: "方法的第一個參數是接收者:&self 表示「借用實例來讀取」,不取得所有權也不修改。它其實是 self: &Self 的簡寫。" },
+            { code: "        self.width * self.height", note: "透過 self 讀欄位;尾端無分號即為回傳值。" },
+            { code: "    }", note: "方法結束。" },
+            { code: "}", note: "impl 區塊結束。呼叫時寫 r.area()。" },
+          ],
+        },
+        {
+          label: "❌ 三個錯誤寫法錯在哪",
+          lines: [
+            { code: "struct Rectangle {", note: "以下三段都是常見的錯誤寫法。" },
+            { code: "    fn area(&self) -> u32 {", note: "⛔ 方法不能寫在 struct 大括號內,那裡只能放欄位定義;行為一律放 impl。" },
+            { code: "    fn area(this) -> u32 {", note: "⛔ Rust 沒有 this 關鍵字,接收者一律叫 self,而且要寫成 &self / &mut self / self 三種形式之一。" },
+            { code: "fn Rectangle.area(&self) -> u32 {", note: "⛔ 不能用「型別.方法名」在外面定義方法,這個語法在 Rust 不存在。" },
+          ],
+        },
+      ],
       csharp: `C# 的方法寫在 class 本體內,資料與行為綁在同一個大括號。Rust 的 impl 分離設計有個好處:你甚至能為「別人的型別」加方法(透過 trait,lesson1-12)——類似 C# 擴充方法,但整合進型別系統的程度深得多。`,
     },
     {
@@ -107,6 +289,44 @@ window.RUST_LESSONS["lesson1-7"] = {
       answer: 0,
       explanation: `方法的接收者遵守 lesson1-4/1-5 的同一套規則:&self 借用(用完歸還)、&mut self 可變借用、self 拿走所有權。consume(self) 呼叫後 c 被 move 進方法、方法結束即 drop,再呼叫 c.get() 就是 borrow of moved value。
 「拿走 self」的方法是刻意的設計手段:表示「這個物件到此為止,轉換成別的東西」——例如 builder 的 build(self) 防止蓋完房子還改藍圖。兩種接收者並存於同一個 impl 完全合法。`,
+      walkthrough: [
+        {
+          label: "❌ 題目程式碼(無法編譯)",
+          lines: [
+            { code: "struct Counter {", note: "定義 struct。" },
+            { code: "    n: i32,", note: "單一欄位。" },
+            { code: "}", note: "struct 定義結束。" },
+            { code: "", note: "" },
+            { code: "impl Counter {", note: "行為區塊。" },
+            { code: "    fn get(&self) -> i32 {", note: "接收者是 &self:借用實例來讀,用完歸還,呼叫多少次都不影響擁有者。" },
+            { code: "        self.n", note: "讀取欄位並回傳(i32 是 Copy)。" },
+            { code: "    }", note: "方法結束。" },
+            { code: "    fn consume(self) -> i32 {", note: "接收者是 self(按值):呼叫時實例的所有權會被 move 進這個方法。兩種接收者並存於同一個 impl 完全合法。" },
+            { code: "        self.n", note: "讀取欄位並回傳。" },
+            { code: "    }", note: "方法結束 → self 離開作用域 → 實例在這裡被 drop。" },
+            { code: "}", note: "impl 區塊結束。" },
+            { code: "", note: "" },
+            { code: "fn main() {", note: "程式進入點。" },
+            { code: "    let c = Counter { n: 5 };", note: "c 擁有這個實例。" },
+            { code: "    let a = c.consume();", note: "所有權被 move 進 consume,方法結束時實例已被釋放;此行之後 c 失效。" },
+            { code: "    let b = c.get();", note: "⛔ 編譯失敗:borrow of moved value: `c`。" },
+            { code: "    println!(\"{} {}\", a, b);", note: "因上一行失敗而無法執行。" },
+            { code: "}", note: "main 結束。" },
+          ],
+        },
+        {
+          label: "✅ 正確寫法(把消耗自己的方法放到最後)",
+          lines: [
+            { code: "fn main() {", note: "struct 與 impl 完全不用改,只調整呼叫順序。" },
+            { code: "    let c = Counter { n: 5 };", note: "c 擁有實例。" },
+            { code: "    let b = c.get();", note: "改動處:先呼叫借用型的方法。&self 只是借用,呼叫完借用即結束,c 仍然完好。" },
+            { code: "    let a = c.consume();", note: "改動處:最後才呼叫會拿走所有權的方法——之後不再需要 c。" },
+            { code: "    println!(\"{} {}\", a, b);", note: "印出 5 5。" },
+            { code: "}", note: "c 的所有權已交給 consume 並在那裡釋放,main 不需要再做任何事。" },
+          ],
+          outro: "「拿走 self」是刻意的設計手段,表示「這個物件到此為止,轉換成別的東西」——例如 builder 的 build(self),讓人不可能蓋完房子還回頭改藍圖。",
+        },
+      ],
       csharp: `C# 方法裡的 this 永遠等同 Rust 的 &mut self(隨時可讀可寫,物件也不會失效),「呼叫方法後物件不能再用」這件事在 C# 無法表達。Rust 把「這個方法會不會消耗物件」寫進簽名,呼叫端一看就知道。`,
     },
     {
@@ -122,6 +342,30 @@ window.RUST_LESSONS["lesson1-7"] = {
       answer: 0,
       explanation: `沒有 self 參數的函式叫「關聯函式」,掛在型別上、用 Rectangle::square(3) 呼叫(:: 而非 .)。impl 區塊裡 Self 就是當前型別的別名,回傳型別與建構處都能用。
 Rust 沒有建構子語法,new 只是「最常見的關聯函式名字」,不是關鍵字——square、from_size、with_capacity 都是合法慣用的建構名,一個型別可以有很多個。`,
+      walkthrough: {
+        label: "🔍 題目程式碼逐行說明(可正常執行)",
+        lines: [
+          { code: "struct Rectangle {", note: "定義 struct。" },
+          { code: "    width: u32,", note: "欄位。" },
+          { code: "    height: u32,", note: "欄位。" },
+          { code: "}", note: "struct 定義結束。" },
+          { code: "", note: "" },
+          { code: "impl Rectangle {", note: "行為區塊。" },
+          { code: "    fn square(size: u32) -> Self {", note: "「沒有 self 參數」的函式叫關聯函式:它掛在型別上而不是實例上,用 :: 呼叫。回傳型別 Self 是「當前型別」的別名,等同 Rectangle。" },
+          { code: "        Self {", note: "建構處同樣可以用 Self,型別改名時不必到處修改。" },
+          { code: "            width: size,", note: "正方形的寬。" },
+          { code: "            height: size,", note: "正方形的高,和寬相同。" },
+          { code: "        }", note: "沒有分號 = 這是回傳值。" },
+          { code: "    }", note: "關聯函式結束。" },
+          { code: "}", note: "impl 區塊結束。" },
+          { code: "", note: "" },
+          { code: "fn main() {", note: "程式進入點。" },
+          { code: "    let sq = Rectangle::square(3);", note: "用 :: 呼叫關聯函式(不是 .),得到一個 3x3 的 Rectangle。" },
+          { code: "    println!(\"{}\", sq.width * sq.height);", note: "印出 9。" },
+          { code: "}", note: "sq 隨 stack frame 消失。" },
+        ],
+        outro: "Rust 沒有建構子語法,new 只是「最常見的關聯函式名字」而不是關鍵字——square、from_size、with_capacity 都同樣合法,一個型別可以有很多個建構用的關聯函式。",
+      },
       csharp: `關聯函式 ≈ C# 的靜態方法;Rectangle::square ≈ 靜態工廠方法 Rectangle.Square(3)。差別在 C# 另有專門的建構子語法 new Rectangle(...),Rust 統一都是關聯函式——「建構」沒有特殊地位,也因此天生鼓勵語意化命名的工廠方法。`,
     },
     {
@@ -137,6 +381,46 @@ Rust 沒有建構子語法,new 只是「最常見的關聯函式名字」,不是
       answer: 0,
       explanation: `{} 佔位符走 Display trait(「給使用者看的格式」),{:?} 走 Debug trait(「給開發者看的格式」)。#[derive(Debug)] 只自動生成後者,所以 println!("{:?}", r) 可以印出 Rectangle { width: 3, height: 4 },{} 則編譯錯誤——Display 被認為該由人來設計,編譯器不代勞。
 除錯還有個更方便的 dbg! 巨集:dbg!(&r) 會連檔名行號一起印。derive 屬性正是為 struct/enum 設計的。`,
+      walkthrough: [
+        {
+          label: "❌ 題目程式碼(無法編譯)",
+          lines: [
+            { code: "#[derive(Debug)]", note: "要求編譯器自動生成 Debug 實作——注意它只提供「給開發者看的」格式,也就是 {:?}。" },
+            { code: "struct Rectangle {", note: "定義 struct。" },
+            { code: "    width: u32,", note: "欄位。" },
+            { code: "    height: u32,", note: "欄位。" },
+            { code: "}", note: "struct 定義結束。" },
+            { code: "", note: "" },
+            { code: "fn main() {", note: "程式進入點。" },
+            { code: "    let r = Rectangle { width: 3, height: 4 };", note: "建立實例。" },
+            { code: "    println!(\"{}\", r);", note: "⛔ 編譯失敗:`Rectangle` doesn't implement `std::fmt::Display`。{} 佔位符走 Display trait(給使用者看的格式),而 derive 只生成了 Debug。Display 被認為該由人來設計,編譯器不代勞。" },
+            { code: "}", note: "main 結束。" },
+          ],
+        },
+        {
+          label: "✅ 兩種正確寫法",
+          lines: [
+            { code: "#[derive(Debug)]", note: "保留 Debug。" },
+            { code: "struct Rectangle {", note: "struct 定義不變。" },
+            { code: "    width: u32,", note: "欄位。" },
+            { code: "    height: u32,", note: "欄位。" },
+            { code: "}", note: "struct 定義結束。" },
+            { code: "", note: "" },
+            { code: "impl std::fmt::Display for Rectangle {", note: "寫法二:自己實作 Display,決定「給使用者看」的樣子。" },
+            { code: "    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {", note: "唯一要實作的方法,把內容寫進格式化器。" },
+            { code: "        write!(f, \"{}x{}\", self.width, self.height)", note: "自訂輸出格式,這裡寫成 3x4。" },
+            { code: "    }", note: "方法結束。" },
+            { code: "}", note: "impl 結束。" },
+            { code: "", note: "" },
+            { code: "fn main() {", note: "程式進入點。" },
+            { code: "    let r = Rectangle { width: 3, height: 4 };", note: "建立實例。" },
+            { code: "    println!(\"{:?}\", r);", note: "寫法一:改用 {:?} 走 Debug,印出 Rectangle { width: 3, height: 4 }——除錯時最省事。" },
+            { code: "    println!(\"{}\", r);", note: "因為上面實作了 Display,現在 {} 也能用了,印出 3x4。" },
+            { code: "}", note: "main 結束。" },
+          ],
+          outro: "除錯還有更方便的 dbg! 巨集:dbg!(&r) 會連檔名與行號一起印出來,而且會把值原封不動回傳,可以直接插在運算式中間。",
+        },
+      ],
       csharp: `C# 每個物件都有預設 ToString()(印型別名),Console.WriteLine(r) 永遠能編譯,只是輸出通常沒用;record 則自動生成漂亮的 ToString。Rust 把「可印」拆成 Debug/Display 兩個明確的能力,沒實作就直接編譯錯誤——沒有「能跑但印出垃圾」的中間狀態。`,
     },
     {
@@ -151,6 +435,33 @@ Rust 沒有建構子語法,new 只是「最常見的關聯函式名字」,不是
       answer: 0,
       explanation: `兩個根本差異:(1)沒有實作繼承——Rust 沒有基底類別、沒有 virtual/override,共享行為用 trait(介面 + 預設實作)、共享資料用組合,直接跳過「繼承階層深不可測」的老問題。(2)記憶體語意——C# class 實例是 GC 堆上的共享參考;Rust struct 是「值」,擁有它的變數遵守 move/borrow 規則。
 struct 當然能有方法(impl 區塊);struct 本體在 stack 但欄位可以擁有 heap 資料(String、Vec 的緩衝區在 heap,由 struct 擁有並隨之 drop)。`,
+      walkthrough: {
+        label: "🔍 沒有繼承,用組合 + trait 取代",
+        lines: [
+          { code: "trait Greet {", note: "trait 定義「共享的行為」,角色接近 C# 的介面(而且可以有預設實作)。" },
+          { code: "    fn hello(&self) -> String;", note: "宣告方法簽名,由各型別自己實作。" },
+          { code: "}", note: "trait 定義結束。" },
+          { code: "", note: "" },
+          { code: "struct Name(String);", note: "一個小型別,準備被「組合」進別人裡面——共享資料靠組合,不靠繼承。" },
+          { code: "", note: "" },
+          { code: "struct User {", note: "定義 struct。Rust 沒有基底類別、沒有 virtual/override。" },
+          { code: "    name: Name,", note: "把 Name 當成欄位包進來(組合),而不是「繼承自 Name」。" },
+          { code: "    active: bool,", note: "另一個欄位。struct 本體在 stack 上,但欄位可以擁有 heap 資料(這裡的 String)。" },
+          { code: "}", note: "struct 定義結束。" },
+          { code: "", note: "" },
+          { code: "impl Greet for User {", note: "為 User 實作 Greet——共享行為靠 trait。" },
+          { code: "    fn hello(&self) -> String {", note: "實作方法,借用自己。" },
+          { code: "        format!(\"hi, {}\", self.name.0)", note: "透過組合進來的欄位取值。" },
+          { code: "    }", note: "方法結束。" },
+          { code: "}", note: "impl 結束。" },
+          { code: "", note: "" },
+          { code: "fn main() {", note: "程式進入點。" },
+          { code: "    let u = User { name: Name(String::from(\"derek\")), active: true };", note: "u「擁有」這個值,遵守 move/borrow 規則——不是 GC 堆上的共享參考。" },
+          { code: "    println!(\"{} {}\", u.hello(), u.active);", note: "印出 hi, derek true。" },
+          { code: "}", note: "u 離開作用域,連同裡面的 String 一起釋放,時機在編譯期就確定。" },
+        ],
+        outro: "所以其他三個說法都不對:struct 當然能有方法(impl 區塊);struct 本體雖在 stack,欄位卻可以擁有 heap 資料;而它和 C# class 的差別遠不只是關鍵字——沒有繼承、而且是「值」而非共享參考。",
+      },
       csharp: `最容易踩的心智慣性:C# 習慣「到處傳物件參考、誰都能改」;Rust 得先想清楚「誰擁有、誰借用、借多久」。初期會覺得綁手綁腳,但這正是不用 GC 也能記憶體安全的代價與紅利——資料流向在編譯期就一目瞭然。`,
     },
   ],

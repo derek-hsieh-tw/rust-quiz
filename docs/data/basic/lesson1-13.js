@@ -1,5 +1,7 @@
-/* 出題慣例:answer 一律為 0(正確答案寫在第一個選項),顯示順序由 quiz.js 依題目 id 洗牌。
- * 詳解禁止用「選項 A/B/C」字母指涉,必須直接描述選項內容。 */
+/* 出題慣例見專案根目錄 AUTHORING.md:
+ *   - answer 一律為 0(正確答案寫在第一個選項),顯示順序由 quiz.js 依題目 id 洗牌
+ *   - 詳解禁止用「選項 A/B/C」字母指涉,必須直接描述選項內容
+ *   - 有程式碼的題目一律附 walkthrough(逐行說明);反面案例必須同時附上 ✅ 正確寫法 */
 window.RUST_LESSONS = window.RUST_LESSONS || {};
 window.RUST_LESSONS["lesson1-13"] = {
   id: "lesson1-13",
@@ -18,6 +20,20 @@ window.RUST_LESSONS["lesson1-13"] = {
       answer: 0,
       explanation: `lesson1-5 看過懸空參考被編譯器擋下——那個「擋」的機制就是生命週期分析:每個參考都有一段有效範圍,編譯器檢查它永遠不超過資料本身的範圍。大多數情況編譯器自己推得出來;推不出來的少數場合,才需要你寫 'a 標註「說明關係」。
 Rust 沒有 GC;標註也不會「延長」任何東西的壽命(本課最重要的迷思,後面有專題);跟執行緒排程更是無關。`,
+      walkthrough: {
+        label: "🔍 生命週期在擋的就是這件事",
+        lines: [
+          { code: "fn main() {", note: "程式進入點。" },
+          { code: "    let r;", note: "先宣告一個變數,準備接住某個參考。" },
+          { code: "    {", note: "開一個內層作用域。" },
+          { code: "        let x = 5;", note: "x 的資料只活在這個區塊裡。" },
+          { code: "        r = &x;", note: "⛔ 編譯失敗:`x` does not live long enough。r 想活到外層,x 卻在區塊結束就消失——編譯器比較兩者的存活範圍,發現參考會活得比資料久,直接拒絕。" },
+          { code: "    }", note: "區塊結束,x 被釋放;如果剛才放行,r 現在就是懸空參考。" },
+          { code: "    println!(\"{}\", r);", note: "正是這一行讓 r 的存活範圍延伸到區塊之外,把衝突坐實。" },
+          { code: "}", note: "main 結束。" },
+        ],
+        outro: "這就是生命週期分析:每個參考都有一段有效範圍,編譯器檢查它永遠不超過資料本身的範圍。大多數情況編譯器自己推得出來,推不出來時才需要你寫 'a 說明關係。它不會延長任何東西的壽命,和 GC、執行緒排程都無關。",
+      },
       csharp: `C# 為什麼沒這個概念:GC 保證「參考還在,物件就不回收」——安全靠執行期追蹤。Rust 把同一份安全改成編譯期證明,代價是偶爾要寫 'a 幫編譯器把關係說清楚,換來的是零執行期成本。`,
     },
     {
@@ -33,6 +49,33 @@ Rust 沒有 GC;標註也不會「延長」任何東西的壽命(本課最重要�
       answer: 0,
       explanation: `編譯器看這個簽名的困境:回傳的 &str 有時是 x、有時是 y(執行期才知道),那呼叫端拿到的參考該被限制活多久?沒有標註就無法檢查,直接要求你補(missing lifetime specifier),並附上建議寫法。
 函式回傳參考本身完全合法(lesson1-4 的 gives_ownership 回傳「值」,&self 方法天天回傳參考);「可能懸空」永遠不會發生——Rust 的立場是編譯不過,而不是編譯過但危險。`,
+      walkthrough: [
+        {
+          label: "❌ 題目程式碼(無法編譯)",
+          lines: [
+            { code: "fn longest(x: &str, y: &str) -> &str {", note: "⛔ 編譯失敗:missing lifetime specifier, this function's return type contains a borrowed value, but the signature does not say whether it is borrowed from `x` or `y`。編譯器的困境:回傳的參考有時是 x、有時是 y,呼叫端拿到後該被限制活多久?簽名沒說,就無法檢查。" },
+            { code: "    if x.len() > y.len() {", note: "比較兩者長度。" },
+            { code: "        x", note: "回傳第一個參考。" },
+            { code: "    } else {", note: "另一條分支。" },
+            { code: "        y", note: "回傳第二個參考——正是「有兩個可能來源」讓編譯器無法自行決定。" },
+            { code: "    }", note: "if 運算式結束,值成為函式回傳值。" },
+            { code: "}", note: "函式結束。" },
+          ],
+          outro: "函式回傳參考本身完全合法(&self 方法天天這麼做);問題只在「來源不只一個時,關係必須由你說明」。而且 Rust 的立場永遠是「編譯不過」,不會出現「編譯過但可能懸空」。",
+        },
+        {
+          label: "✅ 正確寫法(補上生命週期標註)",
+          lines: [
+            { code: "fn longest<'a>(x: &'a str, y: &'a str) -> &'a str {", note: "改動處:宣告一個生命週期參數 'a,並把兩個參數與回傳值都標上它——意思是「回傳的參考,壽命不長於 x 與 y 之中較短的那一個」。" },
+            { code: "    if x.len() > y.len() {", note: "函式本體一字未改。" },
+            { code: "        x", note: "回傳第一個參考。" },
+            { code: "    } else {", note: "另一條分支。" },
+            { code: "        y", note: "回傳第二個參考,現在編譯器有規則可以驗證了。" },
+            { code: "    }", note: "if 運算式結束。" },
+            { code: "}", note: "函式結束。標註不產生任何執行期成本,純粹是給編譯器看的約定。" },
+          ],
+        },
+      ],
       csharp: `C# 的 string Longest(string x, string y) 毫無波瀾——回傳的參考讓物件自動延命。Rust 要在編譯期就回答「這個參考依賴誰」,答不出來就不放行;這題的錯誤訊息是每個 Rust 學習者的成年禮。`,
     },
     {
@@ -48,6 +91,19 @@ Rust 沒有 GC;標註也不會「延長」任何東西的壽命(本課最重要�
       answer: 0,
       explanation: `'a 是「泛型生命週期參數」,宣告方式和泛型 T 一樣放在角括號。這個簽名說:存在某段範圍 'a,x、y 至少活這麼久,回傳值也只保證活這麼久——實際呼叫時,'a 被推定為「x 與 y 存活範圍的交集(較短者)」,呼叫端把回傳值用超過這個範圍就是編譯錯誤(下一題示範)。
 x、y 可以是完全不同來源的參考;沒有任何東西被強制延命或複製——標註是「描述與檢查」,不是「改變行為」。`,
+      walkthrough: {
+        label: "🔍 逐段拆解這個簽名在說什麼",
+        lines: [
+          { code: "fn longest<'a>(x: &'a str, y: &'a str) -> &'a str {", note: "<'a> 宣告一個「泛型生命週期參數」,位置和泛型 T 一樣。x、y 標 'a 代表「這兩個參考至少活 'a 這麼久」;回傳值標 'a 代表「我保證回傳的參考只活 'a 這麼久」。實際呼叫時 'a 被推定為 x 與 y 存活範圍的「交集」(較短者)。" },
+          { code: "    if x.len() > y.len() {", note: "比較長度——注意這是執行期才知道結果的分支。" },
+          { code: "        x", note: "回傳 x,它的壽命滿足 'a。" },
+          { code: "    } else {", note: "另一條分支。" },
+          { code: "        y", note: "回傳 y,它的壽命同樣滿足 'a。兩條路徑都符合簽名,函式體檢查通過。" },
+          { code: "    }", note: "if 結束。" },
+          { code: "}", note: "函式結束。呼叫端若把回傳值用超過 'a 的範圍,就會在呼叫端報錯(下一題)。" },
+        ],
+        outro: "三個常見誤解一次澄清:x 與 y 可以是完全不同來源的參考(標同一個 'a 只是取交集,不是要求同一個變數);沒有任何東西被強制延命到程式結束;也沒有任何複製發生。標註是「描述與檢查」,不是「改變行為」。",
+      },
       csharp: `可以借 C# 泛型類比:'a 之於「存活範圍」如同 T 之於「型別」——都是呼叫端決定實際值、簽名只描述關係的參數。C# 沒有對應物,因為「存活範圍」在 GC 世界不是需要靜態描述的東西。`,
     },
     {
@@ -63,6 +119,41 @@ x、y 可以是完全不同來源的參考;沒有任何東西被強制延命或�
       answer: 0,
       explanation: `簽名說「回傳值只活到 x、y 中較短者」——較短者是 string2(內層作用域結束即 drop),而 result 在作用域外還要用,違反契約,編譯錯誤。
 「實際上回傳的是 string1 所以沒事」是最誘人的錯誤答案:編譯器做的是「最壞情況」的靜態分析,不會執行你的程式看實際走哪條分支——只要「可能」指向 string2,就按 string2 的壽命算。這保守性正是安全的來源:換個輸入走另一條分支,保證依然成立。`,
+      walkthrough: [
+        {
+          label: "❌ 題目程式碼(無法編譯)",
+          lines: [
+            { code: "fn longest<'a>(x: &'a str, y: &'a str) -> &'a str {", note: "簽名說:回傳值只活到 x、y 中較短者。" },
+            { code: "    if x.len() > y.len() { x } else { y }", note: "函式本體完全正確。" },
+            { code: "}", note: "函式結束。" },
+            { code: "", note: "" },
+            { code: "fn main() {", note: "程式進入點。" },
+            { code: "    let string1 = String::from(\"long string is long\");", note: "活到 main 結束。" },
+            { code: "    let result;", note: "宣告在外層,所以它想活到 main 結束。" },
+            { code: "    {", note: "開一個內層作用域。" },
+            { code: "        let string2 = String::from(\"xyz\");", note: "⛔ 問題根源:這份資料只活到內層區塊結束。" },
+            { code: "        result = longest(string1.as_str(), string2.as_str());", note: "⛔ 編譯失敗:`string2` does not live long enough。'a 被推定為兩者的交集,也就是 string2 的短命範圍;而 result 要活得比它久。" },
+            { code: "    }", note: "區塊結束,string2 被 drop。" },
+            { code: "    println!(\"{}\", result);", note: "正是這一行讓 result 必須活過區塊,衝突因此成立。" },
+            { code: "}", note: "main 結束。" },
+          ],
+          outro: "「實際上較長的是 string1,所以回傳的一定是 string1」是最誘人的錯誤答案:編譯器做的是「最壞情況」的靜態分析,不會執行你的程式看走哪條分支。只要「可能」指向 string2,就按 string2 的壽命算——換個輸入結論依然成立,這保守性正是安全的來源。",
+        },
+        {
+          label: "✅ 正確寫法(在資料還活著時用完)",
+          lines: [
+            { code: "fn main() {", note: "函式 longest 完全不用改,要改的是呼叫端的結構。" },
+            { code: "    let string1 = String::from(\"long string is long\");", note: "活到 main 結束。" },
+            { code: "    {", note: "開內層作用域。" },
+            { code: "        let string2 = String::from(\"xyz\");", note: "只活在這個區塊。" },
+            { code: "        let result = longest(string1.as_str(), string2.as_str());", note: "改動處:result 也宣告在內層,壽命與 string2 一致,不再違反契約。" },
+            { code: "        println!(\"{}\", result);", note: "改動處:在 string2 還活著時就用完 result,印出 long string is long。" },
+            { code: "    }", note: "區塊結束,result 與 string2 一起消失,沒有任何懸空風險。" },
+            { code: "}", note: "main 結束。" },
+          ],
+          outro: "另一種修法是把 string2 也宣告在外層,讓兩份資料都活得夠久。重點都一樣:改的是「程式結構」,不是標註。",
+        },
+      ],
       csharp: `C# 版本無論走哪個分支都安全(被引用的物件延命)。Rust 用「編譯期最壞情況分析」取代「執行期逐物件追蹤」——偶爾會擋下實際上安全的程式(像這題的特定輸入),這是零成本安全的代價;好消息是調整寫法(println 移進內層)就能過。`,
     },
     {
@@ -78,6 +169,34 @@ x、y 可以是完全不同來源的參考;沒有任何東西被強制延命或�
       answer: 0,
       explanation: `編譯器內建三條「省略規則」,能唯一確定關係就免標:(1)每個參考參數各得一個獨立的生命週期;(2)恰好一個輸入生命週期時,回傳參考綁定它;(3)方法有 &self 時,回傳參考綁定 self。這裡命中第二條——編譯器自動補成 fn first_word<'a>(s: &'a str) -> &'a str。
 longest 有兩個參考參數,三條規則都套不上才要手寫。省略是「按固定規則填空」,不是分析函式內容(簽名是唯一依據);規則對所有型別的參考一視同仁。`,
+      walkthrough: [
+        {
+          label: "🔍 編譯器幫你補了什麼",
+          lines: [
+            { code: "fn first_word(s: &str) -> &str {", note: "你寫的版本。編譯器套用省略規則後,實際看到的是 fn first_word<'a>(s: &'a str) -> &'a str ——只有一個參考參數時,回傳參考自動綁定它。" },
+            { code: "    s.split_whitespace().next().unwrap_or(\"\")", note: "回傳的切片指向 s 內部的資料,和編譯器補出來的關係完全一致。" },
+            { code: "}", note: "函式結束。" },
+          ],
+          outro: "三條省略規則:(1) 每個參考參數各得一個獨立的生命週期;(2) 恰好一個輸入生命週期時,回傳參考綁定它;(3) 方法有 &self 時,回傳參考綁定 self。這裡命中第二條。",
+        },
+        {
+          label: "❌ 對照:兩個參考參數就套不上規則",
+          lines: [
+            { code: "fn longest(x: &str, y: &str) -> &str {", note: "⛔ 規則一給了 x、y 兩個「不同」的生命週期;規則二要求「恰好一個」輸入生命週期,不符;規則三要有 &self,也不符——三條都套不上,只好要求你手寫。" },
+            { code: "    if x.len() > y.len() { x } else { y }", note: "函式本體無關緊要:省略規則只看簽名,不會去分析函式內容。" },
+            { code: "}", note: "函式結束。" },
+          ],
+          outro: "類比 C# 的型別推斷:var 能用是因為規則能唯一確定型別,確定不了就得明寫。規則對所有型別的參考一視同仁,字串並不特殊。",
+        },
+        {
+          label: "✅ 套不上規則時就手寫標註",
+          lines: [
+            { code: "fn longest<'a>(x: &'a str, y: &'a str) -> &'a str {", note: "改動處:三條省略規則都套不上時,由你出面說明關係——宣告 'a 並標在兩個參數與回傳值上。" },
+            { code: "    if x.len() > y.len() { x } else { y }", note: "函式本體一字未改,有了標註編譯器就能驗證呼叫端的安全性。" },
+            { code: "}", note: "函式結束。實務上手寫 'a 的頻率遠低於初學者想像,別被教材的密度嚇到。" },
+          ],
+        },
+      ],
       csharp: `類比 C# 的型別推斷:var 能用是因為規則能唯一確定型別,確定不了就得明寫。生命週期同理——「大多數場合不用寫,寫的時候必有原因」。實務上手寫 'a 的頻率遠低於初學者想像,別被教材的密度嚇到。`,
     },
     {
@@ -93,6 +212,20 @@ longest 有兩個參考參數,三條規則都套不上才要手寫。省略是�
       answer: 0,
       explanation: `'static 是「最長的生命週期」:資料保證撐到程式結束。字面值編譯進執行檔(lesson1-6 見過),自然滿足。這是描述既有事實,不是搬移或複製任何資料。
 變數 s 本身仍是普通區域變數(可以 shadowing、可以離開作用域),'static 修飾的是「它指向的資料」的壽命。進階備註:錯誤訊息建議「加 'static」時通常是誤導,真正該修的多半是所有權結構——先懷疑設計再考慮 'static。`,
+      walkthrough: {
+        label: "🔍 'static 描述的是「資料」的壽命",
+        lines: [
+          { code: "fn main() {", note: "程式進入點。" },
+          { code: "    let s: &'static str = \"I have a static lifetime.\";", note: "'static 是「最長的生命週期」:資料保證撐到程式結束。字串字面值編譯進執行檔的唯讀資料段,天生滿足這個條件——這是「描述既有事實」,不是把資料搬到什麼特殊記憶體。" },
+          { code: "    {", note: "開一個內層作用域。" },
+          { code: "        let s = \"shadowed\";", note: "變數 s 本身仍是普通區域變數:可以被 shadowing、會離開作用域。'static 修飾的是「它指向的資料」,不是變數。" },
+          { code: "        println!(\"{}\", s);", note: "印出 shadowed。" },
+          { code: "    }", note: "區塊結束,內層的 s 消失,外層的 s 回來。" },
+          { code: "    println!(\"{}\", s);", note: "印出 I have a static lifetime.。" },
+          { code: "}", note: "main 結束。" },
+        ],
+        outro: "進階備註:編譯器的錯誤訊息建議「加 'static」時通常是誤導,真正該修的多半是所有權結構——先懷疑設計再考慮 'static。另外 Rust 也有 static 關鍵字(宣告全域變數),那個才對應 C# 的 static field,和 'static 只是撞名。",
+      },
       csharp: `類似 C# 的 const string 或 interned 字串常量的「永遠有效」感。C# 的 static 關鍵字(靜態成員)與 Rust 的 'static(壽命描述)是不同概念,只是撞名——Rust 另有 static 關鍵字宣告全域變數,那個才對應 C# 的 static field。`,
     },
     {
@@ -107,6 +240,34 @@ longest 有兩個參考參數,三條規則都套不上才要手寫。省略是�
       answer: 0,
       explanation: `本課最重要的觀念:標註「描述」關係,不「改變」壽命。錯誤的根源是程式結構(result 想活過 string2),任何標註魔法都改不了這個事實——改結構才是正解。
 把回傳綁定單一參數 'a 的版本會在「函式體」報錯(else 分支回傳的 y 不符合簽名);給 result 標 'static 只是把矛盾換個位置(string2 給不出 'static 的參考);生命週期的名字('a、'long)純粹是識別符,長短毫無意義。遇到生命週期錯誤的正確反射:先想「這個參考到底該活多久、資料是否真的撐得到」,而不是堆標註。`,
+      walkthrough: [
+        {
+          label: "✅ 正確修法:調整程式結構",
+          lines: [
+            { code: "fn main() {", note: "函式簽名完全不用動。" },
+            { code: "    let string1 = String::from(\"long string is long\");", note: "活到 main 結束。" },
+            { code: "    {", note: "內層作用域。" },
+            { code: "        let string2 = String::from(\"xyz\");", note: "短命的那一份資料。" },
+            { code: "        let result = longest(string1.as_str(), string2.as_str());", note: "改動處:result 跟著搬進內層,壽命不再超過 string2。" },
+            { code: "        println!(\"{}\", result);", note: "改動處:在資料還活著時就用完。" },
+            { code: "    }", note: "區塊結束,全部一起消失。" },
+            { code: "}", note: "main 結束——錯誤的根源是程式結構,所以解法也在程式結構。" },
+          ],
+        },
+        {
+          label: "❌ 三種「用標註變魔術」的嘗試都不行",
+          lines: [
+            { code: "fn longest<'a, 'b>(x: &'a str, y: &'b str) -> &'a str {", note: "看似把回傳綁到活得久的那個就好。" },
+            { code: "    if x.len() > y.len() { x } else { y }", note: "⛔ 但這次換「函式體」報錯:lifetime may not live long enough——else 分支回傳的 y 只有 'b,給不出簽名承諾的 'a。矛盾只是被搬了個位置。" },
+            { code: "}", note: "函式結束。" },
+            { code: "", note: "" },
+            { code: "let result: &'static str;", note: "⛔ 也不行:string2 根本給不出 'static 的參考,錯誤會變成 borrowed value does not live long enough。標註不能無中生有。" },
+            { code: "", note: "" },
+            { code: "fn longest<'long>(x: &'long str, ...)", note: "⛔ 生命週期的名字純粹是識別符,'a 和 'long 對編譯器完全一樣,長短沒有任何意義。" },
+          ],
+          outro: "本課最重要的觀念:標註「描述」關係,不「改變」壽命。遇到生命週期錯誤的正確反射是問「這個參考到底該活多久?資料真的撐得到嗎?」——而不是堆標註。",
+        },
+      ],
       csharp: `C# 工程師的對應教訓:這類錯誤相當於 Rust 編譯器提前抓到「快取了一個之後會失效的參考」的設計問題。在 C# 這種問題以另一種形式存在(快取已 Dispose 的物件、閉包捕獲循環變數),只是沒人在編譯期攔你。`,
     },
     {
@@ -122,6 +283,39 @@ longest 有兩個參考參數,三條規則都套不上才要手寫。省略是�
       answer: 0,
       explanation: `struct 欄位要存參考,必須在定義上宣告:struct Excerpt<'a> { part: &'a str }——意思是「Excerpt 的實例不能活過它引用的資料」,編譯器據此檢查每個使用處(和泛型 struct 宣告 <T> 同一個模式)。補上 <'a> 後這段程式合法,novel 活得比 e 久。
 struct 存參考完全允許(解析器、視圖類型的常見設計),只是要標註;不過入門階段的實用建議:優先讓 struct「擁有」資料(String 而非 &str),需要零複製的效能時再引入參考欄位。`,
+      walkthrough: [
+        {
+          label: "❌ 題目程式碼(無法編譯)",
+          lines: [
+            { code: "struct Excerpt {", note: "⛔ 編譯失敗的起點:missing lifetime specifier。" },
+            { code: "    part: &str,", note: "⛔ 欄位要存參考,就必須說明「這個實例不能活過它引用的資料」——沒有生命週期參數,編譯器無從檢查。" },
+            { code: "}", note: "struct 定義結束。" },
+            { code: "", note: "" },
+            { code: "fn main() {", note: "程式進入點。" },
+            { code: "    let novel = String::from(\"Call me Ishmael. Some years ago...\");", note: "擁有資料的變數。" },
+            { code: "    let first = novel.split('.').next().unwrap();", note: "取出第一句的切片,型別是 &str,指向 novel 內部。" },
+            { code: "    let e = Excerpt { part: first };", note: "把參考存進 struct——這正是需要生命週期標註的場景。" },
+            { code: "    println!(\"{}\", e.part);", note: "因 struct 定義失敗而無法執行。" },
+            { code: "}", note: "main 結束。" },
+          ],
+        },
+        {
+          label: "✅ 正確寫法(在 struct 上宣告生命週期參數)",
+          lines: [
+            { code: "struct Excerpt<'a> {", note: "改動處:宣告生命週期參數,和泛型 struct 宣告 <T> 是同一個模式。語意是「Excerpt 的實例不能活過 'a」。" },
+            { code: "    part: &'a str,", note: "改動處:欄位標上 'a,編譯器據此檢查每個使用處。" },
+            { code: "}", note: "struct 定義結束。" },
+            { code: "", note: "" },
+            { code: "fn main() {", note: "程式進入點。" },
+            { code: "    let novel = String::from(\"Call me Ishmael. Some years ago...\");", note: "資料的擁有者,活到 main 結束。" },
+            { code: "    let first = novel.split('.').next().unwrap();", note: "取出第一句的切片。" },
+            { code: "    let e = Excerpt { part: first };", note: "'a 被推定為 novel 的借用範圍;e 比 novel 晚宣告、早釋放,檢查通過。" },
+            { code: "    println!(\"{}\", e.part);", note: "印出 Call me Ishmael。" },
+            { code: "}", note: "e 先釋放、novel 後釋放,順序正確。" },
+          ],
+          outro: "struct 存參考完全允許(解析器、視圖型別的常見設計),只是要標註。不過入門階段的實用建議:優先讓 struct「擁有」資料(用 String 而不是 &str),需要零複製的效能時再引入參考欄位。",
+        },
+      ],
       csharp: `C# 的 class 欄位存參考天經地義,誰也不追問「物件會不會活過欄位指向的資料」——GC 讓問題不存在。C# 7.2 的 ref struct(如 Span<T> 只能在 stack、不能存進 class 欄位)其實就是一套寫死的隱形生命週期規則;Rust 把這套規則做成了可表達的通用語法。`,
     },
     {
@@ -137,6 +331,22 @@ struct 存參考完全允許(解析器、視圖類型的常見設計),只是要�
       answer: 0,
       explanation: `第三條省略規則專為方法設計:簽名裡有 &self,回傳參考就自動綁定 self——這符合絕大多數方法的實情(回傳的東西來自自己的欄位),所以方法幾乎從不手寫生命週期。本題回傳 self.part 正中規則,不用標註。
 若真要回傳 greeting 的衍生參考,預設綁定就錯了,那時才需要手動標註推翻預設。兩個參考參數在「函式」上無法省略,但「方法」多了 &self 規則,依然免寫。`,
+      walkthrough: {
+        label: "🔍 題目程式碼逐行說明(可正常編譯)",
+        lines: [
+          { code: "struct Excerpt<'a> {", note: "struct 上宣告生命週期參數。" },
+          { code: "    part: &'a str,", note: "參考欄位。" },
+          { code: "}", note: "struct 定義結束。" },
+          { code: "", note: "" },
+          { code: "impl<'a> Excerpt<'a> {", note: "和泛型一樣:impl 後面的 <'a> 是宣告,Excerpt<'a> 是「為哪個型別實作」。" },
+          { code: "    fn announce(&self, greeting: &str) -> &str {", note: "有兩個參考參數,照理套不上第二條省略規則——但第三條專為方法設計:簽名裡有 &self 時,回傳參考自動綁定 self。所以這裡完全不用手寫標註。" },
+          { code: "        println!(\"{}\", greeting);", note: "使用另一個參數,但不影響回傳值的來源。" },
+          { code: "        self.part", note: "回傳自己的欄位——正中第三條規則的假設:方法回傳的東西通常來自自己的狀態。" },
+          { code: "    }", note: "方法結束。" },
+          { code: "}", note: "impl 結束。" },
+        ],
+        outro: "若你真的想回傳 greeting 衍生的參考,預設綁定就錯了,那時才需要手動標註推翻預設(例如寫成 fn announce<'b>(&self, greeting: &'b str) -> &'b str)。也因為有這條規則,實務上「方法」幾乎從不手寫生命週期。",
+      },
       csharp: `這條規則的直覺在 C# 也熟悉:方法回傳的東西通常來自 this 的狀態。差別是 Rust 把這個「通常」正式編進編譯器規則,並在例外時強迫你明說——API 的參考來源永遠有據可查。`,
     },
     {
@@ -151,6 +361,34 @@ struct 存參考完全允許(解析器、視圖類型的常見設計),只是要�
       answer: 0,
       explanation: `總結本課:懸空參考的解法有兩種——執行期(GC:有人引用就不回收,代價是 GC 暫停、記憶體開銷、不確定的釋放時機)與編譯期(生命週期:寫程式時就證明安全,代價是學習曲線與偶爾的標註)。Rust 選了後者,才能同時做到記憶體安全、零 GC、可預測的效能。
 一般的 C# 程式碼沒有隱藏的生命週期分析(不過 ref struct/Span 的逃逸規則確實是縮水版的同類機制);與繼承毫無關係。`,
+      walkthrough: [
+        {
+          label: "🔷 C# 的做法:執行期由 GC 兜底",
+          lang: "csharp",
+          lines: [
+            { code: "string Longest(string x, string y) => x.Length > y.Length ? x : y;", note: "簽名不需要描述任何存活關係。" },
+            { code: "string result;", note: "宣告在外層。" },
+            { code: "{ var s2 = \"xyz\"; result = Longest(s1, s2); }", note: "就算回傳的是 s2,物件也不會被回收——只要還有人引用,GC 就不動它。安全靠執行期追蹤,代價是 GC 暫停、記憶體開銷、不確定的釋放時機。" },
+            { code: "Console.WriteLine(result);", note: "永遠安全。" },
+          ],
+        },
+        {
+          label: "✅ Rust 的做法:編譯期證明同一件事",
+          lines: [
+            { code: "fn longest<'a>(x: &'a str, y: &'a str) -> &'a str {", note: "簽名把存活關係寫出來,讓編譯器有依據可查——這是同一份安全的另一種實現時機。" },
+            { code: "    if x.len() > y.len() { x } else { y }", note: "函式本體。" },
+            { code: "}", note: "函式結束。" },
+            { code: "", note: "" },
+            { code: "fn main() {", note: "程式進入點。" },
+            { code: "    let s1 = String::from(\"long string is long\");", note: "第一份資料。" },
+            { code: "    let s2 = String::from(\"xyz\");", note: "改動處:兩份資料活在同一層,'a 的交集夠長。" },
+            { code: "    let result = longest(s1.as_str(), s2.as_str());", note: "編譯期就證明了 result 不會活過任何一份資料。" },
+            { code: "    println!(\"{}\", result);", note: "印出 long string is long。沒有 GC、沒有執行期檢查、釋放時機完全確定。" },
+            { code: "}", note: "main 結束,兩份資料在此釋放。" },
+          ],
+          outro: "帶著走的判讀技巧:看到 'a 不要慌,問三個問題——這個參考從哪來?要活多久?資料撐得到嗎?九成的生命週期錯誤在回答完就知道怎麼改結構了。剩下一成需要進階知識(lesson2-4),入門階段先用「擁有代替借用」(clone / String)繞過,不丟人。",
+        },
+      ],
       csharp: `帶著走的判讀技巧:看到 'a 不要慌,問三個問題——這個參考從哪來?要活多久?資料撐得到嗎?九成的生命週期錯誤在回答完就知道怎麼改結構了。剩下一成需要進階知識(lesson2-4),入門階段遇到可以先用「擁有代替借用」(clone/String)繞過,不丟人。`,
     },
   ],

@@ -5,6 +5,9 @@
  *  3. 每個選項必須是 { code } 或 { text } 其中一種
  *  4. 題目 id 不得重複
  *  5. 詳解不得出現「選項 A/B/C/D」字母指涉(選項會洗牌,字母對不上)
+ *  6. walkthrough(逐行說明):有程式碼的題目必須有、每行程式碼都要有註解、
+ *     code 不得含換行、反面案例(❌)必須同時附上正確寫法(✅)
+ * 規範全文見專案根目錄 AUTHORING.md。
  */
 const fs = require("fs");
 const path = require("path");
@@ -69,9 +72,53 @@ for (const cat of window.RUST_INDEX.categories) {
         if (q[field] && letterRef.test(q[field]))
           errors.push(`${tag}: ${field} 出現選項字母指涉(洗牌後字母會對不上)`);
       }
+
+      validateWalkthrough(tag, q, errors);
     }
     console.log(`✓ ${meta.id}(${lesson.questions.length} 題)`);
   }
+}
+
+/* walkthrough(逐行說明)的規範檢查,細節見 AUTHORING.md */
+function validateWalkthrough(tag, q, errors) {
+  const hasCode = q.questionCode !== undefined ||
+    (q.options || []).some(o => o.code !== undefined);
+
+  if (!q.walkthrough) {
+    if (hasCode) errors.push(`${tag}: 題目含程式碼,必須提供 walkthrough(逐行說明)`);
+    return;
+  }
+
+  const blocks = Array.isArray(q.walkthrough) ? q.walkthrough : [q.walkthrough];
+  if (blocks.length === 0) {
+    errors.push(`${tag}: walkthrough 是空陣列`);
+    return;
+  }
+
+  blocks.forEach((b, bi) => {
+    const at = `${tag} / walkthrough[${bi}]`;
+    if (!Array.isArray(b.lines) || b.lines.length === 0) {
+      errors.push(`${at}: 缺少 lines`);
+      return;
+    }
+    b.lines.forEach((ln, li) => {
+      if (typeof ln.code !== "string") {
+        errors.push(`${at} 第 ${li + 1} 行:缺少 code 字串`);
+        return;
+      }
+      // 完整程式碼由各行 code 接起來,含換行會讓行號與註解錯位
+      if (ln.code.includes("\n"))
+        errors.push(`${at} 第 ${li + 1} 行:code 不可含換行,請拆成多行`);
+      // 空行與純結構行以外,每一行都要有說明
+      if (ln.code.trim() && !(ln.note || "").trim())
+        errors.push(`${at} 第 ${li + 1} 行缺少 note:${JSON.stringify(ln.code)}`);
+    });
+  });
+
+  // 反面案例必須附上可直接編譯執行的正確寫法
+  const labels = blocks.map(b => b.label || "");
+  if (labels.some(l => l.startsWith("❌")) && !labels.some(l => l.startsWith("✅")))
+    errors.push(`${tag}: 有 ❌ 區塊卻沒有 ✅ 正確寫法區塊`);
 }
 
 if (errors.length) {

@@ -1,5 +1,7 @@
-/* 出題慣例:answer 一律為 0(正確答案寫在第一個選項),顯示順序由 quiz.js 依題目 id 洗牌。
- * 詳解禁止用「選項 A/B/C」字母指涉,必須直接描述選項內容。 */
+/* 出題慣例見專案根目錄 AUTHORING.md:
+ *   - answer 一律為 0(正確答案寫在第一個選項),顯示順序由 quiz.js 依題目 id 洗牌
+ *   - 詳解禁止用「選項 A/B/C」字母指涉,必須直接描述選項內容
+ *   - 有程式碼的題目一律附 walkthrough(逐行說明);反面案例必須同時附上 ✅ 正確寫法 */
 window.RUST_LESSONS = window.RUST_LESSONS || {};
 window.RUST_LESSONS["lesson1-8"] = {
   id: "lesson1-8",
@@ -18,6 +20,27 @@ window.RUST_LESSONS["lesson1-8"] = {
       answer: 0,
       explanation: `Rust enum 的每個變體(variant)都可以「攜帶資料」,而且各變體攜帶的形狀可以不同:Quit 不帶資料、Move 帶具名欄位、Write 帶一個 String、ChangeColor 帶三個 i32——一個型別安全地表達「這個值是四種情況之一,每種情況有自己的資料」。這在型別理論叫「和型別(sum type)」。
 只有純變體或指定整數值的 enum,C# 也能寫——那只是整數常數的集合。帶資料的 enum 才是 Rust 的招牌,Option 和 Result 都是靠這個能力建成的。`,
+      walkthrough: {
+        label: "✅ 展現「C# enum 做不到」的定義",
+        lines: [
+          { code: "enum Message {", note: "定義一個和型別(sum type):這個型別的值一定是底下四種情況之「一」。" },
+          { code: "    Quit,", note: "不帶任何資料的變體,長得像 C# 的 enum 成員。" },
+          { code: "    Move { x: i32, y: i32 },", note: "帶「具名欄位」的變體,形狀像個內嵌的 struct。" },
+          { code: "    Write(String),", note: "帶一個 String 的變體,形狀像 tuple struct。" },
+          { code: "    ChangeColor(i32, i32, i32),", note: "帶三個 i32 的變體。四個變體攜帶的資料形狀完全不同,卻同屬一個型別——這正是 C# enum 做不到的事。" },
+          { code: "}", note: "enum 定義結束。" },
+          { code: "", note: "" },
+          { code: "fn main() {", note: "程式進入點。" },
+          { code: "    let msgs = vec![", note: "四種變體是同一個型別,所以可以放進同一個 Vec。" },
+          { code: "        Message::Quit,", note: "建構不帶資料的變體。" },
+          { code: "        Message::Move { x: 1, y: 2 },", note: "建構具名欄位的變體,語法像建立 struct。" },
+          { code: "        Message::Write(String::from(\"hi\")),", note: "建構帶資料的變體,語法像呼叫函式。" },
+          { code: "    ];", note: "vector 建立完成。" },
+          { code: "    println!(\"{}\", msgs.len());", note: "印出 3。" },
+          { code: "}", note: "msgs 離開作用域,連同 Write 變體裡的 String 一起釋放。" },
+        ],
+        outro: "另外三個選項(純變體、指定整數值、方向列舉)只是「命名的整數集合」,C# 也寫得出來。帶資料的 enum 才是 Rust 的招牌,Option 與 Result 都是靠這個能力建成的。",
+      },
       csharp: `C# 的 enum 只是命名的整數。要表達「多種情況、各自帶資料」,C# 得用類別階層(抽象基底 + 子類)或 OneOf 之類的函式庫,而且編譯器不會檢查你是否處理了所有情況。C# 社群多年許願的 discriminated union 提案,就是想要 Rust enum 這個東西。`,
     },
     {
@@ -33,6 +56,34 @@ window.RUST_LESSONS["lesson1-8"] = {
       answer: 0,
       explanation: `這就是 Option 的全部意義:i8 是「保證有值」,Option<i8> 是「可能有值可能沒有」——兩者是不同型別,編譯器強迫你先處理「沒有」的情況(match、unwrap_or 等)才能拿到裡面的值,不存在自動解包。
 換句話說:在 Rust,「忘記檢查 null」不是執行期炸彈,而是編譯錯誤。billion-dollar mistake(null 參考)被型別系統直接封印。`,
+      walkthrough: [
+        {
+          label: "❌ 題目程式碼(無法編譯)",
+          lines: [
+            { code: "fn main() {", note: "程式進入點。" },
+            { code: "    let x: i8 = 5;", note: "型別是 i8:語意是「保證有值」。" },
+            { code: "    let y: Option<i8> = Some(5);", note: "型別是 Option<i8>:語意是「可能有值、可能沒有」。它和 i8 是「兩個不同的型別」,不是 i8 的加強版。" },
+            { code: "    let sum = x + y;", note: "⛔ 編譯失敗:cannot add `Option<i8>` to `i8`。Rust 不會自動解包 Option——強迫你先處理「沒有」的情況,才能拿到裡面的值。" },
+            { code: "    println!(\"{}\", sum);", note: "因上一行失敗而無法執行。" },
+            { code: "}", note: "main 結束。" },
+          ],
+        },
+        {
+          label: "✅ 正確寫法(先處理 None 再運算)",
+          lines: [
+            { code: "fn main() {", note: "程式進入點。" },
+            { code: "    let x: i8 = 5;", note: "保證有值。" },
+            { code: "    let y: Option<i8> = Some(5);", note: "可能有值。" },
+            { code: "    let sum = match y {", note: "改動處:用 match 把兩種情況都處理掉,match 的值就是解出來的結果。" },
+            { code: "        Some(v) => x + v,", note: "有值時把內部的 v 綁定出來,和 x 相加。" },
+            { code: "        None => x,", note: "沒有值時的行為必須明寫——這正是 Option 逼你面對的那一半。" },
+            { code: "    };", note: "match 結束,sum 得到 10。" },
+            { code: "    println!(\"{}\", sum);", note: "印出 10。" },
+            { code: "}", note: "main 結束。" },
+          ],
+          outro: "更精簡的寫法是 let sum = x + y.unwrap_or(0);——同樣是「明確處理沒有值的情況」,只是換成組合子。重點不變:在 Rust,「忘記檢查 null」不是執行期炸彈,而是編譯錯誤。",
+        },
+      ],
       csharp: `C# 的 int? y = 5; int sum = x + y; 也不能直接編譯(要 .Value 或 ??)——Nullable<T> 和 Option 神似!但 C# 的參考型別直到 NRT(nullable reference types)出現前都可以隨意為 null,而且 NRT 只是「警告」;Rust 的 Option 是硬性的型別區分,沒有繞過的空間。`,
     },
     {
@@ -48,6 +99,31 @@ window.RUST_LESSONS["lesson1-8"] = {
       answer: 0,
       explanation: `match 到 Coin::Quarter(state) 分支時,變體攜帶的 String 被「綁定」到變數 state,分支區塊裡就能使用——這是 enum 帶資料與 match 的合體技:分辨是哪種情況「同時」取出該情況的資料,一步完成。
 分支可以是單一運算式,也可以是 { } 區塊(區塊尾端運算式 25 就是該分支的值)。輸出兩行:State: Alaska、25。`,
+      walkthrough: {
+        label: "🔍 題目程式碼逐行說明(可正常執行)",
+        lines: [
+          { code: "enum Coin {", note: "定義一個帶資料的 enum。" },
+          { code: "    Penny,", note: "不帶資料的變體。" },
+          { code: "    Quarter(String),", note: "帶一個 String 的變體——這個 String 由該變體的值擁有。" },
+          { code: "}", note: "enum 定義結束。" },
+          { code: "", note: "" },
+          { code: "fn value(coin: Coin) -> u8 {", note: "參數按值收下 enum,取得所有權(包含變體裡的 String)。" },
+          { code: "    match coin {", note: "match 是運算式,它的值就是函式的回傳值。" },
+          { code: "        Coin::Penny => 1,", note: "單一運算式的分支:值就是 1。" },
+          { code: "        Coin::Quarter(state) => {", note: "匹配到這個變體時,它攜帶的 String 被「綁定」到變數 state——分辨是哪種情況與取出資料一步完成。" },
+          { code: "            println!(\"State: {}\", state);", note: "使用綁定出來的資料,印出 State: Alaska。" },
+          { code: "            25", note: "區塊的尾端運算式沒有分號,就是這個分支的值。" },
+          { code: "        }", note: "分支區塊結束——分支可以是單一運算式,也可以是 { } 區塊。" },
+          { code: "    }", note: "match 結束,值為 25;沒有分號,成為函式回傳值。" },
+          { code: "}", note: "函式結束,coin(以及綁定出去的 state)在這裡被釋放。" },
+          { code: "", note: "" },
+          { code: "fn main() {", note: "程式進入點。" },
+          { code: "    let v = value(Coin::Quarter(String::from(\"Alaska\")));", note: "建構帶資料的變體並把所有權交給函式。" },
+          { code: "    println!(\"{}\", v);", note: "印出 25。整體輸出兩行:State: Alaska 與 25。" },
+          { code: "}", note: "main 結束。" },
+        ],
+        outro: "重點:資料「只能」透過模式取出——沒有 C# 那種「先 is 判斷、再強制轉型」的裂縫,判斷與取值永遠是原子的一步。",
+      },
       csharp: `C# 8+ 的模式匹配也能做到:coin switch { Quarter q => ..., ... } 配合類別階層。差別在 Rust 的資料「只能」透過 match 這類模式取出——沒有先 is 判斷再強轉的裂縫,判斷與取值永遠是原子的一步。`,
     },
     {
@@ -63,6 +139,38 @@ window.RUST_LESSONS["lesson1-8"] = {
       answer: 0,
       explanation: `match 必須窮盡所有可能——Option 有 Some 和 None 兩個變體,少了 None 直接編譯錯誤,「這次呼叫剛好傳 Some」完全不重要:編譯器看的是型別的所有可能,不是這次的實際值。
 這與 lesson1-3 的整數 match 同一條規則,但在 enum 上才顯出真正威力:未來幫 enum 加新變體時,專案裡所有漏掉新變體的 match 會被編譯器逐一點名——重構的安全網。`,
+      walkthrough: [
+        {
+          label: "❌ 題目程式碼(無法編譯)",
+          lines: [
+            { code: "fn plus_one(x: Option<i32>) -> Option<i32> {", note: "接收一個可能沒有值的整數,回傳同樣可能沒有值的整數。" },
+            { code: "    match x {", note: "⛔ 編譯失敗的起點:non-exhaustive patterns: `None` not covered。" },
+            { code: "        Some(i) => Some(i + 1),", note: "只處理了「有值」這一半:把內部的 i 綁定出來加一,再包回 Some。" },
+            { code: "    }", note: "match 結束。Option 有 Some 與 None 兩個變體,少了 None 就不窮盡——「這次呼叫剛好傳 Some」完全不重要,編譯器看的是型別的所有可能,不是這次的實際值。" },
+            { code: "}", note: "函式結束。" },
+            { code: "", note: "" },
+            { code: "fn main() {", note: "程式進入點。" },
+            { code: "    println!(\"{:?}\", plus_one(Some(5)));", note: "呼叫端沒有問題,是函式裡的 match 擋住了整支程式。" },
+            { code: "}", note: "main 結束。" },
+          ],
+        },
+        {
+          label: "✅ 正確寫法(補上 None 分支)",
+          lines: [
+            { code: "fn plus_one(x: Option<i32>) -> Option<i32> {", note: "簽名不變。" },
+            { code: "    match x {", note: "現在這個 match 是窮盡的。" },
+            { code: "        Some(i) => Some(i + 1),", note: "有值:加一後重新包成 Some。" },
+            { code: "        None => None,", note: "改動處:明確處理沒有值的情況——沒有值加一還是沒有值。" },
+            { code: "    }", note: "match 結束,值成為函式回傳值。" },
+            { code: "}", note: "函式結束。" },
+            { code: "", note: "" },
+            { code: "fn main() {", note: "程式進入點。" },
+            { code: "    println!(\"{:?} {:?}\", plus_one(Some(5)), plus_one(None));", note: "印出 Some(6) None。" },
+            { code: "}", note: "main 結束。" },
+          ],
+          outro: "這個「有值就加工、沒有值就照樣沒有」的模式太常見,標準函式庫直接提供:x.map(|i| i + 1) 一行等價。而窮盡檢查的真正威力在重構——幫 enum 加新變體時,專案裡所有漏掉新變體的 match 都會被編譯器逐一點名。",
+        },
+      ],
       csharp: `C# 的 switch 運算式對未涵蓋的情況只給警告(CS8509),執行期遇到才丟 SwitchExpressionException;針對類別階層的匹配,編譯器更難判斷是否窮盡。Rust 的 enum 是封閉集合,窮盡檢查是硬性編譯錯誤——「編譯過 = 每種情況都處理了」。`,
     },
     {
@@ -78,6 +186,35 @@ window.RUST_LESSONS["lesson1-8"] = {
       answer: 0,
       explanation: `if let 就是「只關心一種模式、其餘全部忽略」的 match 語法糖:匹配 Some(max) 就執行區塊,其他情況(None)什麼都不做——等價於帶 _ => () 萬用分支的 match。
 None 時 panic 的版本語意不同(if let 靜默跳過,不會炸);Some(3) 的版本只匹配「值恰好是 3」,不是綁定任意值;用 != None 判斷後直接印 config_max 則印出的是 Some(3) 而非 3,而且失去了「取出內部值」的能力。if let 也可以接 else 區塊處理其餘情況。`,
+      walkthrough: [
+        {
+          label: "🔍 題目的 if let 逐行說明",
+          lines: [
+            { code: "let config_max = Some(3u8);", note: "建立一個 Option<u8>,值是 Some(3)。" },
+            { code: "if let Some(max) = config_max {", note: "if let 是「只關心一種模式」的語法糖:模式 Some(max) 匹配成功就把內部值綁定到 max 並執行區塊;不成功就整個跳過。" },
+            { code: "    println!(\"max is {}\", max);", note: "使用綁定出來的值,印出 max is 3。" },
+            { code: "}", note: "區塊結束。None 的情況什麼都不做——這正是它等價於帶 _ => () 分支的 match 的原因。" },
+          ],
+        },
+        {
+          label: "✅ 等價的 match 寫法",
+          lines: [
+            { code: "match config_max {", note: "同樣對 Option 做匹配。" },
+            { code: "    Some(max) => println!(\"max is {}\", max),", note: "和 if let 的區塊做同一件事。" },
+            { code: "    _ => (),", note: "萬用分支什麼都不做,() 是「單位值」——這一行就是 if let 省略掉的部分。" },
+            { code: "}", note: "match 結束。" },
+          ],
+        },
+        {
+          label: "❌ 另外三個寫法為什麼不等價",
+          lines: [
+            { code: "    None => panic!(\"no value\"),", note: "語意不同:if let 遇到 None 是靜靜跳過,不會讓程式炸掉。" },
+            { code: "    Some(3) => println!(\"max is 3\"),", note: "語意不同:這是「值恰好等於 3」才匹配的字面值模式,而不是「有值就綁定出來」。" },
+            { code: "if config_max != None {", note: "兩個問題:印出來的會是 Some(3) 而不是 3,而且完全失去「取出內部值」的能力——這正是模式匹配存在的理由。" },
+          ],
+          outro: "if let 也可以接 else 區塊來處理其餘情況,寫法是 if let Some(max) = config_max { ... } else { ... }。",
+        },
+      ],
       csharp: `對應 C# 的 if (config_max is int max) { ... }(對 Nullable 的模式匹配)——判斷與解包一步完成,形狀幾乎一樣。Rust 的 if let 適用於任何 enum 模式,不限「有沒有值」。`,
     },
     {
@@ -93,6 +230,33 @@ None 時 panic 的版本語意不同(if let 靜默跳過,不會炸);Some(3) 的�
       answer: 0,
       explanation: `unwrap 的語意是「我賭裡面有值」:Some(v) 給你 v,None 直接 panic 讓程式炸掉。編譯器不會攔——這是合法的程式,只是把「沒有值」升級成不可恢復的錯誤。
 安全的替代品:unwrap_or(0) 給預設值、unwrap_or_else 惰性計算預設值、expect("說明") 是 panic 訊息更清楚的 unwrap(至少除錯時知道賭輸在哪)。正式程式碼裡裸的 unwrap 通常是 code review 的紅旗,除非你能證明不可能是 None。`,
+      walkthrough: [
+        {
+          label: "❌ 題目程式碼(執行期 panic)",
+          lines: [
+            { code: "fn main() {", note: "程式進入點。" },
+            { code: "    let x: Option<i32> = None;", note: "明確建立一個「沒有值」的 Option。" },
+            { code: "    let v = x.unwrap();", note: "⛔ 執行期 panic:called `Option::unwrap()` on a `None` value。unwrap 的語意是「我賭裡面有值」:Some(v) 給你 v,None 就直接讓程式炸掉。注意這是合法程式,編譯器不會攔。" },
+            { code: "    println!(\"{}\", v);", note: "因 panic 而走不到這裡。" },
+            { code: "}", note: "main 結束。" },
+          ],
+        },
+        {
+          label: "✅ 三種安全的替代寫法",
+          lines: [
+            { code: "fn main() {", note: "程式進入點。" },
+            { code: "    let x: Option<i32> = None;", note: "同樣是沒有值。" },
+            { code: "    println!(\"{}\", x.unwrap_or(0));", note: "給預設值:None 時回傳 0,永不 panic。印出 0。" },
+            { code: "    println!(\"{}\", x.unwrap_or_else(|| expensive()));", note: "惰性預設值:只有真的是 None 才會執行那段昂貴的計算。" },
+            { code: "    match x {", note: "最完整的做法:明確列出兩種情況。" },
+            { code: "        Some(v) => println!(\"有值 {}\", v),", note: "有值時的處理。" },
+            { code: "        None => println!(\"沒有值,改用預設流程\"),", note: "沒有值時的處理——這裡會被執行。" },
+            { code: "    }", note: "match 結束。" },
+            { code: "}", note: "main 結束。" },
+          ],
+          outro: "若你真的能證明不可能是 None,至少改用 expect(\"這裡的設定檔一定已載入\"):行為和 unwrap 一樣,但 panic 訊息會告訴你賭輸在哪。正式程式碼裡裸的 unwrap 通常是 code review 的紅旗。",
+        },
+      ],
       csharp: `unwrap ≈ C# Nullable 的 .Value(None/null 時丟 InvalidOperationException),unwrap_or(0) ≈ x ?? 0,expect ≈ 帶訊息的 ArgumentNullException.ThrowIfNull。差別是文化:C# 到處都在隱式賭「不是 null」;Rust 讓每一次賭注都是看得見的 unwrap,可以被搜尋、被審查。`,
     },
     {
@@ -108,6 +272,22 @@ None 時 panic 的版本語意不同(if let 靜默跳過,不會炸);Some(3) 的�
       answer: 0,
       explanation: `match 是運算式,每個分支的值就是整個 match 的值,直接當函式回傳值。1..=9 是「range 模式」:匹配 1 到 9(含),所以 5 落在 single digit;42 沒被前兩個分支接住,落到萬用的 _。
 三個分支的型別必須一致(都是 &'static str)——和 if 運算式同一條規則。分支由上往下依序嘗試,第一個匹配的獲勝。`,
+      walkthrough: {
+        label: "🔍 題目程式碼逐行說明(可正常執行)",
+        lines: [
+          { code: "fn describe(n: i32) -> &'static str {", note: "回傳字串字面值的參考;'static 表示它活得跟整個程式一樣久(字面值編譯進執行檔)。" },
+          { code: "    match n {", note: "match 是運算式,它的值就是函式的回傳值(尾端沒有分號)。分支由上往下依序嘗試,第一個匹配的獲勝。" },
+          { code: "        0 => \"zero\",", note: "字面值模式:只匹配 0。" },
+          { code: "        1..=9 => \"single digit\",", note: "range 模式:匹配 1 到 9(含尾端)。所以 5 落在這裡——range 在 match 分支裡完全合法。" },
+          { code: "        _ => \"big\",", note: "萬用分支接住其餘所有值,讓 match 窮盡。42 落在這裡。" },
+          { code: "    }", note: "match 結束。三個分支的值型別必須一致(都是 &'static str),和 if 運算式同一條規則。" },
+          { code: "}", note: "函式結束。" },
+          { code: "", note: "" },
+          { code: "fn main() {", note: "程式進入點。" },
+          { code: "    println!(\"{} {} {}\", describe(0), describe(5), describe(42));", note: "依序得到 zero、single digit、big,印出 zero single digit big。" },
+          { code: "}", note: "main 結束。" },
+        ],
+      },
       csharp: `幾乎就是 C# 的 switch 運算式:n switch { 0 => "zero", >= 1 and <= 9 => "single digit", _ => "big" }。這是兩個語言長得最像的角落——C# 的 switch 運算式本來就是向函數式語言的 match 取經。`,
     },
     {
@@ -123,6 +303,18 @@ None 時 panic 的版本語意不同(if let 靜默跳過,不會炸);Some(3) 的�
       answer: 0,
       explanation: `Vec::pop 從「尾端」取出元素,回傳 Option<T>:有元素給 Some(值),空了給 None。while let 的語意:模式匹配成功就繼續迴圈,失敗(None)就結束——所以依序印出 3 2 1,棧空後乾淨地停下。
 這是「用型別驅動迴圈終止」的漂亮示範:不用先檢查 is_empty 再取值,pop 的回傳型別本身就攜帶了「還有沒有」的資訊。`,
+      walkthrough: {
+        label: "🔍 題目程式碼逐行說明(可正常執行)",
+        lines: [
+          { code: "fn main() {", note: "程式進入點。" },
+          { code: "    let mut stack = vec![1, 2, 3];", note: "建立可變的 Vec,當成堆疊使用。" },
+          { code: "    while let Some(top) = stack.pop() {", note: "pop 從「尾端」取出元素並回傳 Option<i32>:有元素給 Some(值)、空了給 None。while let 的語意是「模式匹配成功就繼續跑,失敗就結束迴圈」。" },
+          { code: "        print!(\"{} \", top);", note: "印出這一圈取出的值,依序是 3、2、1。" },
+          { code: "    }", note: "迴圈結束:第四次 pop 回傳 None,模式匹配失敗,乾淨地停下來。整體輸出 3 2 1。" },
+          { code: "}", note: "stack 離開作用域(此時已經空了)。" },
+        ],
+        outro: "這是「用型別驅動迴圈終止」的漂亮示範:不必先檢查 is_empty 再取值,pop 的回傳型別本身就攜帶了「還有沒有」的資訊,也就不存在「檢查完到取值之間狀態變了」的空窗。",
+      },
       csharp: `C# 對應 while (stack.TryPop(out var top)) { ... }——TryXxx + out 參數模式正是 C# 版的「回傳值攜帶成功與否」。Rust 用 Option 把同樣的事做進型別系統:不需要 out 參數這種特殊機制,任何函式都能回傳 Option。`,
     },
     {
@@ -138,6 +330,29 @@ None 時 panic 的版本語意不同(if let 靜默跳過,不會炸);Some(3) 的�
       answer: 0,
       explanation: `unwrap_or(預設值):Some(v) 給 v,None 給預設值,永不 panic——a 得到 5,b 得到 0。參數就是內部值的型別(i32),不是 Option。
 家族還有:unwrap_or_default()(用型別的 Default,i32 是 0)、unwrap_or_else(|| 昂貴計算)(只在 None 時才執行計算)。先用 match/if let 思考,熟了之後這些方法讓程式碼更精簡。`,
+      walkthrough: [
+        {
+          label: "🔍 題目程式碼逐行說明(可正常執行)",
+          lines: [
+            { code: "fn main() {", note: "程式進入點。" },
+            { code: "    let a: Option<i32> = Some(5);", note: "有值的 Option。" },
+            { code: "    let b: Option<i32> = None;", note: "沒有值的 Option。" },
+            { code: "    println!(\"{} {}\", a.unwrap_or(0), b.unwrap_or(0));", note: "unwrap_or(預設值):Some(v) 給 v、None 給預設值,永遠不會 panic。注意參數型別是「內部值的型別」i32,不是另一個 Option。a 得到 5、b 得到 0,印出 5 0。" },
+            { code: "}", note: "main 結束。" },
+          ],
+        },
+        {
+          label: "🔍 同一家族的其他成員",
+          lines: [
+            { code: "let b: Option<i32> = None;", note: "同樣是沒有值。" },
+            { code: "let v1 = b.unwrap_or_default();", note: "用型別的 Default 當預設值,i32 的預設是 0——不必自己寫那個 0。" },
+            { code: "let v2 = b.unwrap_or_else(|| 1 + 2);", note: "惰性版本:只有真的是 None 才執行閉包,適合預設值計算昂貴的情況。" },
+            { code: "let v3 = b.map(|x| x * 2).unwrap_or(0);", note: "先加工再解包:有值就乘二,沒有值就給 0。組合子可以串起來,不必層層 match。" },
+            { code: "println!(\"{} {} {}\", v1, v2, v3);", note: "印出 0 3 0。" },
+          ],
+          outro: "建議順序:先用 match / if let 把邏輯想清楚,熟了之後再改用這些組合子讓程式碼精簡。同一套思路也適用於 Result——學一套用兩處。",
+        },
+      ],
       csharp: `unwrap_or(0) 就是 C# 的 b ?? 0(null 合併運算子)。C# 的 ?? 只服務 null;Rust 的 Option 方法家族(unwrap_or / map / and_then⋯⋯)是一整套組合子,同樣的思路也適用於 Result——學一套用兩處。`,
     },
     {
@@ -152,6 +367,35 @@ None 時 panic 的版本語意不同(if let 靜默跳過,不會炸);Some(3) 的�
       answer: 0,
       explanation: `三個層次的差異:(1)普遍性——Rust「所有」型別預設不可為空,可能缺值就包 Option,沒有例外;C# 實值型別靠 Nullable、參考型別靠 NRT 註記,兩套機制。(2)強制力——Option 不解包連編譯都過不了;NRT 是警告,加個 ! 就靜音。(3)成本——Option<&T> 經過編譯器最佳化後和裸指標一樣大(niche optimization),零額外開銷。
 檢查全部發生在編譯期,「執行期檢查比較慢」的說法正好說反。`,
+      walkthrough: [
+        {
+          label: "🔷 C# 的做法:可以編譯,但保護是「可選的」",
+          lang: "csharp",
+          lines: [
+            { code: "string? name = GetName();", note: "NRT 註記說「這個字串可能是 null」——但這只是給編譯器的提示。" },
+            { code: "Console.WriteLine(name.Length);", note: "編譯器只給「警告」CS8602,程式照樣編得過、跑得動,執行期就是 NullReferenceException。" },
+            { code: "Console.WriteLine(name!.Length);", note: "加個 ! 就能讓警告靜音,保護等於自願放棄。" },
+          ],
+        },
+        {
+          label: "✅ Rust 的做法:不處理 None 就編譯不過",
+          lines: [
+            { code: "fn get_name() -> Option<String> {", note: "回傳型別直接說明「可能沒有」,不需要額外註記機制,而且沒有例外——所有型別預設都不可為空。" },
+            { code: "    None", note: "這次回傳沒有值。" },
+            { code: "}", note: "函式結束。" },
+            { code: "", note: "" },
+            { code: "fn main() {", note: "程式進入點。" },
+            { code: "    let name = get_name();", note: "name 的型別是 Option<String>。" },
+            { code: "    // println!(\"{}\", name.len());", note: "⛔ 若解開這一行會編譯失敗:no method named `len` found for enum `Option`。想用內部的值就「必須」先處理沒有值的情況,這是硬性的編譯錯誤,不是警告。" },
+            { code: "    match name {", note: "唯一的出路:明確處理兩種情況。" },
+            { code: "        Some(n) => println!(\"{}\", n.len()),", note: "有值時才拿得到 String,安全地取長度。" },
+            { code: "        None => println!(\"沒有名字\"),", note: "沒有值時的行為必須寫出來。這裡會被執行。" },
+            { code: "    }", note: "match 結束。" },
+            { code: "}", note: "main 結束。" },
+          ],
+          outro: "三個層次的差異:普遍性(Rust 沒有例外,C# 分成 Nullable 與 NRT 兩套)、強制力(編譯錯誤 vs 可被 ! 靜音的警告)、成本(Option<&T> 經 niche optimization 後和裸指標一樣大,零額外開銷)。而且檢查全部發生在編譯期——「執行期檢查比較慢」的說法正好說反。",
+        },
+      ],
       csharp: `實務感受:寫 C# 時「這個參數會不會是 null」靠文件、註記和防禦性檢查;寫 Rust 時看型別就是答案——是 T 就保證有,是 Option<T> 就必須處理沒有。NullReferenceException 這個類別在 Rust 的字典裡不存在。`,
     },
   ],

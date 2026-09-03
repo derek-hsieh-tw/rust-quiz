@@ -1,5 +1,7 @@
-/* 出題慣例:answer 一律為 0(正確答案寫在第一個選項),顯示順序由 quiz.js 依題目 id 洗牌。
- * 詳解禁止用「選項 A/B/C」字母指涉,必須直接描述選項內容。 */
+/* 出題慣例見專案根目錄 AUTHORING.md:
+ *   - answer 一律為 0(正確答案寫在第一個選項),顯示順序由 quiz.js 依題目 id 洗牌
+ *   - 詳解禁止用「選項 A/B/C」字母指涉,必須直接描述選項內容
+ *   - 有程式碼的題目一律附 walkthrough(逐行說明);反面案例必須同時附上 ✅ 正確寫法 */
 window.RUST_LESSONS = window.RUST_LESSONS || {};
 window.RUST_LESSONS["lesson1-14"] = {
   id: "lesson1-14",
@@ -19,6 +21,31 @@ window.RUST_LESSONS["lesson1-14"] = {
       answer: 0,
       explanation: `模組形成一棵樹,根是 crate。路徑分隔符是 ::(絕對路徑從 crate:: 起頭;相對路徑從當前位置起算,main 與 front_of_house 同層所以直接寫)。
 點號是方法呼叫的語法,不用於模組路徑;跳過中間層直接寫 hosting:: 找不到(hosting 不在 main 的這一層);import 不是 Rust 關鍵字(引入用 use,而且 use 也不是呼叫的必要條件——完整路徑隨時可用)。`,
+      walkthrough: [
+        {
+          label: "✅ 正確寫法逐行說明",
+          lines: [
+            { code: "mod front_of_house {", note: "宣告一個模組。模組會組成一棵樹,樹根叫 crate。" },
+            { code: "    pub mod hosting {", note: "巢狀模組;加 pub 才能被外面看見(下一題細講隱私規則)。" },
+            { code: "        pub fn add_to_waitlist() {}", note: "同樣要 pub,否則就算模組公開了,裡面的函式仍是私有。" },
+            { code: "    }", note: "hosting 模組結束。" },
+            { code: "}", note: "front_of_house 模組結束。" },
+            { code: "", note: "" },
+            { code: "fn main() {", note: "main 位在 crate 根,與 front_of_house 同一層。" },
+            { code: "    crate::front_of_house::hosting::add_to_waitlist();", note: "絕對路徑:從 crate:: 這個樹根出發,用 :: 逐層往下。" },
+            { code: "    front_of_house::hosting::add_to_waitlist();", note: "相對路徑:從「目前所在位置」起算。因為 main 與 front_of_house 同層,直接寫模組名即可。兩種寫法完全等價。" },
+            { code: "}", note: "main 結束。" },
+          ],
+        },
+        {
+          label: "❌ 三個錯誤寫法錯在哪",
+          lines: [
+            { code: "front_of_house.hosting.add_to_waitlist();", note: "點號是「方法呼叫/欄位存取」的語法,不能用於模組路徑;模組路徑一律用 ::。" },
+            { code: "hosting::add_to_waitlist();", note: "⛔ 編譯失敗:failed to resolve: use of undeclared crate or module `hosting`。hosting 不在 main 這一層,不能跳過中間的 front_of_house。" },
+            { code: "import front_of_house;", note: "Rust 沒有 import 關鍵字,引入用 use。而且 use 也不是呼叫的必要條件——完整路徑隨時可用。" },
+          ],
+        },
+      ],
       csharp: `C# 的 namespace 用點號:FrontOfHouse.Hosting.AddToWaitlist()。Rust 用 :: 且模組樹「就是」crate 的實體結構——下一題開始的隱私規則、拆檔規則都掛在這棵樹上,比 namespace 承擔更多職責。`,
     },
     {
@@ -34,6 +61,37 @@ window.RUST_LESSONS["lesson1-14"] = {
       answer: 0,
       explanation: `Rust 的隱私規則:模組內的一切「預設私有」,對外開放要逐一標 pub。main 在 kitchen 外面,呼叫私有的 cook 是硬性編譯錯誤——「同檔案」不是豁免條件,模組邊界才是判準(反過來,子模組可以用祖先模組的私有項目)。
 修法:pub fn cook。這個預設方向是刻意的:公開介面必須顯式聲明,重構私有內容永遠不會破壞外部使用者。`,
+      walkthrough: [
+        {
+          label: "❌ 題目程式碼(無法編譯)",
+          lines: [
+            { code: "mod kitchen {", note: "宣告模組。模組是「隱私邊界」——裡面的一切預設私有。" },
+            { code: "    fn cook() {", note: "⛔ 問題所在:沒有 pub,這個函式只有 kitchen 自己與它的子孫模組看得到。" },
+            { code: "        println!(\"cooking\");", note: "函式內容。" },
+            { code: "    }", note: "函式結束。" },
+            { code: "}", note: "模組結束。" },
+            { code: "", note: "" },
+            { code: "fn main() {", note: "main 在 kitchen「外面」——注意判準是模組邊界,不是「同一個檔案」。" },
+            { code: "    kitchen::cook();", note: "⛔ 編譯失敗:function `cook` is private。「同檔案」不是豁免條件。" },
+            { code: "}", note: "main 結束。" },
+          ],
+        },
+        {
+          label: "✅ 正確寫法(顯式對外開放)",
+          lines: [
+            { code: "mod kitchen {", note: "模組宣告不變。" },
+            { code: "    pub fn cook() {", note: "改動處:加上 pub,把這個函式列入模組的公開介面。" },
+            { code: "        println!(\"cooking\");", note: "函式內容不變。" },
+            { code: "    }", note: "函式結束。" },
+            { code: "}", note: "模組結束。" },
+            { code: "", note: "" },
+            { code: "fn main() {", note: "程式進入點。" },
+            { code: "    kitchen::cook();", note: "現在合法,印出 cooking。" },
+            { code: "}", note: "main 結束。" },
+          ],
+          outro: "這個預設方向是刻意的:公開介面必須顯式聲明,重構私有內容永遠不會破壞外部使用者。反過來的方向則寬鬆——子模組可以使用祖先模組的私有項目(見 super 那題)。",
+        },
+      ],
       csharp: `C# 類別成員預設 private(方向相同),但頂層類別預設 internal、同專案暢行。Rust 的邊界更細:以「模組」為單位層層把關,pub 決定跨模組、pub(crate) 決定跨 crate(後面考)——內部結構的封裝粒度比 assembly/internal 細得多。`,
     },
     {
@@ -49,6 +107,61 @@ window.RUST_LESSONS["lesson1-14"] = {
       answer: 0,
       explanation: `pub struct 只公開「型別本身」,欄位各自獨立決定:toast 有 pub 可以讀寫,fruit 沒有就是私有——存取它編譯錯誤。也因為有私有欄位,外部無法用字面值語法建構 Breakfast,必須走 summer 這種公開的關聯函式:封裝的標準做法。
 順帶一提,pub enum 則是一人得道全家公開(變體全部 pub)——變體藏起來的 enum 沒有使用意義,語言直接定了規則。`,
+      walkthrough: [
+        {
+          label: "❌ 題目程式碼(最後一行編譯失敗)",
+          lines: [
+            { code: "mod menu {", note: "宣告模組。" },
+            { code: "    pub struct Breakfast {", note: "pub 只公開「型別本身」,不代表欄位跟著公開。" },
+            { code: "        pub toast: String,", note: "這個欄位有 pub,外部可讀可寫。" },
+            { code: "        fruit: String,", note: "⛔ 這個欄位沒有 pub,是私有的——欄位各自獨立決定可見性。" },
+            { code: "    }", note: "struct 定義結束。" },
+            { code: "", note: "" },
+            { code: "    impl Breakfast {", note: "行為區塊。" },
+            { code: "        pub fn summer(toast: &str) -> Breakfast {", note: "因為有私有欄位,外部無法用字面值語法建構 Breakfast,必須提供這種公開的關聯函式——這正是封裝的標準做法。" },
+            { code: "            Breakfast {", note: "在模組內部,私有欄位當然可以自由設定。" },
+            { code: "                toast: String::from(toast),", note: "由參數決定。" },
+            { code: "                fruit: String::from(\"peach\"),", note: "由模組自己決定,外部無從干預。" },
+            { code: "            }", note: "沒有分號 = 回傳值。" },
+            { code: "        }", note: "關聯函式結束。" },
+            { code: "    }", note: "impl 結束。" },
+            { code: "}", note: "模組結束。" },
+            { code: "", note: "" },
+            { code: "fn main() {", note: "程式進入點。" },
+            { code: "    let mut meal = menu::Breakfast::summer(\"Rye\");", note: "透過公開的關聯函式建立實例,合法。" },
+            { code: "    meal.toast = String::from(\"Wheat\");", note: "合法:toast 是 pub 欄位。" },
+            { code: "    meal.fruit = String::from(\"apple\");", note: "⛔ 編譯失敗:field `fruit` of struct `Breakfast` is private。" },
+            { code: "}", note: "main 結束。" },
+          ],
+        },
+        {
+          label: "✅ 正確寫法(想開放就補 pub,或提供方法)",
+          lines: [
+            { code: "mod menu {", note: "模組宣告不變。" },
+            { code: "    pub struct Breakfast {", note: "型別公開。" },
+            { code: "        pub toast: String,", note: "公開欄位。" },
+            { code: "        fruit: String,", note: "刻意保持私有——外部不該直接改水果。" },
+            { code: "    }", note: "struct 定義結束。" },
+            { code: "", note: "" },
+            { code: "    impl Breakfast {", note: "行為區塊。" },
+            { code: "        pub fn summer(toast: &str) -> Breakfast {", note: "建構用的關聯函式。" },
+            { code: "            Breakfast { toast: String::from(toast), fruit: String::from(\"peach\") }", note: "回傳實例。" },
+            { code: "        }", note: "函式結束。" },
+            { code: "        pub fn fruit(&self) -> &str {", note: "改動處:Rust 沒有屬性語法,慣例是「私有欄位 + 公開方法」提供受控存取。" },
+            { code: "            &self.fruit", note: "只給讀,不給寫。" },
+            { code: "        }", note: "方法結束。" },
+            { code: "    }", note: "impl 結束。" },
+            { code: "}", note: "模組結束。" },
+            { code: "", note: "" },
+            { code: "fn main() {", note: "程式進入點。" },
+            { code: "    let mut meal = menu::Breakfast::summer(\"Rye\");", note: "建立實例。" },
+            { code: "    meal.toast = String::from(\"Wheat\");", note: "公開欄位照樣可改。" },
+            { code: "    println!(\"{} {}\", meal.toast, meal.fruit());", note: "改動處:私有欄位改走公開方法讀取,印出 Wheat peach。" },
+            { code: "}", note: "main 結束。" },
+          ],
+          outro: "順帶一提,pub enum 則是一人得道全家公開(變體全部 pub)——把變體藏起來的 enum 沒有使用意義,語言直接定了規則。",
+        },
+      ],
       csharp: `與 C# 的 public class + private 欄位精神一致,這題直覺可以平移。差別在習慣:C# 靠屬性(getter/setter)控制存取;Rust 沒有屬性語法,慣例是私有欄位 + 公開方法(fn fruit(&self) -> &str 讀、fn set_fruit 寫),樣板較多但一切顯式。`,
     },
     {
@@ -63,6 +176,27 @@ window.RUST_LESSONS["lesson1-14"] = {
       answer: 0,
       explanation: `社群慣例的分工:「函式」引到父模組——呼叫處保留 hosting::add_to_waitlist() 一層,讀者一眼看出這不是本地函式、來自哪個模組;「型別」引到本身——HashMap::new() 已經帶著型別名,再掛路徑徒增噪音。
 引函式到最深「能編譯」但丟失來源資訊;萬用字元 * 讓讀者無從追蹤名字來源,慣例只用於 prelude 模式與測試;完整路徑寫到天荒地老則沒人受得了——use 存在就是為了消這個。`,
+      walkthrough: [
+        {
+          label: "✅ 慣用寫法逐行說明",
+          lines: [
+            { code: "use crate::front_of_house::hosting;", note: "「函式」引到「父模組」為止。" },
+            { code: "hosting::add_to_waitlist();", note: "呼叫處保留 hosting:: 一層,讀者一眼看出「這不是本地函式,來自 hosting 模組」——來源資訊沒有被 use 抹掉。" },
+            { code: "", note: "" },
+            { code: "use std::collections::HashMap;", note: "「型別」引到型別本身。" },
+            { code: "let map: HashMap<i32, i32> = HashMap::new();", note: "HashMap::new() 已經帶著型別名,再掛一層路徑只是噪音。這條慣例的判準始終是「讀者能不能看懂這個名字從哪來」。" },
+          ],
+        },
+        {
+          label: "❌ 另外三個寫法的問題",
+          lines: [
+            { code: "use crate::front_of_house::hosting::add_to_waitlist;", note: "能編譯,但呼叫處變成裸的 add_to_waitlist(),讀者分不出它是本地函式還是外來的——來源資訊被丟失。" },
+            { code: "use crate::front_of_house::*;", note: "萬用字元讓所有名字憑空出現,無從追蹤來源,還可能撞名。慣例只用於 prelude 模式與測試模組(use super::*;)。" },
+            { code: "crate::front_of_house::hosting::add_to_waitlist();", note: "每次都寫完整路徑沒人受得了——use 存在就是為了消除這種重複。" },
+          ],
+          outro: "C# 的 using 只能引整個 namespace(相當於 Rust 引到父模組),using static 才能引成員。Rust 的 use 粒度全自選,於是社群長出了這套「函式留一層、型別到本身」的最佳實踐——寫給讀者看的設計。",
+        },
+      ],
       csharp: `C# 的 using 只能引整個 namespace(等於 Rust 引到父模組),C# 6 的 using static 才能引成員。Rust 的 use 粒度全自選,於是社群長出了這套「函式留一層、型別到本身」的最佳實踐——寫給讀者看的設計。`,
     },
     {
@@ -78,6 +212,30 @@ window.RUST_LESSONS["lesson1-14"] = {
       answer: 0,
       explanation: `super:: 是「上一層模組」(類比檔案系統的 ..):back_of_house 的父層是 crate 根,super::deliver_order() 正確指到。cook_order 同模組內互相呼叫,不需要 pub。
 關鍵的隱私方向:「子模組可以使用祖先模組的私有項目」(小孩看得到家裡的東西),pub 管的是反方向與旁系——所以沒 pub 的 deliver_order 被子模組呼叫完全合法。連結錯誤發生在編譯期,Rust 沒有「執行期找不到函式」這種事。`,
+      walkthrough: {
+        label: "🔍 題目程式碼逐行說明(可正常執行)",
+        lines: [
+          { code: "fn deliver_order() {", note: "定義在 crate 根,而且「沒有」pub——它是根模組的私有項目。" },
+          { code: "    println!(\"delivered\");", note: "函式內容。" },
+          { code: "}", note: "函式結束。" },
+          { code: "", note: "" },
+          { code: "mod back_of_house {", note: "宣告子模組,它的父層就是 crate 根。" },
+          { code: "    pub fn fix_order() {", note: "公開給外面呼叫。" },
+          { code: "        cook_order();", note: "同模組內互相呼叫,不需要 pub。" },
+          { code: "        super::deliver_order();", note: "super:: 是「上一層模組」(類比檔案系統的 ..),這裡指向 crate 根。關鍵:隱私是有方向的——子模組可以使用祖先模組的私有項目,所以沒有 pub 的 deliver_order 在這裡完全合法。" },
+          { code: "    }", note: "函式結束。" },
+          { code: "", note: "" },
+          { code: "    fn cook_order() {", note: "私有函式,只有 back_of_house 與其子孫看得到。" },
+          { code: "        println!(\"cooked\");", note: "函式內容。" },
+          { code: "    }", note: "函式結束。" },
+          { code: "}", note: "模組結束。" },
+          { code: "", note: "" },
+          { code: "fn main() {", note: "程式進入點。" },
+          { code: "    back_of_house::fix_order();", note: "依序印出 cooked 與 delivered。" },
+          { code: "}", note: "main 結束。" },
+        ],
+        outro: "記住這個方向:「往上看得到、往下要 pub」。另外名稱解析全部發生在編譯期,Rust 沒有「執行期找不到函式」這種事。",
+      },
       csharp: `C# namespace 沒有「向上引用」的專用語法(名稱解析自動往外層找),也沒有「巢狀 namespace 的隱私方向」概念——internal 是平的。Rust 的模組樹隱私是有方向的:往上看得到、往下要 pub,這讓「模組 = 封裝單位」名副其實。`,
     },
     {
@@ -92,6 +250,38 @@ window.RUST_LESSONS["lesson1-14"] = {
       answer: 0,
       explanation: `mod garden;(分號版)= 「這裡有個 garden 模組,內容在對應檔案裡」:編譯器按固定規則找 src/garden.rs(現代慣例)或 src/garden/mod.rs(舊慣例),garden 的子模組再拆就放 src/garden/xxx.rs。重點:檔案不會自動變成模組——沒有 mod 宣告的 .rs 檔就是孤兒,根本不會被編譯。
 它不是 #include(不能指任意路徑、不是文字貼上);外部套件走 Cargo.toml + use,與 mod 無關;模組內容也只能由被宣告的那個檔案提供,不能四散各處。`,
+      walkthrough: [
+        {
+          label: "🔍 拆檔後的專案長相",
+          lang: "bash",
+          lines: [
+            { code: "src/", note: "所有原始碼的固定位置。" },
+            { code: "├── main.rs", note: "crate 根。裡面寫 mod garden; 宣告子模組。" },
+            { code: "├── garden.rs", note: "garden 模組的本體。編譯器按固定規則來這裡找(舊慣例是 src/garden/mod.rs,兩者擇一)。" },
+            { code: "└── garden/", note: "garden 的子模組再往下拆時使用的目錄。" },
+            { code: "    └── vegetables.rs", note: "garden::vegetables 模組的本體,需要在 garden.rs 裡寫 pub mod vegetables; 才會被載入。" },
+          ],
+        },
+        {
+          label: "✅ 三個檔案的內容",
+          lines: [
+            { code: "// src/main.rs", note: "crate 根檔案。" },
+            { code: "mod garden;", note: "分號結尾 = 「這裡有個 garden 模組,內容在對應檔案裡」。模組樹仍然由這行宣告構成,只是本體搬到別的檔案。" },
+            { code: "fn main() {", note: "程式進入點。" },
+            { code: "    garden::vegetables::plant();", note: "路徑寫法完全不受拆檔影響。" },
+            { code: "}", note: "main 結束。" },
+            { code: "", note: "" },
+            { code: "// src/garden.rs", note: "garden 模組的本體。" },
+            { code: "pub mod vegetables;", note: "在這裡再宣告子模組,編譯器會去找 src/garden/vegetables.rs。" },
+            { code: "", note: "" },
+            { code: "// src/garden/vegetables.rs", note: "最深一層模組的本體。" },
+            { code: "pub fn plant() {", note: "要被外面呼叫就得 pub。" },
+            { code: "    println!(\"planting\");", note: "函式內容。" },
+            { code: "}", note: "函式結束。" },
+          ],
+          outro: "重點:檔案不會自動變成模組——沒有 mod 宣告的 .rs 檔就是孤兒,根本不會被編譯。它也不是 C 的 #include(不能指任意路徑、不是文字貼上);外部套件則走 Cargo.toml 加 use,和 mod 無關。",
+        },
+      ],
       csharp: `C# 反過來:專案裡每個 .cs 自動參與編譯,namespace 想寫哪就寫哪、一個 namespace 跨任意多檔。Rust 要求模組樹「顯式宣告、位置可預測」——看 main.rs 的 mod 清單就是整個 crate 的目錄,不用 IDE 全域搜尋才能拼出結構。`,
     },
     {
@@ -107,6 +297,23 @@ window.RUST_LESSONS["lesson1-14"] = {
       answer: 0,
       explanation: `一般 use 只是「本模組內的別名」,對外不可見;加上 pub 之後,這個名字成為當前模組公開介面的一部分——外部使用者看到的路徑是 my_crate::hosting,內部的 front_of_house 完全隱形。之後內部怎麼重組(改名、搬層),只要 pub use 這行跟著調,外部 API 紋絲不動。
 沒有任何程式碼被複製——匯出的是「名字」,指向同一個實體。實務上大量函式庫的 lib.rs 就是一串 pub use,精心設計「使用者看到的形狀」。`,
+      walkthrough: {
+        label: "🔍 pub use 讓「內部結構」與「對外 API」解耦",
+        lines: [
+          { code: "// src/lib.rs", note: "函式庫的根。" },
+          { code: "mod front_of_house {", note: "注意這個模組「沒有」pub——它是內部組織,不打算讓使用者看見。" },
+          { code: "    pub mod hosting {", note: "模組內部照常公開。" },
+          { code: "        pub fn add_to_waitlist() {}", note: "實際的功能。" },
+          { code: "    }", note: "hosting 模組結束。" },
+          { code: "}", note: "front_of_house 模組結束——它沒有 pub,外部看不到。" },
+          { code: "", note: "" },
+          { code: "pub use crate::front_of_house::hosting;", note: "關鍵一行:一般的 use 只是「本模組內的別名」,對外不可見;加上 pub 之後,這個名字成為當前模組公開介面的一部分。沒有任何程式碼被複製——匯出的是「名字」,指向同一個實體。" },
+          { code: "", note: "" },
+          { code: "// 使用者端", note: "以下是別人使用這個函式庫時寫的程式。" },
+          { code: "my_crate::hosting::add_to_waitlist();", note: "使用者用的是短路徑,完全不知道 front_of_house 這層存在。日後內部改名或搬層,只要這行 pub use 跟著調,外部 API 紋絲不動。" },
+        ],
+        outro: "實務上大量函式庫的 lib.rs 就是一長串 pub use,精心設計「使用者看到的形狀」。C# 幾乎沒有對應物,namespace 結構基本上直接暴露給使用者。",
+      },
       csharp: `C# 幾乎沒有對應物(global using 別名和 TypeForwardedTo 只覆蓋零碎場景)——namespace 結構基本上直接暴露給使用者。Rust 的「內部樹」與「公開 API 樹」可以完全是兩棵樹,這是函式庫設計的重要自由度。`,
     },
     {
@@ -122,6 +329,15 @@ window.RUST_LESSONS["lesson1-14"] = {
       answer: 0,
       explanation: `兩個工具:(1)as 別名——fmt::Result 與 io::Result 撞名,第二個取名 IoResult 就相安無事(這正是「函式引到父模組」慣例想避免的問題的另一個解法);(2)巢狀 use 的 self——use std::io::{self, Write} 等於 use std::io; 加 use std::io::Write; 兩行,self 代表「路徑本身」。
 use 的 as 純粹是命名(與轉型運算子 as 撞關鍵字但無關);這裡的 self 也不是方法裡的 self。`,
+      walkthrough: {
+        label: "🔍 題目三行 use 逐行說明",
+        lines: [
+          { code: "use std::fmt::Result;", note: "引入格式化模組的 Result,之後可以直接寫 Result。" },
+          { code: "use std::io::Result as IoResult;", note: "io 也有一個叫 Result 的型別,直接引入會撞名。as 給它取個別名 IoResult,兩者就能共存——注意這個 as 純粹是「命名」,和型別轉換的 as 運算子只是撞關鍵字。" },
+          { code: "use std::io::{self, Write};", note: "巢狀 use:大括號一次引入多個項目。這裡的 self 代表「路徑本身」,所以整行等於 use std::io; 加上 use std::io::Write; 兩行。它和方法簽名裡的 self 沒有關係。" },
+        ],
+        outro: "撞名的另一個解法就是上一題的慣例:引到父模組,寫成 fmt::Result 與 io::Result,天然不會衝突。巢狀 {} 是 Rust 特有的整理術,大型專案的 use 區塊靠它保持整潔。",
+      },
       csharp: `對應 C# 的 using IoResult = System.IO.Result;(別名 using)——概念相同。巢狀 {} 語法則是 Rust 特有的整理術,大型專案的 use 區塊靠它保持整潔;C# 每個 using 一行,靠 IDE 摺疊眼不見為淨。`,
     },
     {
@@ -137,6 +353,23 @@ use 的 as 純粹是命名(與轉型運算子 as 撞關鍵字但無關);這裡�
       answer: 0,
       explanation: `可見性光譜:私有(預設,本模組+子孫)< pub(crate)(整個 crate)< pub(全世界)。pub(crate) 的定位是「內部共用工具」:跨模組要用、但不想寫進公開 API 的東西——函式庫尤其重要,pub 出去的東西就是對使用者的承諾,不能隨便改。
 另有更細的 pub(super)、pub(in path) 可指定範圍。「整個 crate 可用」不等於「只有根模組可用」,也與檔案邊界無關——Rust 的可見性單位永遠是模組。`,
+      walkthrough: {
+        label: "🔍 可見性光譜:三個等級各看一眼",
+        lines: [
+          { code: "mod util {", note: "一個內部模組。" },
+          { code: "    fn only_here() {}", note: "等級一(預設):私有——只有 util 自己與它的子孫模組看得到。" },
+          { code: "    pub(crate) fn internal_helper() {}", note: "等級二:整個 crate 內任何模組都能用,但「不」進入對外公開的 API。定位是「內部共用工具」——跨模組要用,卻不想對使用者做出承諾。" },
+          { code: "    pub fn public_api() {}", note: "等級三:對外部 crate 也開放。pub 出去的東西就是對使用者的承諾,不能隨便改。" },
+          { code: "}", note: "模組結束。" },
+          { code: "", note: "" },
+          { code: "mod other {", note: "同一個 crate 內的另一個模組。" },
+          { code: "    pub fn call() {", note: "示範跨模組呼叫。" },
+          { code: "        crate::util::internal_helper();", note: "合法:pub(crate) 的範圍是整個 crate,不限於根模組,也與檔案邊界無關——Rust 的可見性單位永遠是模組。" },
+          { code: "    }", note: "函式結束。" },
+          { code: "}", note: "模組結束。" },
+        ],
+        outro: "另有更細的 pub(super)(只對父模組公開)與 pub(in path)(指定某個祖先模組)。pub(crate) ≈ C# 的 internal,是兩個語言對照最工整的一組;差別在 C# 頂層型別「預設」internal,Rust 預設更嚴(模組私有),要 internal 等級得主動聲明。",
+      },
       csharp: `pub(crate) ≈ C# 的 internal(assembly 內可見)——這是兩個語言對照最工整的一組。差別:C# 頂層型別「預設」internal,Rust 預設更嚴(模組私有),internal 等級要主動聲明;方向不同,哲學一致——公開介面越小越好。`,
     },
     {
@@ -151,6 +384,23 @@ use 的 as 純粹是命名(與轉型運算子 as 撞關鍵字但無關);這裡�
       answer: 0,
       explanation: `本課總結,mod 一肩挑三職:(1)命名空間(路徑);(2)隱私邊界(pub 以模組為單位,層層把關);(3)編譯結構(mod 宣告決定哪些檔案參與編譯、放在哪)。C# 的 namespace 只做第一件事——任何檔案任意宣告、不設防、與編譯單位無關,封裝粒度只有 assembly 一刀(internal)。
 mod 當然能跨檔案(mod xxx; 拆檔那題);功能是多了不是少了。`,
+      walkthrough: {
+        label: "🔍 mod 一肩挑三職",
+        lines: [
+          { code: "// src/main.rs", note: "crate 根。" },
+          { code: "mod kitchen;", note: "職責三(編譯結構):這行決定了 src/kitchen.rs 會被編譯、而且掛在模組樹的哪個位置。沒有這行,那個檔案在編譯器眼中不存在——C# 的 namespace 完全不管這件事。" },
+          { code: "", note: "" },
+          { code: "fn main() {", note: "程式進入點。" },
+          { code: "    kitchen::cook();", note: "職責一(命名空間):用路徑定位項目,對應 C# 的 namespace 前綴。" },
+          { code: "    // kitchen::secret();", note: "⛔ 職責二(隱私邊界):若解開這行會編譯失敗——模組每一層都是封裝單位,pub 逐項把關。C# 的 namespace 不設防,封裝粒度只有 assembly 一刀(internal)。" },
+          { code: "}", note: "main 結束。" },
+          { code: "", note: "" },
+          { code: "// src/kitchen.rs", note: "模組本體在另一個檔案——mod 當然能跨檔案。" },
+          { code: "pub fn cook() { println!(\"cooking\"); }", note: "顯式公開的部分。" },
+          { code: "fn secret() {}", note: "私有的部分,外面碰不到。" },
+        ],
+        outro: "遷移速查:namespace ≈ mod(但帶隱私)、using ≈ use、internal ≈ pub(crate)、專案/assembly ≈ crate、NuGet 套件 ≈ crates.io 的 crate、.csproj ≈ Cargo.toml。最需要適應的一件事:新增檔案後要記得補 mod 宣告——沒宣告的檔案不存在於編譯器眼中。",
+      },
       csharp: `遷移速查:namespace ≈ mod(但帶隱私)、using ≈ use、internal ≈ pub(crate)、專案/assembly ≈ crate、NuGet 套件 ≈ crates.io 的 crate、.csproj ≈ Cargo.toml。最需要適應的一件事:新增檔案後要記得補 mod 宣告——沒宣告的檔案不存在於編譯器眼中。`,
     },
   ],

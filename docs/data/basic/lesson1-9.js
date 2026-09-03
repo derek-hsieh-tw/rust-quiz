@@ -1,5 +1,7 @@
-/* 出題慣例:answer 一律為 0(正確答案寫在第一個選項),顯示順序由 quiz.js 依題目 id 洗牌。
- * 詳解禁止用「選項 A/B/C」字母指涉,必須直接描述選項內容。 */
+/* 出題慣例見專案根目錄 AUTHORING.md:
+ *   - answer 一律為 0(正確答案寫在第一個選項),顯示順序由 quiz.js 依題目 id 洗牌
+ *   - 詳解禁止用「選項 A/B/C」字母指涉,必須直接描述選項內容
+ *   - 有程式碼的題目一律附 walkthrough(逐行說明);反面案例必須同時附上 ✅ 正確寫法 */
 window.RUST_LESSONS = window.RUST_LESSONS || {};
 window.RUST_LESSONS["lesson1-9"] = {
   id: "lesson1-9",
@@ -19,6 +21,34 @@ window.RUST_LESSONS["lesson1-9"] = {
       answer: 0,
       explanation: `push 會修改 Vec,需要可變性:let mut v 才行——集合和一般變數遵守同一套 mut 規則,沒有例外。
 「必須標註型別」的說法不對:這裡編譯器能從後面的 push(1) 推斷出 Vec<i32>(推斷會往後看用法);真正孤零零的 let v = Vec::new(); 沒有任何用法時才需要標註。另外有字面值時慣用 vec! 巨集:let v = vec![1, 2];,一行完成建立加填充。`,
+      walkthrough: [
+        {
+          label: "❌ 題目程式碼(無法編譯)",
+          lines: [
+            { code: "fn main() {", note: "程式進入點。" },
+            { code: "    let v = Vec::new();", note: "⛔ 問題所在:沒有 mut。集合和一般變數遵守同一套可變性規則,沒有例外。(型別倒是推得出來,見下方說明。)" },
+            { code: "    v.push(1);", note: "⛔ 編譯失敗:cannot borrow `v` as mutable, as it is not declared as mutable。push 的簽名是 fn push(&mut self, value: T),需要可變借用。" },
+            { code: "    v.push(2);", note: "同樣的錯誤。" },
+            { code: "    println!(\"{:?}\", v);", note: "因上面失敗而無法執行。" },
+            { code: "}", note: "main 結束。" },
+          ],
+          outro: "「必須標註元素型別」的說法不對:編譯器會往後看用法,從 push(1) 推斷出 Vec<i32>。真正孤零零、完全沒有任何用法的 let v = Vec::new(); 才需要標註。",
+        },
+        {
+          label: "✅ 兩種正確寫法",
+          lines: [
+            { code: "fn main() {", note: "程式進入點。" },
+            { code: "    let mut v = Vec::new();", note: "改動處:加上 mut。型別仍由後面的 push 推斷成 Vec<i32>。" },
+            { code: "    v.push(1);", note: "合法:對可變變數建立可變借用並推入元素。" },
+            { code: "    v.push(2);", note: "上一個借用在 push 回傳時就結束了,這次再借一次完全沒問題。" },
+            { code: "    println!(\"{:?}\", v);", note: "印出 [1, 2]。" },
+            { code: "", note: "" },
+            { code: "    let v2 = vec![1, 2];", note: "有初始字面值時的慣用寫法:vec! 巨集一行完成建立與填充。因為之後不再修改,連 mut 都不需要。" },
+            { code: "    println!(\"{:?}\", v2);", note: "同樣印出 [1, 2]。" },
+            { code: "}", note: "兩個 Vec 離開作用域,釋放各自的 heap 緩衝區。" },
+          ],
+        },
+      ],
       csharp: `C# 的 var list = new List<int>(); list.Add(1); 永遠合法——可變是預設。Rust 要求 mut 的紅利:函式收 &Vec<i32> 時,呼叫端「保證」它不會被改;收 &mut Vec<i32> 才可能被改,簽名即文件。`,
     },
     {
@@ -34,6 +64,33 @@ window.RUST_LESSONS["lesson1-9"] = {
       answer: 0,
       explanation: `同一件事的兩種失敗語意:v.get(10) 回傳 Option<&i32>,越界給 None,把「可能不存在」交給呼叫端處理;&v[10] 是索引運算,越界直接 panic。程式會在執行到 &v[10] 那行時中止(get 那行已安全執行完)。
 選擇準則:索引值來自使用者輸入或計算結果(可能錯)→ 用 get;邏輯上保證合法(剛檢查過長度)→ 用索引,panic 就是抓 bug。編譯器只對「字面值常數索引固定長度陣列」能提前報錯,Vec 是動態長度,編譯期不會攔。`,
+      walkthrough: [
+        {
+          label: "🔍 題目程式碼逐行說明(第二行執行期 panic)",
+          lines: [
+            { code: "fn main() {", note: "程式進入點。" },
+            { code: "    let v = vec![1, 2, 3];", note: "建立長度 3 的 Vec,合法索引是 0~2。" },
+            { code: "    let a = v.get(10);", note: "get 回傳 Option<&i32>:越界時給 None,把「可能不存在」交給呼叫端處理。這一行安全執行完畢,a 是 None。" },
+            { code: "    let b = &v[10];", note: "⛔ 執行期 panic:index out of bounds: the len is 3 but the index is 10。索引運算的語意是「我保證這個位置存在」,不存在就直接中止程式。注意這不是編譯錯誤——Vec 是動態長度,編譯期攔不到。" },
+            { code: "    println!(\"{:?} {}\", a, b);", note: "因 panic 而走不到這裡。" },
+            { code: "}", note: "main 結束。" },
+          ],
+        },
+        {
+          label: "✅ 索引可能越界時就用 get",
+          lines: [
+            { code: "fn main() {", note: "程式進入點。" },
+            { code: "    let v = vec![1, 2, 3];", note: "同樣的 Vec。" },
+            { code: "    let i = 10;", note: "假設這個索引來自使用者輸入或計算結果,不保證合法。" },
+            { code: "    match v.get(i) {", note: "改動處:用 get 取得 Option<&i32>,兩種情況都明確處理。" },
+            { code: "        Some(x) => println!(\"值是 {}\", x),", note: "索引合法時取出元素的參考。" },
+            { code: "        None => println!(\"索引 {} 超出範圍\", i),", note: "越界時程式繼續執行而不是中止。這裡會印出「索引 10 超出範圍」。" },
+            { code: "    }", note: "match 結束。" },
+            { code: "}", note: "main 正常結束。" },
+          ],
+          outro: "選擇準則:索引來自外部輸入或計算結果(可能錯)→ 用 get;邏輯上保證合法(剛檢查過長度)→ 用索引,真的越界就是 bug,panic 反而幫你抓出來。",
+        },
+      ],
       csharp: `C# 對應:list[10] 丟 ArgumentOutOfRangeException ≈ panic;沒有內建的 TryGet,得自己檢查 Count 或用 ElementAtOrDefault(回傳 default 而非明確的「沒有」)。Rust 的 get 把「安全取值」做成一等公民,回傳型別誠實表達失敗可能。`,
     },
     {
@@ -48,6 +105,34 @@ window.RUST_LESSONS["lesson1-9"] = {
       answer: 0,
       explanation: `要修改元素得可變借用:for x in &mut v 讓 x 是 &mut i32,*x += 50 透過解參考改到 Vec 裡的本體。
 用 &v(不可變借用)拿到的 x 是 &i32,*x += 50 是「不能對唯讀參考賦值」的編譯錯誤;for x in v(沒有 &)把整個 Vec move 進迴圈,之後 println 用 v 是 borrow of moved value;for mut x in &v 只是讓「參考變數本身」可重新指向,依然改不了指到的唯讀內容。`,
+      walkthrough: [
+        {
+          label: "✅ 正確寫法逐行說明",
+          lines: [
+            { code: "fn main() {", note: "把選項補成完整程式。" },
+            { code: "    let mut v = vec![100, 32, 57];", note: "要修改內容就必須宣告 mut。" },
+            { code: "    for x in &mut v {", note: "對 &mut v 走訪 → 每一圈的 x 型別是 &mut i32,也就是指向 Vec 內部元素的可變參考。" },
+            { code: "        *x += 50;", note: "透過解參考運算子改到元素本體。這是就地修改,不是改複本。" },
+            { code: "    }", note: "迴圈結束,可變借用在此結束。" },
+            { code: "    println!(\"{:?}\", v);", note: "印出 [150, 82, 107]。" },
+            { code: "}", note: "v 離開作用域,釋放 heap 緩衝區。" },
+          ],
+        },
+        {
+          label: "❌ 三個錯誤寫法錯在哪",
+          lines: [
+            { code: "for x in &v {", note: "走訪不可變借用,x 的型別是 &i32(唯讀)。" },
+            { code: "    *x += 50;", note: "⛔ 編譯失敗:cannot assign to `*x`, which is behind a `&` reference。唯讀參考不能寫。" },
+            { code: "", note: "" },
+            { code: "for x in v {", note: "沒有 & = 把整個 Vec「move」進迴圈,x 是元素本身的複本(i32 是 Copy)。" },
+            { code: "    x += 50;", note: "改的是複本,對 Vec 毫無影響;而且 x 本身也不是 mut,這一行就先編譯失敗。" },
+            { code: "println!(\"{:?}\", v);", note: "⛔ 就算前面能過,這裡也是 borrow of moved value: `v`——v 已經被迴圈吃掉了。" },
+            { code: "", note: "" },
+            { code: "for mut x in &v {", note: "mut 加在這裡只是讓「參考變數 x 本身」可以重新指向別處。" },
+            { code: "    x += 50;", note: "⛔ 依然改不了它指向的唯讀內容,而且 &i32 也不支援 += 運算。" },
+          ],
+        },
+      ],
       csharp: `C# 的 foreach (var x in list) x += 50; 編譯錯誤(迭代變數唯讀),而且就算能改也只是改複本——要就地修改得用 for (int i = 0; ...) list[i] += 50;。Rust 的 &mut 迭代直接拿到元素的可變參考,不用索引繞路。`,
     },
     {
@@ -63,6 +148,33 @@ window.RUST_LESSONS["lesson1-9"] = {
       answer: 0,
       explanation: `直覺上「讀頭、加尾」井水不犯河水,但 push 可能觸發擴容:配置更大的緩衝區、搬走全部元素、釋放舊緩衝區——first 指向的舊位置瞬間變成懸空指標。借用檢查器不管「這次會不會真的擴容」,規則一刀切:不可變借用存活期間不准可變借用。
 這是 lesson1-5 借用規則在集合上最經典的應用,也是 C++ 迭代器失效(iterator invalidation)這類未定義行為在 Rust 變成編譯錯誤的原因。修法:先用完 first 再 push,或 push 後重新取参考。`,
+      walkthrough: [
+        {
+          label: "❌ 題目程式碼(無法編譯)",
+          lines: [
+            { code: "fn main() {", note: "程式進入點。" },
+            { code: "    let mut v = vec![1, 2, 3];", note: "建立可變的 Vec。" },
+            { code: "    let first = &v[0];", note: "取得第一個元素的不可變參考,同時對整個 v 建立一個不可變借用。" },
+            { code: "    v.push(4);", note: "⛔ 編譯失敗:cannot borrow `v` as mutable because it is also borrowed as immutable。push 需要可變借用,但 first 的不可變借用還活著(下一行還會用到)。" },
+            { code: "    println!(\"{}\", first);", note: "正是這一行讓 first 的借用延續到 push 之後,衝突因此成立。" },
+            { code: "}", note: "main 結束。" },
+          ],
+          outro: "直覺上「讀頭、加尾」井水不犯河水,但 push 可能觸發擴容:配置更大的緩衝區、搬走全部元素、釋放舊緩衝區——first 指向的舊位置瞬間變成懸空指標。借用檢查器不去猜「這次會不會真的擴容」,規則一刀切。",
+        },
+        {
+          label: "✅ 正確寫法(先用完參考,再修改集合)",
+          lines: [
+            { code: "fn main() {", note: "程式進入點。" },
+            { code: "    let mut v = vec![1, 2, 3];", note: "建立可變的 Vec。" },
+            { code: "    let first = &v[0];", note: "取得第一個元素的參考。" },
+            { code: "    println!(\"{}\", first);", note: "改動處:把使用提前。這是 first 的最後一次使用,不可變借用到此結束(NLL)。印出 1。" },
+            { code: "    v.push(4);", note: "此刻沒有任何存活的借用,可變借用完全合法。" },
+            { code: "    println!(\"{:?}\", v);", note: "印出 [1, 2, 3, 4]。" },
+            { code: "}", note: "v 離開作用域並釋放。" },
+          ],
+          outro: "若真的需要在 push 之後還拿得到第一個元素,就在 push 之後重新取一次參考(let first = &v[0];)——或者乾脆複製值出來:let first = v[0];(i32 是 Copy,複製後與 Vec 再無瓜葛)。",
+        },
+      ],
       csharp: `C# 沒有這個問題的「表面」:int first = list[0] 是複製值,list 擴容搬家由 GC 世界安全處理。但換成 foreach 中 Add 就露餡——InvalidOperationException,同一類問題執行期才炸。Rust 把整類問題都收編到編譯期的借用規則下。`,
     },
     {
@@ -78,6 +190,20 @@ window.RUST_LESSONS["lesson1-9"] = {
       answer: 0,
       explanation: `insert 對已存在的 key 直接覆蓋(回傳被擠掉的舊值 Some(10),這裡沒接)。get 回傳 Option<&V>——key 可能不存在,所以是 Option;不複製值,所以是參考:印出 Some(25)。
 注意 HashMap 要 use std::collections::HashMap 引入(不像 Vec 在 prelude 自動可用)。想要「不存在才插入」的語意,用下一題的 entry。`,
+      walkthrough: {
+        label: "🔍 題目程式碼逐行說明(可正常執行)",
+        lines: [
+          { code: "use std::collections::HashMap;", note: "HashMap 不在 prelude 裡,必須自己引入(Vec 則是自動可用)。" },
+          { code: "", note: "" },
+          { code: "fn main() {", note: "程式進入點。" },
+          { code: "    let mut scores = HashMap::new();", note: "建立空的 HashMap;要 insert 就必須 mut。鍵值型別由後面的用法推斷成 HashMap<String, i32>。" },
+          { code: "    scores.insert(String::from(\"Blue\"), 10);", note: "插入第一筆。key 與 value 都是按值收下,所有權進入 map。" },
+          { code: "    scores.insert(String::from(\"Blue\"), 25);", note: "同一個 key 再 insert 會「直接覆蓋」舊值,並把被擠掉的舊值以 Some(10) 回傳(這裡沒接住就丟掉了)。不會 panic,也不會被忽略。" },
+          { code: "    println!(\"{:?}\", scores.get(\"Blue\"));", note: "get 回傳 Option<&V>:key 可能不存在所以是 Option,不複製值所以是參考。印出 Some(25)。" },
+          { code: "}", note: "scores 離開作用域,連同所有 key 與 value 一起釋放。" },
+        ],
+        outro: "想要「不存在才插入」的語意,不要用 insert,而是用下一題的 entry API。",
+      },
       csharp: `C# 的 dict[key] = 25 同樣覆蓋,但 dict.Add(key, ...) 對重複 key 丟例外——兩種方法兩種語意;讀取時 dict["Blue"] 對缺席 key 丟 KeyNotFoundException,安全版是 TryGetValue。Rust 用 Option 統一收斂:get 永不丟例外,型別強迫你面對「可能沒有」。`,
     },
     {
@@ -93,6 +219,23 @@ window.RUST_LESSONS["lesson1-9"] = {
       answer: 0,
       explanation: `entry(key).or_insert(0) 的語意:key 不存在就先插入 0,然後「無論如何」回傳該 value 的可變參考(&mut i32)。*count += 1 就地遞增——"a" 出現三次,最後是 Some(3)。
 這是 HashMap 最重要的慣用法:「查詢 + 不存在就初始化 + 修改」一步完成,不用先 contains_key 再 insert 再 get 跑三趟。or_insert 只在缺席時插入,不會重設既有值;count 是可變借用,+= 正是它的用途。`,
+      walkthrough: {
+        label: "🔍 題目程式碼逐行說明(可正常執行)",
+        lines: [
+          { code: "use std::collections::HashMap;", note: "引入 HashMap。" },
+          { code: "", note: "" },
+          { code: "fn main() {", note: "程式進入點。" },
+          { code: "    let text = \"a b a c a\";", note: "要統計的來源字串。" },
+          { code: "    let mut map = HashMap::new();", note: "建立計數用的 map,型別推斷為 HashMap<&str, i32>。" },
+          { code: "    for word in text.split_whitespace() {", note: "依空白切分,依序得到 \"a\"、\"b\"、\"a\"、\"c\"、\"a\";每個 word 是指向原字串的 &str,不做任何配置。" },
+          { code: "        let count = map.entry(word).or_insert(0);", note: "entry 取得該 key 的「位置」;or_insert(0) 的語意是:key 不存在就先插入 0,然後「無論如何」回傳這個 value 的可變參考(&mut i32)。既有的值不會被重設。" },
+          { code: "        *count += 1;", note: "透過可變參考就地遞增。查詢、初始化、修改一步完成,不必先 contains_key 再 insert 再 get 跑三趟。" },
+          { code: "    }", note: "迴圈結束,每一圈的可變借用都在該圈結束。" },
+          { code: "    println!(\"{:?}\", map.get(\"a\"));", note: "\"a\" 出現三次,印出 Some(3)。" },
+          { code: "}", note: "map 離開作用域並釋放。" },
+        ],
+        outro: "這是 HashMap 最重要的慣用法。至於「count 是借用不能 +=」的疑慮正好相反:它是「可變」借用,+= 正是它存在的用途。",
+      },
       csharp: `C# 傳統寫法:if (!dict.TryGetValue(word, out var c)) c = 0; dict[word] = c + 1;(兩次雜湊查找);.NET 有 CollectionsMarshal.GetValueRefOrAddDefault 可一次完成但知者甚少。Rust 的 entry API 把高效寫法做成了「最順手的寫法」。`,
     },
     {
@@ -108,6 +251,40 @@ window.RUST_LESSONS["lesson1-9"] = {
       answer: 0,
       explanation: `insert 按值接收 key 和 value,兩個 String 的所有權都被 move 進 map——集合「擁有」它的內容,隨集合一起 drop。之後使用 field_name 就是編譯錯誤。
 這是 lesson1-4「集合擁有元素」在 HashMap 的版本。要保留原變數:insert(field_name.clone(), ...) 付複製成本;i32 這類 Copy 型別則直接複製進去,原變數照用。存參考進 map(&str 當 key)可行但牽涉生命週期,入門階段先用擁有的 String。`,
+      walkthrough: [
+        {
+          label: "❌ 題目程式碼(無法編譯)",
+          lines: [
+            { code: "use std::collections::HashMap;", note: "引入 HashMap。" },
+            { code: "", note: "" },
+            { code: "fn main() {", note: "程式進入點。" },
+            { code: "    let field_name = String::from(\"color\");", note: "field_name 擁有一份 heap 字串。" },
+            { code: "    let field_value = String::from(\"blue\");", note: "field_value 擁有另一份 heap 字串。" },
+            { code: "", note: "" },
+            { code: "    let mut map = HashMap::new();", note: "建立空的 map。" },
+            { code: "    map.insert(field_name, field_value);", note: "insert 按值接收 key 與 value → 兩個 String 的所有權都被 move 進 map。集合「擁有」它的內容,會隨集合一起釋放。" },
+            { code: "", note: "" },
+            { code: "    println!(\"{}\", field_name);", note: "⛔ 編譯失敗:borrow of moved value: `field_name`。" },
+            { code: "}", note: "map 離開作用域,連同兩個字串一起釋放。" },
+          ],
+        },
+        {
+          label: "✅ 兩種正確寫法",
+          lines: [
+            { code: "use std::collections::HashMap;", note: "引入 HashMap。" },
+            { code: "", note: "" },
+            { code: "fn main() {", note: "程式進入點。" },
+            { code: "    let field_name = String::from(\"color\");", note: "同樣的字串。" },
+            { code: "    let field_value = String::from(\"blue\");", note: "同樣的字串。" },
+            { code: "    let mut map = HashMap::new();", note: "建立 map。" },
+            { code: "    map.insert(field_name.clone(), field_value);", note: "寫法一:key 明寫 clone,付一次深複製的成本換得原變數繼續可用;value 這裡不再需要就直接交出去。" },
+            { code: "    println!(\"{}\", field_name);", note: "field_name 沒有被 move,合法印出 color。" },
+            { code: "    println!(\"{:?}\", map.get(\"color\"));", note: "寫法二:放進去之後改從集合借出來讀,印出 Some(\"blue\")。" },
+            { code: "}", note: "map 與 field_name 各自釋放自己擁有的資料。" },
+          ],
+          outro: "若 key/value 是 i32 這類 Copy 型別,insert 是複製而非搬移,原變數本來就照用。把參考(&str)當 key 存進 map 也可行,但牽涉生命週期,入門階段先用擁有的 String 最省事。",
+        },
+      ],
       csharp: `C# 的 dict.Add(fieldName, fieldValue) 之後兩個變數照用——map 和變數共享同一物件的參考。到底「誰擁有這筆資料」在 C# 是個沒人問的問題(GC 兜底);Rust 每一步都有明確答案:現在是 map 擁有。`,
     },
     {
@@ -123,6 +300,44 @@ window.RUST_LESSONS["lesson1-9"] = {
       answer: 0,
       explanation: `Vec<T> 只有一個元素型別參數,整數、&str、浮點混在一起,編譯器無法統一 T,直接編譯錯誤。
 正解是用 enum 包裝:enum Cell { Int(i32), Text(String), Float(f64) },然後 Vec<Cell>——「不同form的資料」變成「同一個 enum 的不同變體」,取用時 match 解開,型別安全全程在線。這正是上一課 enum 帶資料能力的實戰應用;完全動態的場景(型別事先未知)才需要 trait 物件(進階課程)。`,
+      walkthrough: [
+        {
+          label: "❌ 題目程式碼(無法編譯)",
+          lines: [
+            { code: "fn main() {", note: "程式進入點。" },
+            { code: "    let v = vec![1, \"two\", 3.0];", note: "⛔ 編譯失敗:mismatched types。Vec<T> 只有「一個」元素型別參數,整數、&str、浮點混在一起,編譯器無法統一 T。" },
+            { code: "    println!(\"{:?}\", v);", note: "因上一行失敗而無法執行。Rust 沒有「一切皆 object」的後門,也不會自動裝箱。" },
+            { code: "}", note: "main 結束。" },
+          ],
+        },
+        {
+          label: "✅ 正確寫法(用 enum 把「有哪幾種」列出來)",
+          lines: [
+            { code: "#[derive(Debug)]", note: "讓 {:?} 可以印。" },
+            { code: "enum Cell {", note: "改動處:定義一個 enum 把所有可能的資料形狀收攏成「同一個型別」。" },
+            { code: "    Int(i32),", note: "整數的變體。" },
+            { code: "    Text(String),", note: "字串的變體。" },
+            { code: "    Float(f64),", note: "浮點的變體。" },
+            { code: "}", note: "enum 定義結束。" },
+            { code: "", note: "" },
+            { code: "fn main() {", note: "程式進入點。" },
+            { code: "    let v = vec![", note: "現在所有元素都是 Cell,型別一致。" },
+            { code: "        Cell::Int(1),", note: "包裝整數。" },
+            { code: "        Cell::Text(String::from(\"two\")),", note: "包裝字串。" },
+            { code: "        Cell::Float(3.0),", note: "包裝浮點。" },
+            { code: "    ];", note: "Vec<Cell> 建立完成。" },
+            { code: "    for c in &v {", note: "走訪每個元素。" },
+            { code: "        match c {", note: "取用時 match 解開,而且編譯器會檢查你有沒有漏處理任何變體——型別安全全程在線。" },
+            { code: "            Cell::Int(i) => println!(\"int {}\", i),", note: "整數的處理。" },
+            { code: "            Cell::Text(s) => println!(\"text {}\", s),", note: "字串的處理。" },
+            { code: "            Cell::Float(f) => println!(\"float {}\", f),", note: "浮點的處理。" },
+            { code: "        }", note: "match 結束。" },
+            { code: "    }", note: "迴圈結束。" },
+            { code: "}", note: "v 離開作用域,連同 Text 變體裡的 String 一起釋放。" },
+          ],
+          outro: "這正是上一課「enum 可攜帶資料」的實戰應用。只有在「型別事先完全未知」的場景才需要 trait 物件(Vec<Box<dyn Trait>>),那是進階課程的主題。",
+        },
+      ],
       csharp: `C# 的 List<object> 或 List<dynamic> 什麼都能塞——代價是取出時強轉、錯了執行期炸,還有裝箱成本。Rust 沒有「一切皆 object」的後門,逼你先想清楚「到底有哪幾種」,再用 enum 白紙黑字列出來。`,
     },
     {
@@ -138,6 +353,18 @@ window.RUST_LESSONS["lesson1-9"] = {
       answer: 0,
       explanation: `pop 從「尾端」移除並回傳元素(Vec 是 stack 語意的成長方向):先取走 3、再取走 2,剩 [1]。回傳型別是 Option<T>——空 Vec 時給 None 而不是 panic,所以印出來帶著 Some 外衣。
 從頭部取用 remove(0)(O(n) 搬移,頻繁操作改用 VecDeque)。Option 實作了 Debug,{:?} 印它完全沒問題。`,
+      walkthrough: {
+        label: "🔍 題目程式碼逐行說明(可正常執行)",
+        lines: [
+          { code: "fn main() {", note: "程式進入點。" },
+          { code: "    let mut v = vec![1, 2, 3];", note: "建立可變的 Vec;pop 會修改它,所以必須 mut。" },
+          { code: "    let x = v.pop();", note: "pop 從「尾端」移除並回傳元素(Vec 的成長方向就是尾端,所以這是 stack 語意)。回傳型別是 Option<i32>,這裡得到 Some(3),v 剩 [1, 2]。" },
+          { code: "    let y = v.pop();", note: "再取一次,得到 Some(2),v 剩 [1]。" },
+          { code: "    println!(\"{:?} {:?} {:?}\", x, y, v);", note: "Option 實作了 Debug,{:?} 印它完全沒問題。印出 Some(3) Some(2) [1]。" },
+          { code: "}", note: "v 離開作用域並釋放。" },
+        ],
+        outro: "回傳 Option 而不是 panic,代表「空了」是可以優雅處理的情況——這也是 while let Some(x) = v.pop() 這種寫法能成立的原因。想從頭部取用是 remove(0),但那要把後面元素全部往前搬(O(n)),頻繁操作應改用 VecDeque。",
+      },
       csharp: `C# 的 List 沒有 pop;Stack<T>.Pop() 對空堆疊丟 InvalidOperationException,安全版是 TryPop(out var x)。Rust 一個 pop 同時是兩者:回傳 Option 天生就是 TryPop,不需要兩套 API。`,
     },
     {
@@ -152,6 +379,27 @@ window.RUST_LESSONS["lesson1-9"] = {
       answer: 0,
       explanation: `兩條主線貫穿本課:(1)失敗是型別不是例外——get 回 Option、pop 回 Option,呼叫端被迫在編譯期面對「沒有」;(2)存取受借用規則管制——持有元素參考時不能 push、走訪時不能改結構,C++ 的迭代器失效與 C# 的「集合已修改」例外都被搬到編譯期。
 Rust 集合當然是可變的(mut 之下),也是完整泛型(單態化,無裝箱)——「不可變集合」與「無泛型」的說法都不對。`,
+      walkthrough: {
+        label: "🔍 兩條主線各看一段程式",
+        lines: [
+          { code: "use std::collections::HashMap;", note: "引入 HashMap。" },
+          { code: "", note: "" },
+          { code: "fn main() {", note: "程式進入點。" },
+          { code: "    let mut m: HashMap<&str, i32> = HashMap::new();", note: "Rust 的集合當然是可變的(在 mut 之下),也是完整泛型——編譯時單態化,元素不裝箱。" },
+          { code: "    m.insert(\"a\", 1);", note: "插入一筆資料。" },
+          { code: "    match m.get(\"missing\") {", note: "主線一:失敗是「型別」不是例外。get 回傳 Option<&i32>,呼叫端被迫在編譯期面對「沒有」這個可能。" },
+          { code: "        Some(v) => println!(\"{}\", v),", note: "有值的處理。" },
+          { code: "        None => println!(\"查無此鍵\"),", note: "沒有值的處理——這裡會被執行,而不是丟出 KeyNotFoundException。" },
+          { code: "    }", note: "match 結束。" },
+          { code: "", note: "" },
+          { code: "    let mut v = vec![1, 2, 3];", note: "換到 Vec 看主線二。" },
+          { code: "    let first = &v[0];", note: "主線二:存取受借用規則管制。這裡對 v 建立了不可變借用。" },
+          { code: "    // v.push(4);", note: "⛔ 若解開這一行會編譯失敗——持有元素參考時不能修改集合結構。C++ 的迭代器失效與 C# 的「集合已修改」例外,在這裡都被搬到編譯期。" },
+          { code: "    println!(\"{}\", first);", note: "借用在此結束,印出 1;之後才輪得到 push。" },
+          { code: "}", note: "兩個集合離開作用域並釋放。" },
+        ],
+        outro: "速查對照:vec![] ≈ new List<T>{...}、push/pop ≈ Add/(Stack 的)Pop、v.get(i) ≈ 手寫邊界檢查、entry().or_insert() ≈ TryGetValue 加賦值的組合、iter_mut 則沒有直接對應(C# 的 foreach 不能改元素)。方法名可以查表,借用規則才是需要換腦的部分。",
+      },
       csharp: `速查對照:vec![] ≈ new List<T>{...}、push/pop ≈ Add/(Stack 的)Pop、v.get(i) ≈ 手寫邊界檢查、entry().or_insert() ≈ TryGetValue+賦值組合、iter_mut ≈ 無直接對應(foreach 不能改)。方法名可以查表,借用規則才是需要換腦的部分。`,
     },
   ],

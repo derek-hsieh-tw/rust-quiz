@@ -80,6 +80,49 @@ const Quiz = (() => {
     return `<pre class="code-block"><code class="hljs language-${language}">${rows.join("")}</code></pre>`;
   }
 
+  /* ---- 逐行說明區塊(walkthrough)----
+   * 資料格式:{ label?, intro?, outro?, lang?, lines: [{ code, note }] }
+   * 完整程式碼由 lines 的 code 依序接起來,因此程式碼與說明永遠對齊,
+   * 不會出現「改了程式碼忘了改行號」的問題。note 留空即該行不加註解。
+   * 詳細規範見 專案根目錄的 AUTHORING.md。 */
+  function annotatedBlock(wt) {
+    const language = wt.lang || "rust";
+    const lines = wt.lines || [];
+    const code = lines.map(l => l.code).join("\n");
+    const rawLines = code.split("\n");
+    const htmlLines = splitHighlightedLines(highlightCode(code, language));
+    const gutterWidth = String(rawLines.length).length;
+
+    const rows = htmlLines.map((lineHtml, i) => {
+      const guides = indentGuides(rawLines[i] || "");
+      let row =
+        `<span class="code-line">` +
+        `<span class="line-no" style="min-width:${gutterWidth}ch">${i + 1}</span>` +
+        `<span class="line-content">${guides}${lineHtml}</span>` +
+        `</span>`;
+      const note = (lines[i] || {}).note;
+      if (note) {
+        row +=
+          `<span class="note-line">` +
+          `<span class="line-no" style="min-width:${gutterWidth}ch"></span>` +
+          `<span class="note-content">${escapeHtml(note)}</span>` +
+          `</span>`;
+      }
+      return row;
+    });
+
+    return `<pre class="code-block annotated"><code class="hljs language-${language}">${rows.join("")}</code></pre>`;
+  }
+
+  function walkthroughHtml(wt) {
+    let html = `<div class="walkthrough">`;
+    html += `<div class="wt-label">${escapeHtml(wt.label || "🔍 逐行說明")}</div>`;
+    if (wt.intro) html += `<div class="wt-note">${escapeHtml(wt.intro)}</div>`;
+    html += annotatedBlock(wt);
+    if (wt.outro) html += `<div class="wt-note">${escapeHtml(wt.outro)}</div>`;
+    return html + `</div>`;
+  }
+
   const LABELS = ["A", "B", "C", "D", "E", "F"];
 
   /* 選項洗牌:資料檔中正確答案固定寫在第一個(answer: 0),
@@ -164,6 +207,10 @@ const Quiz = (() => {
     const exp = document.createElement("div");
     exp.className = "explanation";
     let expHtml = `<div class="exp-label">📖 詳解</div><div class="exp-body">${escapeHtml(q.explanation)}</div>`;
+    if (q.walkthrough) {
+      const wts = Array.isArray(q.walkthrough) ? q.walkthrough : [q.walkthrough];
+      expHtml += wts.map(walkthroughHtml).join("");
+    }
     if (q.csharp) {
       expHtml += `<div class="csharp-compare"><div class="cs-label">🔷 C# 對照</div><div class="cs-body">${escapeHtml(q.csharp)}</div></div>`;
     }

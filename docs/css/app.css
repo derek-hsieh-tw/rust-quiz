@@ -196,6 +196,41 @@ pre.code-block code {
   margin-bottom: 4px;
 }
 .explanation .exp-body { white-space: pre-wrap; color: #d4d4d4; }
+/* ---- 逐行說明(walkthrough):程式碼每行下方接一條說明 ---- */
+.walkthrough { margin-top: 12px; }
+.walkthrough .wt-label {
+  color: var(--vsc-green);
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+.walkthrough .wt-note { white-space: pre-wrap; color: #d4d4d4; margin: 4px 0; }
+.walkthrough pre.code-block.annotated { margin: 6px 0 0; }
+
+.note-line {
+  display: flex;
+  align-items: flex-start;
+  position: sticky; /* 程式碼橫向捲動時,說明文字留在視野內 */
+  left: 0;
+  width: 100%;
+}
+.note-line .note-content {
+  flex: 1;
+  min-width: 0;
+  white-space: pre-wrap;
+  font-family: var(--font-ui);
+  font-size: 12.5px;
+  line-height: 1.7;
+  color: #9db3c0;
+  background: var(--vsc-code-bg); /* 蓋住捲動到底下的長程式碼 */
+  padding: 0 16px 4px 0;
+  text-indent: -1.35em;
+  padding-left: 1.35em;
+}
+.note-line .note-content::before {
+  content: "↳ ";
+  color: #6a7a85;
+}
+
 .csharp-compare {
   margin-top: 10px;
   background: rgba(86, 156, 214, 0.07);
@@ -256,6 +291,8 @@ pre.code-block code {
   /* 手機版:編輯器外觀降級為純程式碼區塊(無行號/縮排線/整行 hover) */
   .line-no, .ig { display: none; }
   .code-line { width: auto; min-width: 0; }
+  .note-line { width: auto; }
+  .note-line .note-content { font-size: 12px; padding-right: 0; }
   .code-line:hover { background: transparent; }
   .option { padding: 8px 10px; gap: 8px; }
   .lesson-header h1 { font-size: 18px; }

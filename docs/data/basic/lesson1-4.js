@@ -1,5 +1,7 @@
-/* 出題慣例:answer 一律為 0(正確答案寫在第一個選項),顯示順序由 quiz.js 依題目 id 洗牌。
- * 詳解禁止用「選項 A/B/C」字母指涉,必須直接描述選項內容。 */
+/* 出題慣例見專案根目錄 AUTHORING.md:
+ *   - answer 一律為 0(正確答案寫在第一個選項),顯示順序由 quiz.js 依題目 id 洗牌
+ *   - 詳解禁止用「選項 A/B/C」字母指涉,必須直接描述選項內容
+ *   - 有程式碼的題目一律附 walkthrough(逐行說明);反面案例必須同時附上 ✅ 正確寫法 */
 window.RUST_LESSONS = window.RUST_LESSONS || {};
 window.RUST_LESSONS["lesson1-4"] = {
   id: "lesson1-4",
@@ -19,6 +21,29 @@ window.RUST_LESSONS["lesson1-4"] = {
       answer: 0,
       explanation: `String 擁有 heap 上的資料。let s2 = s1 不是複製,是「move」:所有權從 s1 轉移到 s2,s1 從此失效,再使用就是編譯錯誤。
 為什麼這樣設計?若允許兩個變數都「擁有」同一份 heap 資料,作用域結束時就會釋放兩次(double free)。Rust 的解法:同一時間只有一個擁有者,編譯期就把問題堵死——這就是無 GC 卻記憶體安全的根基。`,
+      walkthrough: [
+        {
+          label: "❌ 題目程式碼(無法編譯)",
+          lines: [
+            { code: "fn main() {", note: "程式進入點。" },
+            { code: "    let s1 = String::from(\"hello\");", note: "在 heap 配置一份 \"hello\",s1 成為這份資料的唯一擁有者;s1 本身在 stack 上只存(指標、長度、容量)三個欄位。" },
+            { code: "    let s2 = s1;", note: "把那三個欄位複製給 s2,並「作廢 s1」——這就是 move。此行之後 heap 資料的擁有者是 s2,s1 被編譯器標記為已移動,不可再讀。" },
+            { code: "    println!(\"{}\", s1);", note: "⛔ 編譯失敗:borrow of moved value: `s1`。編譯器記得 s1 的所有權在上一行被交出去了。" },
+            { code: "}", note: "若能走到這裡,s2 離開作用域 → 呼叫 drop → 釋放 heap 資料一次(而且只有一次)。" },
+          ],
+        },
+        {
+          label: "✅ 正確寫法(要兩份資料就明寫 clone)",
+          lines: [
+            { code: "fn main() {", note: "程式進入點。" },
+            { code: "    let s1 = String::from(\"hello\");", note: "s1 擁有第一份 heap 資料。" },
+            { code: "    let s2 = s1.clone();", note: "改動處:clone() 深複製一份新的 heap 資料給 s2,s1 沒有被 move,仍然有效。" },
+            { code: "    println!(\"{} {}\", s1, s2);", note: "兩個變數各自擁有一份資料,都能安全讀取,印出 hello hello。" },
+            { code: "}", note: "s2、s1 依序離開作用域(後宣告的先釋放),各自釋放自己那一份 heap 資料。" },
+          ],
+          outro: "若不需要兩份資料,另一個修法是把 println 改成印 s2——所有權已經在 s2 手上。",
+        },
+      ],
       csharp: `C# 的 string s2 = s1; 之後兩個變數都能用——因為只是複製參考,GC 在背後追蹤這份資料被誰引用、何時能回收。Rust 把 GC 的工作換成編譯期的所有權規則:零執行期成本,代價是你要理解 move。`,
     },
     {
@@ -34,6 +59,16 @@ window.RUST_LESSONS["lesson1-4"] = {
       answer: 0,
       explanation: `i32 實作了 Copy trait:賦值時直接「按位元複製」,x 和 y 是兩份獨立的值,都繼續有效。
 判斷標準:整數、浮點、bool、char,以及全由 Copy 型別組成的 tuple/陣列,都是 Copy;凡是擁有 heap 資源的(String、Vec)都不是。直覺:複製成本便宜且無資源歸屬問題的,才配得上 Copy。`,
+      walkthrough: {
+        lines: [
+          { code: "fn main() {", note: "程式進入點。" },
+          { code: "    let x = 5;", note: "在 stack 上放一個 i32,值為 5。i32 沒有 heap 資源,大小固定 4 bytes。" },
+          { code: "    let y = x;", note: "因為 i32 實作了 Copy,這裡是「按位元複製」而不是 move:stack 上多出一個獨立的 5,x 完全不受影響。" },
+          { code: "    println!(\"{} {}\", x, y);", note: "x 與 y 是兩個各自獨立的值,都合法,印出 5 5。" },
+          { code: "}", note: "兩個 i32 隨 stack frame 一起消失,沒有 heap 要釋放,也不需要 drop。" },
+        ],
+        outro: "把第 2 行換成 let x = String::from(\"5\"); 之後,第 3 行就會從「複製」變成「移動」,第 4 行印 x 隨即編譯失敗——同樣的語法,行為由型別是否實作 Copy 決定。",
+      },
       csharp: `類似 C# 的實值型別(int、struct)賦值即複製。差別在 C# 的 class 一律參考語意、struct 一律複製語意,由「型別的種類」決定;Rust 由「是否實作 Copy」決定,而且不是 Copy 的就 move——沒有「多個變數共享可變資料」這個預設選項。`,
     },
     {
@@ -48,6 +83,17 @@ window.RUST_LESSONS["lesson1-4"] = {
       answer: 0,
       explanation: `clone() 深複製 heap 資料,s2 得到獨立的一份,s1 保持有效。
 Rust 刻意讓深複製「必須明寫 .clone()」:昂貴的操作要在程式碼上看得見,不會有隱形的效能損耗。.copy() 這個方法不存在(Copy 是隱式的位元複製,不是方法);new String(...) 是 C#/Java 語法;&s1 as String 也不行,as 不能把參考轉成擁有的 String。`,
+      walkthrough: {
+        label: "✅ 正確寫法逐行說明",
+        lines: [
+          { code: "fn main() {", note: "把選項補成可執行的完整程式。" },
+          { code: "    let s1 = String::from(\"hello\");", note: "heap 上配置 \"hello\",s1 是唯一擁有者。" },
+          { code: "    let s2 = s1.clone();", note: "clone() 重新配置一塊 heap 記憶體並複製內容,s2 擁有全新的一份;s1 只是被借去讀取(clone 的簽名是 fn clone(&self)),所有權沒有轉移。" },
+          { code: "    println!(\"{} {}\", s1, s2);", note: "兩份資料互不影響,印出 hello hello。" },
+          { code: "}", note: "s2 先 drop、s1 後 drop,各自釋放自己的 heap 記憶體。" },
+        ],
+        outro: "另外三個寫法為什麼不行:.copy() 方法不存在(Copy 是編譯器隱式做的位元複製,不是可呼叫的方法);new String(...) 是 C#/Java 語法,Rust 連 new 關鍵字都沒有;&s1 as String 則是想用 as 把「參考」變成「擁有的值」,as 只能做數值與指標等基本轉型,變不出所有權。",
+      },
       csharp: `C# 的 string 不可變所以從不需要複製;但對一般 class,「淺拷貝或深拷貝」是個要自己想清楚的問題(MemberwiseClone、手寫 Clone)。Rust 用 #[derive(Clone)] 自動生成正確的深複製,且呼叫點明確可見。`,
     },
     {
@@ -63,6 +109,37 @@ Rust 刻意讓深複製「必須明寫 .clone()」:昂貴的操作要在程式�
       answer: 0,
       explanation: `傳參數與賦值遵守同一條規則:非 Copy 型別「move 進函式」。s 的所有權進了 takes_ownership,函式結束時 s 被 drop,main 裡的 s 早已失效。
 這題是理解借用(下一課)的動機:如果只是想讓函式「看一下」值,每次都被搬走也太痛苦——所以才需要 &(借用)。`,
+      walkthrough: [
+        {
+          label: "❌ 題目程式碼(無法編譯)",
+          lines: [
+            { code: "fn takes_ownership(s: String) {", note: "參數型別是 String(不是 &String),簽名的意思是「呼叫我就把值交給我」,參數 s 成為新的擁有者。" },
+            { code: "    println!(\"{}\", s);", note: "函式內用自己擁有的 s,合法。" },
+            { code: "}", note: "函式結束,參數 s 離開作用域 → drop → heap 資料在這裡就被釋放了。" },
+            { code: "", note: "" },
+            { code: "fn main() {", note: "程式進入點。" },
+            { code: "    let s = String::from(\"hello\");", note: "main 的 s 擁有 heap 上的 \"hello\"。" },
+            { code: "    takes_ownership(s);", note: "傳參數和賦值同一條規則:非 Copy 型別按值傳遞就是 move。此行之後所有權在函式裡,main 的 s 失效。" },
+            { code: "    println!(\"{}\", s);", note: "⛔ 編譯失敗:borrow of moved value: `s`——值已經被搬走,而且早在函式結束時就釋放了。" },
+            { code: "}", note: "main 結束。" },
+          ],
+        },
+        {
+          label: "✅ 正確寫法(改成借用,不搬走所有權)",
+          lines: [
+            { code: "fn takes_ownership(s: &String) {", note: "改動處:參數型別加上 &,語意從「給我」變成「借我看看」,函式只取得讀取權。" },
+            { code: "    println!(\"{}\", s);", note: "透過參考讀取內容,println! 會自動解參考,不必寫 *s。" },
+            { code: "}", note: "函式結束,只有「參考」消失,heap 資料不會被釋放(它不屬於這個函式)。" },
+            { code: "", note: "" },
+            { code: "fn main() {", note: "程式進入點。" },
+            { code: "    let s = String::from(\"hello\");", note: "s 擁有 heap 上的 \"hello\",而且從頭到尾都沒交出去。" },
+            { code: "    takes_ownership(&s);", note: "改動處:呼叫端寫 &s,建立一個指向 s 的不可變參考傳進去。" },
+            { code: "    println!(\"{}\", s);", note: "所有權仍在 main 手上,s 完全有效,總共印出 hello 兩次。" },
+            { code: "}", note: "s 離開作用域,釋放 heap 資料一次。" },
+          ],
+          outro: "若函式真的需要拿走值(例如要存進某個集合),保持 String 參數才是對的;此時呼叫端要嘛交出所有權、要嘛傳 s.clone()。",
+        },
+      ],
       csharp: `C# 傳 class 物件是複製參考,呼叫端的變數永遠可用,你從不需要思考「這個值還在不在」。Rust 把「誰擁有這個值」放上檯面,函式簽名 fn f(s: String) 唸作:「呼叫我,就把 s 交給我處置」。`,
     },
     {
@@ -78,6 +155,20 @@ Rust 刻意讓深複製「必須明寫 .clone()」:昂貴的操作要在程式�
       answer: 0,
       explanation: `回傳值也是 move:s 的所有權透過回傳「移交」給呼叫端的 s1,資料本身不會被釋放(擁有者換人了,而不是消失)。
 「區域變數不能回傳」的直覺來自 C 語言的「不能回傳區域陣列指標」——但這裡回傳的是「擁有權」不是「指標」,完全安全。注意對比:回傳 &s(參考)才會是編譯錯誤,那就真的是懸空參考了(lesson1-5 會考)。`,
+      walkthrough: {
+        lines: [
+          { code: "fn gives_ownership() -> String {", note: "回傳型別是 String(擁有的值,不是參考),意思是「我會生一個值交給你」。" },
+          { code: "    let s = String::from(\"yours\");", note: "函式內配置 heap 資料,s 暫時是擁有者。" },
+          { code: "    s", note: "沒有分號 = 這是函式的回傳運算式。所有權從 s 移出函式,因此函式結束時 s 不會被 drop(它已經不擁有東西了)。" },
+          { code: "}", note: "函式結束,heap 資料安然無恙——擁有者換人,不是消失。" },
+          { code: "", note: "" },
+          { code: "fn main() {", note: "程式進入點。" },
+          { code: "    let s1 = gives_ownership();", note: "接住移交過來的所有權,s1 成為新的唯一擁有者。" },
+          { code: "    println!(\"{}\", s1);", note: "印出 yours。" },
+          { code: "}", note: "s1 離開作用域,在這裡才釋放 heap 資料。" },
+        ],
+        outro: "對照:若把回傳型別改成 -> &String 並回傳 &s,就變成回傳指向已釋放記憶體的懸空參考,Rust 會直接編譯失敗(見 lesson1-5)。",
+      },
       csharp: `C# 回傳物件沒這些顧慮(GC 管)。Rust 的規則其實很對稱:值進函式是 move,值出函式也是 move,所有權像接力棒一路傳遞,編譯器全程追蹤棒子在誰手上。`,
     },
     {
@@ -92,6 +183,28 @@ Rust 刻意讓深複製「必須明寫 .clone()」:昂貴的操作要在程式�
       answer: 0,
       explanation: `Rust 的釋放是「確定性」的:擁有者走出作用域(} 那一刻),值的 drop 就被呼叫,先進後出。沒有 GC 執行緒、沒有手動 free、也不會等到程式結束。
 這個機制(RAII)不只管記憶體:檔案控制代碼、網路連線、鎖,全都在擁有者離開作用域時自動釋放——資源管理跟著所有權走。`,
+      walkthrough: {
+        label: "🔍 用可觀察的程式驗證釋放時機",
+        lines: [
+          { code: "struct Noisy(&'static str);", note: "定義一個只帶名字的 struct,用來在被釋放時印出訊息。" },
+          { code: "", note: "" },
+          { code: "impl Drop for Noisy {", note: "為 Noisy 實作 Drop trait:值被釋放時編譯器會自動呼叫這裡的程式。" },
+          { code: "    fn drop(&mut self) {", note: "drop 收 &mut self,是「臨終前最後一次存取自己」的機會(關檔、解鎖都寫在這)。" },
+          { code: "        println!(\"drop {}\", self.0);", note: "印出是誰被釋放,讓釋放時機變成看得見的輸出。" },
+          { code: "    }", note: "drop 方法結束。" },
+          { code: "}", note: "impl 區塊結束,Drop 實作完成。" },
+          { code: "", note: "" },
+          { code: "fn main() {", note: "程式進入點。" },
+          { code: "    let _a = Noisy(\"a\");", note: "建立 a,擁有者是 main 的 _a。" },
+          { code: "    {", note: "開一個內層作用域。" },
+          { code: "        let _b = Noisy(\"b\");", note: "b 的擁有者 _b 只活在這個內層區塊。" },
+          { code: "        println!(\"inner end\");", note: "先印出 inner end。" },
+          { code: "    }", note: "內層區塊結束 → _b 立刻 drop,這一刻印出 drop b(不必等到程式結束)。" },
+          { code: "    println!(\"outer end\");", note: "接著印出 outer end,證明 b 早已釋放。" },
+          { code: "}", note: "main 結束 → _a drop,最後印出 drop a。整體輸出順序:inner end / drop b / outer end / drop a。" },
+        ],
+        outro: "同一作用域內有多個值時,釋放順序是「後宣告的先釋放」(先進後出),和 stack 的行為一致。",
+      },
       csharp: `C# 的 GC 回收時機不確定,所以非記憶體資源需要 IDisposable + using 手動劃定釋放點。Rust 的 drop 等於「每個型別天生自帶 using」——這是無 GC 設計換來的最大紅利之一。`,
     },
     {
@@ -106,6 +219,29 @@ Rust 刻意讓深複製「必須明寫 .clone()」:昂貴的操作要在程式�
       answer: 0,
       explanation: `複合型別是否 Copy,取決於「所有成員是否都 Copy」。含 String 的那組:String 非 Copy,整個 tuple 就不是 Copy,let u = t 是 move,之後用 t.1 → 編譯錯誤。
 其餘三組(整數+浮點+字元、兩個整數、Copy 陣列+bool)的成員全是 Copy,tuple 整體是 Copy,複製後原變數照用。`,
+      walkthrough: [
+        {
+          label: "❌ 無法編譯的那一組(含 String)",
+          lines: [
+            { code: "fn main() {", note: "把選項補成完整程式。" },
+            { code: "    let t = (String::from(\"hi\"), 5);", note: "tuple 的成員之一是 String(非 Copy),因此整個 tuple 也不是 Copy。" },
+            { code: "    let u = t;", note: "非 Copy → 這是 move,整個 tuple(含裡面的 5)一起搬給 u,t 全部失效。" },
+            { code: "    println!(\"{}\", t.1);", note: "⛔ 編譯失敗:borrow of moved value: `t`。即使 t.1 是 i32,被搬走的是「整個 t」,不能挑成員繼續用。" },
+            { code: "}", note: "main 結束。" },
+          ],
+        },
+        {
+          label: "✅ 正確寫法(用解構取代整包搬移)",
+          lines: [
+            { code: "fn main() {", note: "程式進入點。" },
+            { code: "    let t = (String::from(\"hi\"), 5);", note: "同樣的 tuple。" },
+            { code: "    let (s, n) = t;", note: "改動處:解構把兩個成員分別綁定——String 成員 move 給 s,i32 成員 copy 給 n,兩者之後都能直接使用。" },
+            { code: "    println!(\"{} {}\", s, n);", note: "印出 hi 5;原本想用的 t.1 改用 n。" },
+            { code: "}", note: "s 離開作用域時釋放 heap 資料。" },
+          ],
+          outro: "若想連 t 本身都保留,就寫 let u = t.clone();(String 可 clone,整個 tuple 也就能 clone)。另外三組之所以合法,是因為成員全是 Copy 型別,let u = t 只是複製,原變數不受影響。",
+        },
+      ],
       csharp: `C# 的 struct 也是「成員複製」語意,但含參考型別欄位的 struct 複製後兩份共享那個參考——不會禁止你用,只是埋下共享可變狀態的隱患。Rust 直接說:含非 Copy 成員就整個不准隱式複製。`,
     },
     {
@@ -121,6 +257,31 @@ Rust 刻意讓深複製「必須明寫 .clone()」:昂貴的操作要在程式�
       answer: 0,
       explanation: `v.push(s) 的參數是 String(按值),所以 s 被 move 進 vector——集合「擁有」放進去的元素。之後再用 s 就是 borrow of moved value。
 想繼續用有三個選擇:push(s.clone()) 付複製成本;先用完 s 再 push;或之後從 v 借出來用(&v[0])。「集合擁有元素」這個觀念在 lesson1-9 會全面展開。`,
+      walkthrough: [
+        {
+          label: "❌ 題目程式碼(無法編譯)",
+          lines: [
+            { code: "fn main() {", note: "程式進入點。" },
+            { code: "    let s = String::from(\"hello\");", note: "s 擁有 heap 上的 \"hello\"。" },
+            { code: "    let mut v = Vec::new();", note: "建立空 Vec;要 push 就必須宣告 mut。元素型別由下一行的 push 推導成 Vec<String>。" },
+            { code: "    v.push(s);", note: "push 的簽名是 fn push(&mut self, value: T),value 按值收取 → s 被 move 進 v。此行之後元素的擁有者是 v。" },
+            { code: "    println!(\"{}\", s);", note: "⛔ 編譯失敗:borrow of moved value: `s`。" },
+            { code: "}", note: "v 離開作用域 → 連同裡面的每個 String 一起釋放。" },
+          ],
+        },
+        {
+          label: "✅ 正確寫法(放進去之後從集合借出來用)",
+          lines: [
+            { code: "fn main() {", note: "程式進入點。" },
+            { code: "    let s = String::from(\"hello\");", note: "s 擁有 heap 上的 \"hello\"。" },
+            { code: "    let mut v = Vec::new();", note: "建立可變的空 Vec。" },
+            { code: "    v.push(s);", note: "所有權交給 v,這件事本身沒問題,問題只在「之後還想用舊名字」。" },
+            { code: "    println!(\"{}\", v[0]);", note: "改動處:改成從集合借出元素來讀(索引取得的是元素本身,println! 會自動借用),不再碰已失效的 s。" },
+            { code: "}", note: "v 釋放時,裡面的 String 一併釋放。" },
+          ],
+          outro: "若真的要「兩邊都留」,就把 push 那行改成 v.push(s.clone());——明確付出一次深複製的成本,s 保持有效。",
+        },
+      ],
       csharp: `C# 的 list.Add(s) 加的是參考,s 照用不誤,list 與 s 共享同一個物件——修改會互相看見,這正是 Rust 想在編譯期管住的「共享可變狀態」。`,
     },
     {
@@ -135,6 +296,34 @@ Rust 刻意讓深複製「必須明寫 .clone()」:昂貴的操作要在程式�
       answer: 0,
       explanation: `Copy 的語意是「按位元複製即可得到獨立有效的值」。String 在 stack 上只是(指標、長度、容量)三個欄位,按位元複製會得到兩個指向「同一塊 heap」的 String——兩個擁有者、一塊資料,drop 兩次就是 double free,未定義行為。
 所以規則是:實作了 Drop(擁有資源)的型別不可能是 Copy,兩者在語言層面互斥。效能顧慮是考量之一但不是根本原因——clone() 慢也照樣提供,重點是「隱式」複製不能有資源歸屬問題。`,
+      walkthrough: [
+        {
+          label: "❌ 試著硬幫含 String 的型別加上 Copy",
+          lines: [
+            { code: "#[derive(Copy, Clone)]", note: "要求編譯器自動實作 Copy(隱式位元複製)與 Clone。" },
+            { code: "struct User {", note: "定義一個 struct。" },
+            { code: "    name: String,", note: "欄位是 String——它擁有 heap 資源,而且實作了 Drop。" },
+            { code: "    age: u32,", note: "這個欄位本身是 Copy,沒問題。" },
+            { code: "}", note: "⛔ 編譯失敗:the trait `Copy` cannot be implemented for this type; field `name` does not implement `Copy`。語言層面規定:含有需要 Drop 的資源就不可能是 Copy,否則位元複製後兩份都會去釋放同一塊 heap(double free)。" },
+          ],
+        },
+        {
+          label: "✅ 正確寫法(只 derive Clone,複製時明寫)",
+          lines: [
+            { code: "#[derive(Clone)]", note: "改動處:拿掉 Copy,只保留 Clone——複製仍然做得到,但必須明寫 .clone(),成本看得見。" },
+            { code: "struct User {", note: "同樣的 struct。" },
+            { code: "    name: String,", note: "derive(Clone) 會逐欄位呼叫 clone(),String 會重新配置一份 heap 資料。" },
+            { code: "    age: u32,", note: "u32 直接複製。" },
+            { code: "}", note: "型別定義結束。" },
+            { code: "", note: "" },
+            { code: "fn main() {", note: "程式進入點。" },
+            { code: "    let a = User { name: String::from(\"amy\"), age: 30 };", note: "a 擁有這個 User(以及裡面那份 heap 字串)。" },
+            { code: "    let b = a.clone();", note: "深複製:b 有自己獨立的一份 name,a 沒有被 move。" },
+            { code: "    println!(\"{} {}\", a.name, b.name);", note: "兩者都有效,印出 amy amy;各自釋放各自的 heap,不會 double free。" },
+            { code: "}", note: "b、a 依序離開作用域並釋放。" },
+          ],
+        },
+      ],
       csharp: `C# 不存在這個問題,因為釋放統一由 GC 執行,複製多少參考都無所謂,代價是執行期的 GC 成本與不確定的回收時機。Rust 選擇把這個複雜度搬到編譯期的型別系統裡。`,
     },
     {
@@ -151,7 +340,448 @@ Rust 刻意讓深複製「必須明寫 .clone()」:昂貴的操作要在程式�
       answer: 0,
       explanation: `本課總結:C# 的心智模型是「變數是通往物件的參考,GC 管生死」;Rust 的模型是「變數擁有值,賦值即移交,離開作用域即釋放」。
 同一行 let s2 = s1,C# 讀作「兩個名字指向同一物件」,Rust 讀作「所有權從 s1 交給 s2」。這不是語法差異,是整個記憶體管理哲學的差異——理解這一點,後面的借用、生命週期都是這個模型的自然推論。`,
+      walkthrough: [
+        {
+          label: "🔷 原始 C# 程式碼逐行說明",
+          lang: "csharp",
+          lines: [
+            { code: "var s1 = \"hello\";", note: "s1 是一個指向字串物件的參考,物件本身在 managed heap 上。" },
+            { code: "var s2 = s1;", note: "只複製「參考」:s1、s2 指向同一個物件,兩者都可用。GC 記著這個物件還有兩個 root 指著它。" },
+            { code: "Console.WriteLine(s1);", note: "完全合法,印出 hello。物件何時回收由 GC 決定,程式設計師不需要關心。" },
+          ],
+        },
+        {
+          label: "❌ 逐字翻成 Rust(無法編譯)",
+          lines: [
+            { code: "fn main() {", note: "程式進入點。" },
+            { code: "    let s1 = String::from(\"hello\");", note: "s1 擁有這份 heap 字串——是「擁有」而不是「指向」。" },
+            { code: "    let s2 = s1;", note: "同一行程式在 Rust 讀作「所有權從 s1 移交給 s2」,s1 隨即失效。" },
+            { code: "    println!(\"{}\", s1);", note: "⛔ 編譯失敗:borrow of moved value: `s1`。這正是兩種語言心智模型的分歧點。" },
+            { code: "}", note: "main 結束。" },
+          ],
+        },
+        {
+          label: "✅ 想「兩個名字都能讀」的 Rust 寫法",
+          lines: [
+            { code: "fn main() {", note: "程式進入點。" },
+            { code: "    let s1 = String::from(\"hello\");", note: "s1 是唯一擁有者。" },
+            { code: "    let s2 = &s1;", note: "改動處:借用而不是移交——s2 是指向 s1 的不可變參考,對應 C# 那種「兩個名字看同一份資料」的語意,而且明確標示為唯讀。" },
+            { code: "    println!(\"{} {}\", s1, s2);", note: "s1 仍是擁有者,s2 只是看;印出 hello hello。" },
+            { code: "}", note: "s1 離開作用域時釋放 heap 資料;s2 只是參考,不負責釋放。" },
+          ],
+          outro: "要「兩份各自獨立、可各自修改」的資料則用 let s2 = s1.clone();。C# 的一行賦值,在 Rust 要先想清楚:是移交(move)、借看(&)、還是複製(clone)。",
+        },
+      ],
       csharp: `補充:C# 的 string 剛好不可變,共享參考沒有副作用;但換成 List<T> 等可變物件,共享參考 + 到處修改就是許多 bug 的來源。Rust 的所有權系統正是把「誰能改、誰在看」這件事制度化。`,
+    },
+    {
+      id: "1-4-11",
+      question: "部分移動(partial move)。以下程式碼的結果是?",
+      questionCode: "struct Person {\n    name: String,\n    age: u32,\n}\n\nfn main() {\n    let p = Person { name: String::from(\"amy\"), age: 30 };\n    let n = p.name;\n    println!(\"{} {}\", n, p.age);\n    println!(\"{}\", p.name);\n}",
+      options: [
+        { text: "編譯錯誤:只有最後一行印 p.name 失敗;印 p.age 反而是合法的,因為所有權是逐欄位追蹤的" },
+        { text: "完全正常執行,印出 amy 30 和 amy" },
+        { text: "編譯錯誤:一旦 p.name 被移出,整個 p 就失效,印 p.age 也不行" },
+        { text: "編譯錯誤:struct 的欄位不能單獨被移出" },
+      ],
+      answer: 0,
+      explanation: `Rust 的所有權追蹤是「逐欄位」的:let n = p.name 只把 name 這個欄位 move 出去,age 欄位不受影響。
+所以 p.age 照樣可讀(而且 u32 是 Copy),但再讀 p.name 會得到 use of moved value: \`p.name\`。另外要注意:部分移動之後,p 這個「整體」也不能再被使用(例如整包傳給函式或 println!("{:?}", p)),因為它已經不完整了。`,
+      walkthrough: [
+        {
+          label: "❌ 題目程式碼(最後一行編譯失敗)",
+          lines: [
+            { code: "struct Person {", note: "定義一個擁有兩個欄位的 struct。" },
+            { code: "    name: String,", note: "非 Copy 欄位,擁有 heap 資源。" },
+            { code: "    age: u32,", note: "Copy 欄位。" },
+            { code: "}", note: "struct 定義結束。" },
+            { code: "", note: "" },
+            { code: "fn main() {", note: "程式進入點。" },
+            { code: "    let p = Person { name: String::from(\"amy\"), age: 30 };", note: "p 擁有整個 struct,包含 name 那份 heap 字串。" },
+            { code: "    let n = p.name;", note: "部分移動:只有 name 欄位的所有權轉給 n,age 欄位仍留在 p 手上。編譯器會分別記錄每個欄位的狀態。" },
+            { code: "    println!(\"{} {}\", n, p.age);", note: "合法:n 是新擁有者,而 p.age 這個欄位從未被移走。印出 amy 30。" },
+            { code: "    println!(\"{}\", p.name);", note: "⛔ 編譯失敗:use of moved value: `p.name`——這個欄位的所有權已經在 n 身上。" },
+            { code: "}", note: "n 釋放字串;p 只剩沒有資源的 age,沒有額外要釋放的東西。" },
+          ],
+        },
+        {
+          label: "✅ 正確寫法(要保留 p 就借用而非移出)",
+          lines: [
+            { code: "struct Person {", note: "同樣的定義。" },
+            { code: "    name: String,", note: "欄位定義同上,仍是擁有 heap 資源的 String。" },
+            { code: "    age: u32,", note: "欄位定義同上,Copy 型別。" },
+            { code: "}", note: "struct 定義結束。" },
+            { code: "", note: "" },
+            { code: "fn main() {", note: "程式進入點。" },
+            { code: "    let p = Person { name: String::from(\"amy\"), age: 30 };", note: "p 擁有完整的 struct。" },
+            { code: "    let n = &p.name;", note: "改動處:用 & 借用欄位而不是搬走,p 保持完整。若真的需要獨立一份就改寫 p.name.clone()。" },
+            { code: "    println!(\"{} {}\", n, p.age);", note: "透過參考讀取,印出 amy 30。" },
+            { code: "    println!(\"{}\", p.name);", note: "p 從未被部分移動,這行完全合法,印出 amy。" },
+            { code: "}", note: "p 離開作用域,釋放 name 的 heap 資料。" },
+          ],
+        },
+      ],
+      csharp: `C# 取 p.Name 只是拿到一份參考的複本,原物件毫髮無傷,你不會有「欄位被搬走」這個概念。Rust 把 struct 看成「一組各自有主的欄位」,搬走其中一個,整體就不再完整——這也是為什麼部分移動之後不能再把 p 整包傳出去。`,
+    },
+    {
+      id: "1-4-12",
+      question: "字串串接與所有權。以下程式碼的結果是?",
+      questionCode: "fn main() {\n    let s1 = String::from(\"Hello, \");\n    let s2 = String::from(\"world!\");\n    let s3 = s1 + &s2;\n    println!(\"{} {}\", s1, s3);\n}",
+      options: [
+        { text: "編譯錯誤:+ 會取走左運算元 s1 的所有權,之後 s1 不能再用" },
+        { text: "印出 Hello,  Hello, world!" },
+        { text: "編譯錯誤:String 不能用 + 串接" },
+        { text: "編譯錯誤:右運算元不能加 &" },
+      ],
+      answer: 0,
+      explanation: `String 的 + 對應的是 fn add(self, s: &str) -> String:左邊按值收(取走所有權),右邊收 &str(只借用)。
+所以 s1 被 move 進運算,回傳的新 String 由 s3 接手;s2 只是被借用,依然有效。這個設計是為了效率——直接把右邊的內容附加到左邊已配置好的緩衝區,不必額外配置一塊新記憶體。想保留 s1 就改用 format!。`,
+      walkthrough: [
+        {
+          label: "❌ 題目程式碼(無法編譯)",
+          lines: [
+            { code: "fn main() {", note: "程式進入點。" },
+            { code: "    let s1 = String::from(\"Hello, \");", note: "s1 擁有第一段字串。" },
+            { code: "    let s2 = String::from(\"world!\");", note: "s2 擁有第二段字串。" },
+            { code: "    let s3 = s1 + &s2;", note: "+ 展開成 s1.add(&s2),簽名是 fn add(self, s: &str) -> String:self 按值收 → s1 被 move 走;&s2 只是借用 → s2 保持有效。回傳的字串由 s3 擁有(實際上就是把 s1 原本的緩衝區擴充後交出來)。" },
+            { code: "    println!(\"{} {}\", s1, s3);", note: "⛔ 編譯失敗:borrow of moved value: `s1`。注意這裡若只印 s2 與 s3 是完全合法的。" },
+            { code: "}", note: "main 結束。" },
+          ],
+        },
+        {
+          label: "✅ 正確寫法(用 format! 保留所有輸入)",
+          lines: [
+            { code: "fn main() {", note: "程式進入點。" },
+            { code: "    let s1 = String::from(\"Hello, \");", note: "s1 擁有第一段字串。" },
+            { code: "    let s2 = String::from(\"world!\");", note: "s2 擁有第二段字串。" },
+            { code: "    let s3 = format!(\"{}{}\", s1, s2);", note: "改動處:format! 只借用參數,另外配置一份新字串給 s3,s1 與 s2 都不會被 move。" },
+            { code: "    println!(\"{} {}\", s1, s3);", note: "三個變數都有效,印出 Hello,  Hello, world!。" },
+            { code: "}", note: "s3、s2、s1 依序離開作用域並各自釋放。" },
+          ],
+          outro: "效率取捨:+ 重用左邊的緩衝區、少一次配置,但吃掉左運算元;format! 語法清楚、誰都不吃,代價是多配置一塊記憶體。串很多段時用 format! 最好讀。",
+        },
+      ],
+      csharp: `C# 的 s1 + s2 產生新字串,s1、s2 都還在——因為 string 不可變,編譯器與執行期可以自由最佳化。Rust 的 String 是可變的擁有型緩衝區,所以 + 選擇「吃掉左邊、就地擴充」來避免多餘配置,代價就是要在型別上誠實地取走所有權。`,
+    },
+    {
+      id: "1-4-13",
+      question: "迴圈中的 move。以下程式碼的結果是?",
+      questionCode: "fn consume(s: String) {\n    println!(\"{}\", s);\n}\n\nfn main() {\n    let s = String::from(\"hi\");\n    for _ in 0..3 {\n        consume(s);\n    }\n}",
+      options: [
+        { text: "編譯錯誤:use of moved value: `s`,錯誤訊息會註明 value moved here, in previous iteration of loop" },
+        { text: "印出 hi 三次" },
+        { text: "印出 hi 一次後,後兩次印出空字串" },
+        { text: "印出 hi 一次後執行期 panic" },
+      ],
+      answer: 0,
+      explanation: `迴圈體會執行多次,而 consume(s) 每次都要取走 s 的所有權——第二圈開始 s 已經是被移動的狀態,編譯器直接拒絕,錯誤訊息會特別點出 in previous iteration of loop。
+這是初學者最常撞到的牆之一。解法看需求:函式只需要讀 → 改成借用;函式真的要拿走 → 迴圈內 clone;或者把「建立值」也搬進迴圈裡,每圈生一個新的。`,
+      walkthrough: [
+        {
+          label: "❌ 題目程式碼(無法編譯)",
+          lines: [
+            { code: "fn consume(s: String) {", note: "參數按值收,呼叫一次就吃掉一個 String 的所有權。" },
+            { code: "    println!(\"{}\", s);", note: "印出內容。" },
+            { code: "}", note: "函式結束,參數 s 被 drop,heap 資料釋放。" },
+            { code: "", note: "" },
+            { code: "fn main() {", note: "程式進入點。" },
+            { code: "    let s = String::from(\"hi\");", note: "只建立了「一份」值,擁有者是 s。" },
+            { code: "    for _ in 0..3 {", note: "迴圈會跑三圈;編譯器必須保證迴圈體「每一圈」都合法。" },
+            { code: "        consume(s);", note: "⛔ 編譯失敗:use of moved value: `s`。第一圈把所有權交出去之後,第二圈就沒有東西可交了,錯誤訊息會註明 value moved here, in previous iteration of loop。" },
+            { code: "    }", note: "迴圈區塊結束;因為第一圈就編譯失敗,這個迴圈根本跑不起來。" },
+            { code: "}", note: "main 結束。" },
+          ],
+        },
+        {
+          label: "✅ 正確寫法(函式只需要讀 → 改成借用)",
+          lines: [
+            { code: "fn consume(s: &str) {", note: "改動處:參數改成 &str(唯讀借用),呼叫再多次也不會消耗任何所有權;用 &str 而不是 &String 通用性更好。" },
+            { code: "    println!(\"{}\", s);", note: "透過參考讀取。" },
+            { code: "}", note: "函式結束,只有參考消失,資料還在呼叫端。" },
+            { code: "", note: "" },
+            { code: "fn main() {", note: "程式進入點。" },
+            { code: "    let s = String::from(\"hi\");", note: "s 全程都是唯一擁有者。" },
+            { code: "    for _ in 0..3 {", note: "跑三圈。" },
+            { code: "        consume(&s);", note: "改動處:每圈建立一個短暫的借用,用完即結束,不影響下一圈。印出 hi 三次。" },
+            { code: "    }", note: "迴圈區塊結束,每一圈的借用都在這裡結束。" },
+            { code: "}", note: "s 離開作用域,釋放一次。" },
+          ],
+          outro: "如果 consume 真的必須擁有值(例如要把它存起來),則寫 consume(s.clone());——每圈付一次深複製的成本,這是誠實反映需求的寫法。",
+        },
+      ],
+      csharp: `C# 的迴圈裡重複把同一個物件傳進方法完全沒問題,因為傳的永遠只是參考。Rust 逼你先回答一個 C# 不會問的問題:「這個函式是要借看,還是要把東西拿走?」——答案不同,寫法就不同。`,
+    },
+    {
+      id: "1-4-14",
+      question: "還沒學會借用之前,常見的「拿進來再還回去」寫法。以下程式碼的結果是?",
+      questionCode: "fn calculate_length(s: String) -> (String, usize) {\n    let length = s.len();\n    (s, length)\n}\n\nfn main() {\n    let s1 = String::from(\"hello\");\n    let (s2, len) = calculate_length(s1);\n    println!(\"{} 的長度是 {}\", s2, len);\n}",
+      options: [
+        { text: "可以編譯,印出「hello 的長度是 5」——但這是借用出現前的笨拙寫法,實務上該用 &String / &str" },
+        { text: "編譯錯誤:s1 已被 move,不能再用" },
+        { text: "編譯錯誤:函式不能回傳 tuple" },
+        { text: "可以編譯,但 s2 是空字串" },
+      ],
+      answer: 0,
+      explanation: `這段程式完全合法:s1 的所有權移進函式,函式再把它包在 tuple 裡「還」給呼叫端,由 s2 接手。因為呼叫端用的是新名字 s2 而不是 s1,沒有違反任何規則。
+它示範的是「沒有借用會有多麻煩」:每個只想讀資料的函式,都得把值收下再原封不動地退還,簽名還被 tuple 汙染。下一課的 &(借用)就是為了消滅這種寫法而存在。`,
+      walkthrough: [
+        {
+          label: "🔍 題目程式碼逐行說明(可以編譯,但寫法笨拙)",
+          lines: [
+            { code: "fn calculate_length(s: String) -> (String, usize) {", note: "參數按值收 → 取走所有權;回傳型別是 tuple,第一個成員就是為了「把值還回去」。" },
+            { code: "    let length = s.len();", note: "len() 只需要 &self,所以這裡只是借自己來算長度,s 仍屬於本函式。" },
+            { code: "    (s, length)", note: "沒有分號 = 回傳運算式。s 的所有權移出函式交給呼叫端,length 是 usize(Copy)。" },
+            { code: "}", note: "函式結束,因為 s 已被移出,這裡不會釋放字串。" },
+            { code: "", note: "" },
+            { code: "fn main() {", note: "程式進入點。" },
+            { code: "    let s1 = String::from(\"hello\");", note: "s1 擁有 heap 字串。" },
+            { code: "    let (s2, len) = calculate_length(s1);", note: "s1 被 move 進函式(此後 s1 失效),回傳的 tuple 被解構:字串所有權落到 s2,長度落到 len。" },
+            { code: "    println!(\"{} 的長度是 {}\", s2, len);", note: "用新名字 s2 讀取,印出「hello 的長度是 5」。" },
+            { code: "}", note: "s2 離開作用域,釋放 heap 字串。" },
+          ],
+        },
+        {
+          label: "✅ 實務寫法(改用借用)",
+          lines: [
+            { code: "fn calculate_length(s: &str) -> usize {", note: "改動處:參數改成唯讀借用,回傳值只留真正需要的 usize——簽名一眼就看得出「我只讀不拿」。" },
+            { code: "    s.len()", note: "透過參考讀取長度並回傳。" },
+            { code: "}", note: "函式結束,參考消失,資料不受影響。" },
+            { code: "", note: "" },
+            { code: "fn main() {", note: "程式進入點。" },
+            { code: "    let s1 = String::from(\"hello\");", note: "s1 全程保有所有權。" },
+            { code: "    let len = calculate_length(&s1);", note: "改動處:傳 &s1,呼叫端不必換名字,也不必解構 tuple。" },
+            { code: "    println!(\"{} 的長度是 {}\", s1, len);", note: "s1 依然有效,直接使用,印出「hello 的長度是 5」。" },
+            { code: "}", note: "s1 離開作用域並釋放。" },
+          ],
+        },
+      ],
+      csharp: `這正是 C# 開發者最容易覺得「Rust 好囉嗦」的時刻——在 C# 裡 s.Length 就結束了。重點是:Rust 並不強迫你用 tuple 還來還去,它提供了 & 來表達「只是借看」;先體會過痛點,才會覺得借用是解藥而不是負擔。`,
+    },
+    {
+      id: "1-4-15",
+      question: "從集合裡「搬」元素出來。以下程式碼的結果是?",
+      questionCode: "fn main() {\n    let v = vec![String::from(\"a\"), String::from(\"b\")];\n    let first = v[0];\n    println!(\"{}\", first);\n}",
+      options: [
+        { text: "編譯錯誤:cannot move out of index of `Vec<String>`——索引語法不能把元素的所有權搬出來" },
+        { text: "正常執行,印出 a" },
+        { text: "編譯錯誤:v 沒有宣告 mut" },
+        { text: "執行期 panic:index out of bounds" },
+      ],
+      answer: 0,
+      explanation: `v[0] 展開成 *v.index(0),得到的是「元素本身的位置」;把它綁定給 first 就是要搬走所有權,但 Vec 仍然擁有這個位置,搬走會在 vector 裡留下一個無效的洞——編譯器直接拒絕。
+三個修法:只想讀就借用 &v[0];要獨立一份就 v[0].clone();真的要拿走就用 v.remove(0)(把後面元素往前搬)或 v.into_iter().next()(消耗整個 vector)。注意 vec![1, 2][0] 反而合法,因為 i32 是 Copy——那是複製而非搬移。`,
+      walkthrough: [
+        {
+          label: "❌ 題目程式碼(無法編譯)",
+          lines: [
+            { code: "fn main() {", note: "程式進入點。" },
+            { code: "    let v = vec![String::from(\"a\"), String::from(\"b\")];", note: "v 擁有這個 Vec,連同裡面兩個 String 的所有權。" },
+            { code: "    let first = v[0];", note: "⛔ 編譯失敗:cannot move out of index of `Vec<String>`。索引取得的是「vector 內部那個位置」,搬走它會讓 v 裡留下一個無效的洞,因此不允許;若元素是 Copy 型別(如 i32)則是複製,完全合法。" },
+            { code: "    println!(\"{}\", first);", note: "因上一行失敗而無法執行。" },
+            { code: "}", note: "main 結束。" },
+          ],
+        },
+        {
+          label: "✅ 正確寫法一(只是要讀 → 借用)",
+          lines: [
+            { code: "fn main() {", note: "程式進入點。" },
+            { code: "    let v = vec![String::from(\"a\"), String::from(\"b\")];", note: "v 擁有兩個元素。" },
+            { code: "    let first = &v[0];", note: "改動處:加上 &,first 是指向第一個元素的不可變參考,所有權仍在 v 手上。" },
+            { code: "    println!(\"{}\", first);", note: "透過參考讀取,印出 a。" },
+            { code: "}", note: "v 離開作用域,連同兩個 String 一起釋放。" },
+          ],
+        },
+        {
+          label: "✅ 正確寫法二(真的要拿走 → remove)",
+          lines: [
+            { code: "fn main() {", note: "程式進入點。" },
+            { code: "    let mut v = vec![String::from(\"a\"), String::from(\"b\")];", note: "改動處:要修改 vector 就必須宣告 mut。" },
+            { code: "    let first = v.remove(0);", note: "改動處:remove 把索引 0 的元素「移出」並回傳所有權,後面的元素往前遞補;此時 v 只剩一個元素,沒有無效的洞。" },
+            { code: "    println!(\"{} {:?}\", first, v);", note: "印出 a [\"b\"]:first 擁有搬出來的字串,v 仍是完整有效的 vector。" },
+            { code: "}", note: "first 與 v 各自釋放自己擁有的資料。" },
+          ],
+          outro: "若只想要一份獨立的複本而不動 vector,把那一行寫成 let first = v[0].clone(); 即可。",
+        },
+      ],
+      csharp: `C# 的 var first = list[0]; 拿到的是參考的複本,list 完全不受影響——你從沒想過「取出元素」會破壞集合。Rust 因為元素的所有權真的歸集合所有,所以「讀一下」「複製一份」「整個拿走」是三個不同的動作,必須各自明寫。`,
+    },
+    {
+      id: "1-4-16",
+      question: "從 Option 取值。以下程式碼的結果是?",
+      questionCode: "fn main() {\n    let name = Some(String::from(\"amy\"));\n    if let Some(n) = name {\n        println!(\"{}\", n);\n    }\n    println!(\"{:?}\", name);\n}",
+      options: [
+        { text: "編譯錯誤:if let Some(n) = name 把 name 裡的 String move 到 n,整個 name 也隨之失效" },
+        { text: "印出 amy 和 Some(\"amy\")" },
+        { text: "印出 amy 和 None" },
+        { text: "編譯錯誤:Option<String> 不能用 if let 解構" },
+      ],
+      answer: 0,
+      explanation: `模式匹配預設按值綁定:Some(n) 這個模式會把 Option 內部的 String 搬給 n,因為 Option<String> 不是 Copy,整個 name 就處於被移動的狀態,之後不能再用。
+兩個修法:對參考做匹配 if let Some(n) = &name(n 變成 &String,name 不動),或在模式上寫 ref——現代寫法幾乎都用前者。這也是「match 到底會不會吃掉我的值」這個常見疑問的答案:看你 match 的是值還是參考。`,
+      walkthrough: [
+        {
+          label: "❌ 題目程式碼(無法編譯)",
+          lines: [
+            { code: "fn main() {", note: "程式進入點。" },
+            { code: "    let name = Some(String::from(\"amy\"));", note: "name 的型別是 Option<String>,它擁有裡面那份 heap 字串。" },
+            { code: "    if let Some(n) = name {", note: "匹配的對象是「值」name,所以 Some(n) 會把內部的 String move 給 n。此行之後 name 整個處於已移動狀態。" },
+            { code: "        println!(\"{}\", n);", note: "n 是擁有者,合法印出 amy。" },
+            { code: "    }", note: "區塊結束,n 離開作用域 → 字串在這裡就被釋放了。" },
+            { code: "    println!(\"{:?}\", name);", note: "⛔ 編譯失敗:borrow of moved value: `name`。" },
+            { code: "}", note: "main 結束。" },
+          ],
+        },
+        {
+          label: "✅ 正確寫法(對參考做匹配)",
+          lines: [
+            { code: "fn main() {", note: "程式進入點。" },
+            { code: "    let name = Some(String::from(\"amy\"));", note: "name 擁有 Option<String>。" },
+            { code: "    if let Some(n) = &name {", note: "改動處:匹配的對象改成 &name。編譯器的 match ergonomics 會自動讓 n 的型別變成 &String——只借不搬,name 保持完整。" },
+            { code: "        println!(\"{}\", n);", note: "透過參考讀取,印出 amy。" },
+            { code: "    }", note: "區塊結束,借用結束,沒有任何東西被釋放。" },
+            { code: "    println!(\"{:?}\", name);", note: "name 從未被移動,合法印出 Some(\"amy\")。" },
+            { code: "}", note: "name 離開作用域,在這裡才釋放內部的字串。" },
+          ],
+          outro: "若你真的想「把值取出來、順便把 Option 清成 None」,標準做法是 let n = name.take();(需要 let mut name),寫狀態機或鏈結串列時很常用。",
+        },
+      ],
+      csharp: `C# 的 if (name is not null) { Use(name); } 之後 name 照樣可用,因為從頭到尾都只是參考。Rust 的模式匹配會真的「拆開」值,所以要先決定:這次是要把裡面的東西拿出來,還是只想看一眼——寫 &name 就是後者。`,
+    },
+    {
+      id: "1-4-17",
+      question: "提早釋放。以下程式碼的結果是?",
+      questionCode: "fn main() {\n    let s = String::from(\"hello\");\n    drop(s);\n    println!(\"{}\", s);\n}",
+      options: [
+        { text: "編譯錯誤:drop(s) 把 s 的所有權移進 drop 函式並立即釋放,之後 s 失效" },
+        { text: "印出 hello:drop 只是提示編譯器,不影響變數" },
+        { text: "編譯通過,執行期 panic:use after free" },
+        { text: "編譯錯誤:不能手動呼叫 drop,只能由編譯器自動呼叫" },
+      ],
+      answer: 0,
+      explanation: `std::mem::drop 的定義簡單到好笑:fn drop<T>(_x: T) {}——它按值收下參數,然後什麼都不做就結束,參數在函式結尾自然被釋放。所以「提早釋放」其實就是「提早把所有權交出去」。
+因此 drop(s) 之後 s 是被移動的狀態,再用就是編譯錯誤——這跟把 s 傳給任何吃所有權的函式沒有兩樣。要注意的是不能寫 s.drop()(那是 Drop trait 的方法,禁止手動呼叫,否則值會被釋放兩次)。`,
+      walkthrough: [
+        {
+          label: "❌ 題目程式碼(無法編譯)",
+          lines: [
+            { code: "fn main() {", note: "程式進入點。" },
+            { code: "    let s = String::from(\"hello\");", note: "s 擁有 heap 字串。" },
+            { code: "    drop(s);", note: "drop 的定義是 fn drop<T>(_x: T) {}:按值收下 s(所有權移交),函式體是空的,參數隨即在函式結尾被釋放——heap 記憶體此刻就還回去了。" },
+            { code: "    println!(\"{}\", s);", note: "⛔ 編譯失敗:borrow of moved value: `s`。這跟把 s 傳給任何吃所有權的函式是同一回事。" },
+            { code: "}", note: "main 結束。" },
+          ],
+        },
+        {
+          label: "✅ 正確寫法(先用完再釋放,之後不再碰它)",
+          lines: [
+            { code: "fn main() {", note: "程式進入點。" },
+            { code: "    let s = String::from(\"hello\");", note: "s 擁有 heap 字串。" },
+            { code: "    println!(\"{}\", s);", note: "改動處:把所有讀取移到釋放之前——先用完再丟。" },
+            { code: "    drop(s);", note: "明確在這一刻釋放資源。實務上多半用在鎖、檔案這類「希望盡早釋放」的資源上。" },
+            { code: "    println!(\"釋放完成\");", note: "s 之後不再被提及,完全合法。" },
+            { code: "}", note: "main 結束,s 早已釋放,不會重複釋放。" },
+          ],
+          outro: "更慣用的做法是用區塊限定範圍:{ let s = String::from(\"hello\"); println!(\"{}\", s); } —— 離開大括號自動釋放,不必手寫 drop。",
+        },
+      ],
+      csharp: `對應 C# 的 using / Dispose():提早釋放非記憶體資源。差別在 C# 呼叫 Dispose() 之後物件還在,你可以繼續拿它去用然後吃 ObjectDisposedException(執行期才炸);Rust 釋放等於交出所有權,再碰它是編譯錯誤,根本不存在「已釋放物件」這種東西。`,
+    },
+    {
+      id: "1-4-18",
+      question: "重新賦值時,舊值怎麼了?以下程式碼的結果是?",
+      questionCode: "fn main() {\n    let mut s = String::from(\"first\");\n    s = String::from(\"second\");\n    println!(\"{}\", s);\n}",
+      options: [
+        { text: "印出 second:賦值前舊的 \"first\" 立刻被 drop,沒有記憶體洩漏" },
+        { text: "印出 second,但 \"first\" 洩漏了,要等程式結束才釋放" },
+        { text: "編譯錯誤:已初始化的變數不能重新賦值" },
+        { text: "印出 firstsecond:新值被附加在舊值後面" },
+      ],
+      answer: 0,
+      explanation: `對一個「已經持有值」的可變變數重新賦值時,Rust 會先釋放舊值再寫入新值——這是 drop 規則的一部分,不會洩漏。
+容易搞混的是 shadowing:let s = String::from("second") 是「建立一個新變數遮蔽舊的」,舊變數還活著、要到作用域結束才釋放;而這題的 s = ... 沒有 let,是「同一個變數換內容」,舊值當場釋放。`,
+      walkthrough: {
+        label: "🔍 題目程式碼逐行說明(可正常執行)",
+        lines: [
+          { code: "fn main() {", note: "程式進入點。" },
+          { code: "    let mut s = String::from(\"first\");", note: "配置第一份 heap 資料 \"first\",擁有者是 s;因為之後要重新賦值,必須加 mut。" },
+          { code: "    s = String::from(\"second\");", note: "沒有 let = 對同一個變數重新賦值。編譯器插入的動作是:先 drop 掉 s 目前持有的 \"first\"(釋放那塊 heap),再把新的 String 寫進 s。因此不會洩漏。" },
+          { code: "    println!(\"{}\", s);", note: "s 現在擁有 \"second\",印出 second。" },
+          { code: "}", note: "s 離開作用域,釋放 \"second\"。全程兩次配置、兩次釋放,剛好配對。" },
+        ],
+        outro: "對照 shadowing:let mut s = String::from(\"first\"); let s = String::from(\"second\"); —— 有 let 就是「新建一個變數遮蔽舊的」,舊的 \"first\" 不會在那一行釋放,而是活到作用域結束。兩種寫法看起來很像,釋放時機完全不同。",
+      },
+      csharp: `C# 裡 s = new string(...) 之後,舊物件變成沒人參考的垃圾,等 GC 哪天心情好再回收;非記憶體資源(檔案、連線)這樣覆寫就是實實在在的資源洩漏,必須自己記得先 Dispose()。Rust 的重新賦值自動先釋放舊值,忘不了。`,
+    },
+    {
+      id: "1-4-19",
+      question: "自訂 Copy 型別。以下程式碼的結果是?",
+      questionCode: "#[derive(Debug, Clone, Copy)]\nstruct Point {\n    x: i32,\n    y: i32,\n}\n\nfn show(p: Point) {\n    println!(\"{:?}\", p);\n}\n\nfn main() {\n    let p1 = Point { x: 1, y: 2 };\n    show(p1);\n    let p2 = p1;\n    println!(\"{} {}\", p1.x, p2.y);\n}",
+      options: [
+        { text: "全部合法,印出 Point { x: 1, y: 2 } 和 1 2——所有欄位都是 Copy,整個 struct 就能 derive Copy" },
+        { text: "編譯錯誤:p1 已在 show(p1) 被 move" },
+        { text: "編譯錯誤:struct 不能 derive Copy,只有基本型別可以" },
+        { text: "編譯錯誤:derive Copy 時不能同時 derive Clone" },
+      ],
+      answer: 0,
+      explanation: `Point 的兩個欄位都是 i32(Copy),所以整個 struct 可以 derive Copy:傳進函式是複製、賦值也是複製,p1 從頭到尾有效。
+兩個細節:一、Copy 必須和 Clone 一起 derive(Copy 是 Clone 的 subtrait,語言規定 Copy: Clone);二、要不要幫自己的型別加 Copy 是設計決定——小而單純、複製成本低的值型別(座標、顏色、ID)適合;一旦型別可能長大或含有資源,就不該加,否則到處隱式複製反而失去「哪裡有成本」的可見性。`,
+      walkthrough: {
+        label: "🔍 題目程式碼逐行說明(可正常執行)",
+        lines: [
+          { code: "#[derive(Debug, Clone, Copy)]", note: "Debug 讓 {:?} 可以印;Copy 讓賦值/傳參變成位元複製;Copy 必須搭配 Clone(語言規定 Copy: Clone),所以三個一起 derive。" },
+          { code: "struct Point {", note: "定義一個小型值型別。" },
+          { code: "    x: i32,", note: "i32 是 Copy。" },
+          { code: "    y: i32,", note: "i32 是 Copy——所有欄位都是 Copy,整個 struct 才有資格 derive Copy。" },
+          { code: "}", note: "struct 定義結束。" },
+          { code: "", note: "" },
+          { code: "fn show(p: Point) {", note: "參數按值收。若 Point 不是 Copy,這裡就會取走所有權;因為是 Copy,收到的是一份複本。" },
+          { code: "    println!(\"{:?}\", p);", note: "用 Debug 格式印出 Point { x: 1, y: 2 }。" },
+          { code: "}", note: "函式結束,複本消失,呼叫端毫髮無傷。" },
+          { code: "", note: "" },
+          { code: "fn main() {", note: "程式進入點。" },
+          { code: "    let p1 = Point { x: 1, y: 2 };", note: "在 stack 上建立一個 Point(8 bytes),沒有 heap 資源。" },
+          { code: "    show(p1);", note: "因為 Copy,這裡是複製一份給函式,p1 沒有被 move,之後照樣可用。" },
+          { code: "    let p2 = p1;", note: "同樣是位元複製,p2 是獨立的一份,改 p2 不會影響 p1。" },
+          { code: "    println!(\"{} {}\", p1.x, p2.y);", note: "兩個變數都有效,印出 1 2。" },
+          { code: "}", note: "兩個 Point 隨 stack frame 消失,沒有 drop 要跑。" },
+        ],
+        outro: "反例:把欄位改成 name: String,#[derive(Copy)] 那一行就會編譯失敗(field does not implement `Copy`)——這正是 Copy 與「擁有資源」互斥的規則,見本課關於 double free 的那一題。",
+      },
+      csharp: `幾乎就是 C# 的 struct:小、無資源、複製成本低。差別在 C# 由「你宣告成 class 還是 struct」決定語意,而且 struct 含參考型別欄位照樣能複製(兩份共享同一個物件);Rust 由「是否實作 Copy」決定,且含資源的型別根本不准實作,把隱患從語言層面拿掉。`,
+    },
+    {
+      id: "1-4-20",
+      question: "本課總結:以下對「所有權三規則」的描述,哪一組是正確的?",
+      options: [
+        { text: "每個值有且只有一個擁有者;同一時間只能有一個擁有者;擁有者離開作用域時值被釋放" },
+        { text: "每個值可以有多個擁有者;由參考計數決定何時釋放" },
+        { text: "值由建立它的函式擁有;函式結束時一律釋放,回傳值除外" },
+        { text: "值預設由編譯器擁有;只有標記 mut 的變數才真正擁有值" },
+      ],
+      answer: 0,
+      explanation: `官方三條規則:(1) Rust 中每個值都有一個擁有者;(2) 同一時間只能有一個擁有者;(3) 擁有者離開作用域,值就被釋放。本課所有題目都是這三條的推論。
+「多個擁有者 + 參考計數」描述的是 Rc<T>——那是標準函式庫在這三條規則之上刻意打造的例外(進階課會講),不是語言的預設模型。至於 mut,它管的是「能不能改」,和「誰擁有」完全是兩回事:不可變變數一樣是它所持有的值的擁有者。`,
+      walkthrough: {
+        label: "🔍 一支程式走完三條規則",
+        lines: [
+          { code: "fn take(s: String) -> usize {", note: "簽名宣告「我要拿走一個 String」,參數 s 在函式內成為擁有者。" },
+          { code: "    s.len()", note: "回傳長度(usize 是 Copy)。函式結束時 s 離開作用域 → 規則三:字串在這裡被釋放。" },
+          { code: "}", note: "take 函式結束。" },
+          { code: "", note: "" },
+          { code: "fn main() {", note: "程式進入點。" },
+          { code: "    let a = String::from(\"own\");", note: "規則一:這份 heap 資料有了唯一的擁有者 a。" },
+          { code: "    let b = a;", note: "規則二:所有權移交給 b,a 立即失效——同一時間絕不會有兩個擁有者,因此不可能 double free。" },
+          { code: "    let n = take(b);", note: "所有權再次移交,這次交給函式參數;b 在此失效,而字串已在 take 結束時被釋放。n 拿到的是複製回來的長度 3。" },
+          { code: "    println!(\"{}\", n);", note: "只用 n,合法印出 3。此時 a 與 b 都已失效,碰它們都會編譯失敗。" },
+          { code: "    let c = String::from(\"scope\");", note: "另建一份資料,擁有者是 c。" },
+          { code: "    {", note: "開一個內層作用域。" },
+          { code: "        let d = &c;", note: "借用不是移交:c 仍是擁有者,d 只是暫時看一下(下一課的主題)。" },
+          { code: "        println!(\"{}\", d);", note: "印出 scope。" },
+          { code: "    }", note: "內層結束,借用 d 消失,但 c 擁有的資料完全不受影響。" },
+          { code: "}", note: "規則三:c 離開作用域,字串在這一刻釋放。整支程式沒有一行 free、沒有 GC,釋放時機在編譯期就完全確定。" },
+        ],
+      },
+      csharp: `本課總結給 C# 開發者:你原本的模型是「變數 → 參考 → 物件,GC 決定何時回收」;Rust 的模型是「變數 = 值的擁有者,移交要明寫,離開作用域即釋放」。下一課的借用(&)不是新規則,而是這三條規則下「不移交所有權也能存取」的官方出口——先接受所有權是預設,借用才會顯得自然。`,
     },
   ],
 };
