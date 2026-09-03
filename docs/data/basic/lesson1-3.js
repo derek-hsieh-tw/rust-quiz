@@ -30,10 +30,10 @@ window.RUST_LESSONS["lesson1-3"] = {
           ],
         },
         {
-          label: "✅ 三種都正確的寫法",
+          label: "✅ 三種都正確的寫法(完整可執行)",
           lines: [
             { code: "fn five_a() -> i32 {", note: "寫法一:最慣用的尾端運算式。" },
-            { code: "    5", note: "沒有分號 = 這是區塊的尾端運算式,也就是函式的回傳值。" },
+            { code: "    5", note: "改動處:沒有分號 = 這是區塊的尾端運算式,也就是函式的回傳值。" },
             { code: "}", note: "函式結束,回傳 5。" },
             { code: "", note: "" },
             { code: "fn five_b() -> i32 {", note: "寫法二:明寫 return。" },
@@ -44,6 +44,10 @@ window.RUST_LESSONS["lesson1-3"] = {
             { code: "    let x = 5;", note: "let 是陳述式,建立區域變數。" },
             { code: "    x", note: "尾端運算式是 x,值為 5,成為函式回傳值。" },
             { code: "}", note: "函式結束。" },
+            { code: "", note: "" },
+            { code: "fn main() {", note: "程式進入點,把三個函式都叫一次驗證行為相同。" },
+            { code: "    println!(\"{} {} {}\", five_a(), five_b(), five_c());", note: "三者完全等價,印出 5 5 5。" },
+            { code: "}", note: "main 結束。" },
           ],
           outro: "一句話記住:區塊的最後一行「有分號 = 不回傳」「沒分號 = 回傳」。這條規則貫穿整個 Rust——區塊、if、match、loop 全都適用。",
         },

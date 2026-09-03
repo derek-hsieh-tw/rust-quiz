@@ -7,6 +7,8 @@
  *  5. 詳解不得出現「選項 A/B/C/D」字母指涉(選項會洗牌,字母對不上)
  *  6. walkthrough(逐行說明):有程式碼的題目必須有、每行程式碼都要有註解、
  *     code 不得含換行、反面案例(❌)必須同時附上正確寫法(✅)
+ *  7. ✅ 區塊裡的 Rust 程式碼必須完整可編譯(含 fn main 或測試模組),
+ *     讀者要能整段複製去跑
  * 規範全文見專案根目錄 AUTHORING.md。
  */
 const fs = require("fs");
@@ -119,6 +121,18 @@ function validateWalkthrough(tag, q, errors) {
   const labels = blocks.map(b => b.label || "");
   if (labels.some(l => l.startsWith("❌")) && !labels.some(l => l.startsWith("✅")))
     errors.push(`${tag}: 有 ❌ 區塊卻沒有 ✅ 正確寫法區塊`);
+
+  // ✅ 區塊的 Rust 程式碼要能整段複製去跑,不能只給片段
+  blocks.forEach(b => {
+    if (!(b.label || "").startsWith("✅")) return;
+    if (b.lang && b.lang !== "rust") return; // bash / ini / csharp 不適用
+    const code = b.lines.map(l => l.code).join("\n");
+    const isRustItem = /\bfn\s|\bimpl\s|\bstruct\s|\benum\s|\btrait\s/.test(code);
+    if (!isRustItem) return; // 不是 Rust 定義(例如純設定檔或指令)就不檢查
+    const runnable = /fn main\s*\(|#\[cfg\(test\)\]|#\[test\]/.test(code);
+    if (!runnable)
+      errors.push(`${tag}: ✅ 區塊「${b.label}」缺少 fn main,不是完整可執行的程式`);
+  });
 }
 
 if (errors.length) {
