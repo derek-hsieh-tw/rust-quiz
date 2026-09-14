@@ -4,7 +4,7 @@
   --vsc-sidebar-bg: #252526;
   --vsc-activitybar-bg: #333333;
   --vsc-titlebar-bg: #3c3c3c;
-  --vsc-statusbar-bg: #007acc;
+  --vsc-statusbar-bg: #7a1f2b; /* 酒紅;白字對比 10.2:1,刻意不用 VS Code 預設的藍 */
   --vsc-tab-active-bg: #1e1e1e;
   --vsc-tab-inactive-bg: #2d2d2d;
   --vsc-border: #3c3c3c;
