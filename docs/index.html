@@ -9,6 +9,7 @@
   <link rel="stylesheet" href="./css/app.css">
   <link rel="stylesheet" href="./css/vs-header.css">
   <link rel="stylesheet" href="./css/minimap.css">
+  <link rel="stylesheet" href="./css/find-widget.css">
   <link rel="stylesheet" href="./css/terminal.css">
   <link rel="stylesheet" href="./css/diagnostics.css">
 </head>
@@ -85,6 +86,45 @@
       <div id="tabbar"></div>
       <div id="breadcrumb"></div>
       <div id="editor-body">
+        <!-- 裝飾用的假「尋找及取代」面板(js/find-widget.js)
+             只有輸入框與左上角摺疊鈕是真的,不會去搜尋題目內容 -->
+        <!-- 關閉後縮成這顆小按鈕,點一下把面板叫回來(比照診斷工具的細條) -->
+        <span class="find-reopen" id="find-reopen" title="尋找及取代">⌕</span>
+        <div class="find-widget">
+          <span class="fw-toggle" title="摺疊">⌃</span>
+          <div class="fw-rows">
+
+            <div class="fw-row">
+              <label class="fw-field">
+                <input type="text" placeholder="尋找..." spellcheck="false" autocomplete="off" aria-label="假的尋找輸入框">
+                <span class="fw-caret">▾</span>
+              </label>
+              <span class="fw-btn" title="尋找">⌕</span><span class="fw-caret-btn">▾</span>
+              <span class="fw-btn" title="下一個">→</span><span class="fw-caret-btn">▾</span>
+              <span class="fw-btn close" title="關閉">✕</span>
+            </div>
+
+            <div class="fw-row fw-replace">
+              <label class="fw-field">
+                <input type="text" placeholder="取代..." spellcheck="false" autocomplete="off" aria-label="假的取代輸入框">
+                <span class="fw-caret">▾</span>
+              </label>
+              <span class="fw-btn dim" title="取代">⇄</span>
+              <span class="fw-btn dim" title="全部取代">⇉</span>
+            </div>
+
+            <div class="fw-row fw-opts">
+              <span class="fw-opt" title="區分大小寫">Aa</span>
+              <span class="fw-opt underline" title="全字拼寫須相符">Ab</span>
+              <span class="fw-opt" title="使用規則運算式">.*</span>
+              <span class="fw-opt on" title="比對整個字">AB</span>
+              <span class="fw-scope">整個解決方案</span>
+              <span class="fw-sp"></span>
+              <span class="fw-caret-btn">▾</span>
+            </div>
+
+          </div>
+        </div>
         <div id="content"></div>
         <!-- 編輯區右側縮圖(js/minimap.js);歡迎頁沒內容時自動收起 -->
         <div id="minimap"><canvas></canvas><div class="mm-slider"></div></div>
@@ -118,6 +158,7 @@
     <!-- 裝飾用的假面板:模仿 Visual Studio「診斷工具」視窗。
          資料是固定的向量圖,動畫只有 CSS transform 位移,不做任何量測。 -->
     <div id="diagnostics">
+      <div class="diag-resize" title="拖曳調整寬度"></div>
       <div class="diag-panel">
         <div class="diag-title">
           <span class="dt-name">診斷工具</span>
@@ -226,6 +267,7 @@
   <script src="./js/sidebar.js"></script>
   <script src="./js/quiz.js"></script>
   <script src="./js/minimap.js"></script>
+  <script src="./js/find-widget.js"></script>
   <script src="./js/vs-header.js"></script>
   <script src="./js/terminal.js"></script>
   <script src="./js/diagnostics.js"></script>

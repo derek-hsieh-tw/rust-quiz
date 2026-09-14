@@ -17,12 +17,26 @@
 }
 
 .diag-panel {
-  width: 300px;
+  width: var(--diag-w, 300px); /* 可由左緣把手拖曳,見 js/diagnostics.js */
   display: flex;
   flex-direction: column;
   min-width: 0;
 }
 #diagnostics.collapsed .diag-panel { display: none; }
+
+/* ---- 左緣拖曳把手:調整面板寬度 ---- */
+.diag-resize {
+  width: 5px;
+  flex-shrink: 0;
+  margin-right: -1px; /* 蓋在邊框上,視覺上看不出多一條 */
+  cursor: col-resize;
+  background: transparent;
+  transition: background 0.12s;
+}
+.diag-resize:hover,
+#diagnostics.resizing .diag-resize { background: #0078d4; }
+#diagnostics.collapsed .diag-resize { display: none; } /* 收起來就沒什麼好拉的 */
+#diagnostics.resizing { user-select: none; }
 
 /* ---- 標題列 ---- */
 .diag-title {
@@ -289,7 +303,7 @@
 
 /* ---- RWD:視窗不夠寬就整欄收起來,不跟內容搶空間 ---- */
 @media (max-width: 1400px) {
-  .diag-panel { width: 260px; }
+  .diag-panel { width: var(--diag-w, 260px); }
 }
 @media (max-width: 1150px) {
   #diagnostics { display: none; }
