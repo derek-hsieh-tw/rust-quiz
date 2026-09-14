@@ -56,7 +56,7 @@
 .lesson-header h1 {
   font-size: 22px;
   font-weight: 600;
-  color: #e8e8e8;
+  color: #a8a8a8;
   margin-bottom: 6px;
 }
 .lesson-header .lesson-goal {
@@ -66,7 +66,11 @@
   padding-left: 10px;
 }
 
-/* ===== 題目卡 ===== */
+/* ===== 題目卡 =====
+   文字亮度刻意壓低:題幹 #a8a8a8、內文 #989898、程式碼基底 #a0a0a0,
+   對卡片底色 #232323 的對比落在 5~6.6:1(WCAG AA 門檻是 4.5:1)。
+   坐在螢幕前讀很清楚,退開幾步就融進背景。要改亮之前先想想這件事。
+   作答對錯的綠/紅與詳解標題不在此列——那些是要一眼看到的訊號。 */
 .question-card {
   background: #232323;
   border: 1px solid var(--vsc-border);
@@ -78,7 +82,7 @@
   font-size: 14px;
   font-weight: 600;
   margin-bottom: 10px;
-  color: #e8e8e8;
+  color: #a8a8a8;
   line-height: 1.7;
   white-space: pre-wrap;
 }
@@ -92,6 +96,15 @@ pre.code-block {
   overflow-x: auto;
   margin: 8px 0 12px;
 }
+/* highlight.js 主題的基底字色是 #dcdcdc,太亮;語法上色維持原樣,
+ * 只把「沒有 token 顏色」的那些字降下來(vendor 檔不動,所以用覆寫) */
+.hljs,
+.hljs-title,
+.hljs-function,
+.hljs-params,
+.hljs-subst,
+.hljs-formula { color: #a0a0a0; }
+
 pre.code-block code {
   display: block;
   font-family: var(--font-code);
@@ -121,7 +134,7 @@ pre.code-block code {
   background: var(--vsc-code-bg);
   user-select: none; /* 選取複製程式碼時不會夾帶行號 */
 }
-.code-line:hover .line-no { color: #c6c6c6; background: #2a2a2a; }
+.code-line:hover .line-no { color: #a6a6a6; background: #2a2a2a; }
 
 .line-content {
   position: relative; /* 縮排線的定位基準 */
@@ -159,7 +172,7 @@ pre.code-block code {
 }
 .option .option-body { flex: 1; min-width: 0; }
 .option .option-body pre.code-block { margin: 0; border: none; padding: 4px 0; }
-.option .option-text { line-height: 1.6; padding-top: 2px; white-space: pre-wrap; }
+.option .option-text { line-height: 1.6; padding-top: 2px; white-space: pre-wrap; color: #a0a0a0; }
 
 .option.correct {
   border-color: var(--vsc-green);
@@ -195,7 +208,7 @@ pre.code-block code {
   font-weight: 700;
   margin-bottom: 4px;
 }
-.explanation .exp-body { white-space: pre-wrap; color: #d4d4d4; }
+.explanation .exp-body { white-space: pre-wrap; color: #989898; }
 /* ---- 逐行說明(walkthrough):程式碼每行下方接一條說明 ---- */
 .walkthrough { margin-top: 12px; }
 .walkthrough .wt-label {
@@ -203,7 +216,7 @@ pre.code-block code {
   font-weight: 700;
   margin-bottom: 4px;
 }
-.walkthrough .wt-note { white-space: pre-wrap; color: #d4d4d4; margin: 4px 0; }
+.walkthrough .wt-note { white-space: pre-wrap; color: #989898; margin: 4px 0; }
 .walkthrough pre.code-block.annotated { margin: 6px 0 0; }
 
 .note-line {
@@ -220,7 +233,7 @@ pre.code-block code {
   font-family: var(--font-ui);
   font-size: 12.5px;
   line-height: 1.7;
-  color: #9db3c0;
+  color: #8697a0;
   background: var(--vsc-code-bg); /* 蓋住捲動到底下的長程式碼 */
   padding: 0 16px 4px 0;
   text-indent: -1.35em;
@@ -239,7 +252,7 @@ pre.code-block code {
   border-radius: 0 3px 3px 0;
 }
 .csharp-compare .cs-label { color: var(--vsc-blue); font-weight: 700; margin-bottom: 4px; }
-.csharp-compare .cs-body { white-space: pre-wrap; color: #d4d4d4; line-height: 1.8; }
+.csharp-compare .cs-body { white-space: pre-wrap; color: #989898; line-height: 1.8; }
 
 /* ===== 課程底部 ===== */
 .lesson-footer {
@@ -269,7 +282,7 @@ pre.code-block code {
 /* ===== 歡迎頁 ===== */
 .welcome { max-width: 720px; margin: 40px auto; text-align: center; }
 .welcome .welcome-logo { font-size: 56px; margin-bottom: 16px; }
-.welcome h1 { font-size: 26px; font-weight: 300; color: #e8e8e8; margin-bottom: 8px; }
+.welcome h1 { font-size: 26px; font-weight: 300; color: #b0b0b0; margin-bottom: 8px; }
 .welcome p { color: var(--vsc-fg-dim); line-height: 1.9; margin-bottom: 20px; }
 .welcome .start-hint { font-size: 13px; }
 .welcome .kbd {
