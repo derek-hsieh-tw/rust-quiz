@@ -220,8 +220,7 @@ body { display: flex; flex-direction: column; }
   #statusbar span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 }
 
-/* 極窄螢幕:標題縮短、狀態列只留整體進度 */
+/* 極窄螢幕:狀態列只留整體進度 */
 @media (max-width: 420px) {
-  .titlebar-text { font-size: 12px; }
   #status-lesson { display: none; }
 }
