@@ -3,3 +3,14 @@ rust_todo.txt
 style.png
 
 .claude/
+# Rust 練習專案的建置產物(每個 practices/<crate>/target 都會被比對到)
+target/
+**/*.rs.bk
+*.pdb
+
+# 編輯器 / 作業系統雜訊
+.vs/
+.idea/
+*.swp
+Thumbs.db
+.DS_Store
