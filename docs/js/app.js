@@ -26,7 +26,7 @@ const App = (() => {
 
   function setTab(text) {
     document.getElementById("tabbar").innerHTML = text
-      ? `<div class="tab"><span>🦀 ${text}</span><span class="tab-close">×</span></div>`
+      ? `<div class="tab"><span><span class="file-icon">●</span> ${text}</span><span class="tab-close">×</span></div>`
       : "";
   }
 

@@ -27,6 +27,7 @@
 .tree-item:hover { background: var(--vsc-list-hover); }
 .tree-item.active { background: var(--vsc-list-active); }
 .tree-item .file-icon { color: #ce9178; font-size: 11px; flex-shrink: 0; }
+.tab .file-icon { color: #ce9178; font-size: 9px; vertical-align: middle; }
 .tree-item .file-name { font-family: var(--font-code); font-size: 12px; flex-shrink: 0; }
 .tree-item .file-title {
   color: var(--vsc-fg-dim);

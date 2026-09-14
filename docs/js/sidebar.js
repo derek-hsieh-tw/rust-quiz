@@ -32,7 +32,7 @@ const Sidebar = (() => {
         item.title = lesson.title + (lesson.available ? "" : "(尚未建置)");
 
         item.innerHTML =
-          `<span class="file-icon">🦀</span>` +
+          `<span class="file-icon">●</span>` +
           `<span class="file-name">${lesson.id}.rs</span>` +
           `<span class="file-title">${lesson.title}</span>` +
           (Progress.isCompleted(lesson.id) ? `<span class="done-mark">✓</span>` : "");
