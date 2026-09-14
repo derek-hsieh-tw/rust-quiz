@@ -289,6 +289,8 @@ interface 關鍵字與冒號繼承是 C# 語法;impl Article for Summary 把 tra
     },
     {
       id: "1-12-06",
+      // 詳解裡的 Add<Output = T> 是拿來示範「關聯型別語法」的例子,不是隱藏的去糖概念,不需要 🔧 區塊
+      desugarChecked: true,
       question: "多重約束與 where 子句。以下哪個改寫與原簽名等價且合法?",
       questionCode: "use std::fmt::{Debug, Display};\n\nfn stats<T: Display + Clone, U: Clone + Debug>(t: &T, u: &U) -> i32 {\n    42\n}",
       options: [

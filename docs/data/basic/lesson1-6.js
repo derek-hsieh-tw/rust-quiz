@@ -104,6 +104,20 @@ window.RUST_LESSONS["lesson1-6"] = {
             { code: "}", note: "main 結束。" },
           ],
         },
+        {
+          label: "🔧 去糖後(編譯器眼中的樣子)",
+          intro: "「自動轉換」這四個字到底做了什麼?deref coercion 其實是編譯器替你補了一次解參考:",
+          lines: [
+            { code: "print_it(&owned);", note: "你寫的這一行,&owned 的型別是 &String。" },
+            { code: "", note: "" },
+            { code: "// 編譯器補成:", note: "參數型別對不上時,編譯器會試著透過 Deref 補救。" },
+            { code: "print_it(&*owned);", note: "先 *owned 解參考成 str,再 & 借成 &str——也就是呼叫 String 的 Deref 實作(impl Deref for String { type Target = str; })。零執行期成本,只是型別層面的轉換。" },
+            { code: "", note: "" },
+            { code: "// 反方向沒有這條路:", note: "為什麼 &str 傳不進 &String 參數。" },
+            { code: "// &str → &String 需要 impl Deref for str { type Target = String }", note: "這個實作不存在,而且方向也不合理——str 是「被 String 擁有的內容」,不可能反過來解參考出一個擁有者。" },
+          ],
+          outro: "記住這條單行道,才解釋得了兩件事:為什麼慣例是「參數收 &str」;以及為什麼 my_string.len() 叫得到 str 的方法——同樣是 Deref,編譯器沿著 String → str 往下找方法。錯誤訊息裡出現 Deref 或 no method named ... found for struct,多半就是這條路沒走通。",
+        },
       ],
       csharp: `類似「方法參數宣告為介面/基底型別」的通用性原則(收 IEnumerable<T> 不收 List<T>)。差別是 C# 靠繼承階層,Rust 靠 Deref 強制轉換——發生在編譯期,沒有裝箱或虛擬呼叫成本。`,
     },
@@ -351,6 +365,98 @@ window.RUST_LESSONS["lesson1-6"] = {
         },
       ],
       csharp: `C# 的 StringBuilder.Append 靠多載一口氣吃 string、char、int⋯⋯方便但看呼叫端分不出行為。Rust 幾乎不用多載(語言不支援),寧可用不同方法名把行為寫清楚——初期覺得囉嗦,讀別人程式碼時就會感謝這個設計。`,
+    },
+    {
+      id: "1-6-11",
+      question: "原始字串(raw string)。以下 path 與 raw 兩個變數的內容關係是?",
+      questionCode: "fn main() {\n    let path = \"C:\\\\Users\\\\Derek\";\n    let raw = r\"C:\\Users\\Derek\";\n    let json = r#\"{\"name\": \"Derek\"}\"#;\n\n    println!(\"{}\", path);\n    println!(\"{}\", raw);\n    println!(\"{}\", json);\n}",
+      options: [
+        { text: "兩者內容完全相同:r 前綴關掉跳脫解釋,所以反斜線可以直接寫;而 r#\"…\"# 多包一層 # 之後連雙引號都能直接放進去" },
+        { text: "raw 會多印出反斜線,因為 r 前綴會保留跳脫符號本身" },
+        { text: "path 編譯錯誤:反斜線必須寫成 r\"\\\\\"" },
+        { text: "兩者都會印出 C:UsersDerek,反斜線在 Rust 字串裡一律被吃掉" },
+      ],
+      answer: 0,
+      explanation: `一般字串裡反斜線是跳脫字元的開頭,所以要表達一個反斜線得寫兩個。Windows 路徑、正規表示式、JSON 這三種東西滿是反斜線與雙引號,寫起來就變成一片 \\\\。
+r 前綴把跳脫解釋整個關掉:r"C:\Users\Derek" 裡的每個字元都照字面算,印出來與上面那個雙寫版本一模一樣。需要在字串裡放雙引號時,就在前後各加 # 號:r#"…"#,結束標記變成 "# 這兩個字元,單獨的雙引號就不再結束字串。內容剛好含有 "# 的話還可以加更多井號 r##"…"##,只要前後數量一致即可。
+「r 會保留跳脫符號」的說法搞反了:r 不是「多印一個反斜線」,而是「原始碼裡有幾個就是幾個」。而「反斜線一律被吃掉」也不對——單獨的反斜線在一般字串裡不是被吃掉,是編譯錯誤(unknown character escape),除非它後面接的剛好是合法跳脫序列。`,
+      walkthrough: [
+        {
+          label: "🔍 逐行說明(可正常編譯執行)",
+          lines: [
+            { code: "fn main() {", note: "程式進入點。" },
+            { code: "    let path = \"C:\\\\Users\\\\Derek\";", note: "一般字串:每個反斜線都要寫兩次,第一個是跳脫字元、第二個才是內容。實際內容是 C:\\Users\\Derek。" },
+            { code: "    let raw = r\"C:\\Users\\Derek\";", note: "原始字串:r 前綴關掉跳脫解釋,反斜線直接寫一個就好。內容與上一行完全相同。" },
+            { code: "    let json = r#\"{\"name\": \"Derek\"}\"#;", note: "內容含有雙引號,所以前後各加一個 #。結束標記是 \"# 這兩個字元連在一起,因此中間單獨的雙引號不會提前結束字串。" },
+            { code: "", note: "" },
+            { code: "    println!(\"{}\", path);", note: "印出 C:\\Users\\Derek。" },
+            { code: "    println!(\"{}\", raw);", note: "印出 C:\\Users\\Derek——與上一行一字不差。" },
+            { code: "    println!(\"{}\", json);", note: "印出 {\"name\": \"Derek\"}。" },
+            { code: "}", note: "main 結束。" },
+          ],
+          outro: "原始字串只關掉跳脫解釋,它仍然是一般的 &str——長度、切片、方法全都一樣。內容剛好含有 \"# 時,前後同步加井號即可:r##\"…\"##。",
+        },
+      ],
+      csharp: `對應 C# 的逐字字串 @"C:\Users\Derek"。兩個差異:一是 C# 的 @ 字串要放雙引號得寫兩個(""),Rust 則是用井號把結束標記變長,不必改動內容本身;二是 C# 11 的原始字串字面值("""…""")靠三引號與縮排規則處理多行,Rust 的 r#"…"# 沒有縮排魔法,換行與空白一律照字面保留。`,
+    },
+    {
+      id: "1-6-12",
+      question: "格式化字串裡直接放變數名。以下程式碼的結果是?",
+      questionCode: "fn main() {\n    let width = 30;\n    let height = 50;\n\n    println!(\"{width}x{height}\");\n    println!(\"{}\", width * height);\n}",
+      options: [
+        { text: "印出 30x50 與 1500:大括號裡可以直接寫「已存在的變數名」,等同 println!(\"{}x{}\", width, height)" },
+        { text: "編譯錯誤:大括號裡只能留空,變數一律要放在後面的參數列" },
+        { text: "印出 {width}x{height} 與 1500:未知的名字會原樣輸出" },
+        { text: "印出 30x50 與 1500,但大括號裡也可以放任何運算式,例如 {width * height}" },
+      ],
+      answer: 0,
+      explanation: `Rust 2021 起,格式化巨集的大括號裡可以直接寫一個「當前作用域看得到的變數名」,編譯器會自動把它補到參數列。println!("{width}x{height}") 與 println!("{}x{}", width, height) 展開結果完全相同。
+限制很嚴格:大括號裡只能是「識別字」,不能是運算式。println!("{width * height}") 編譯失敗,而且訊息有點難懂(invalid format string);同理 {arr[0]}、{p.x}、{f()} 也全都不行,得先用 let 取出來,或退回傳統的參數列寫法。這條界線是刻意的——格式化字串是巨集在編譯期解析的,不是執行期求值的模板。
+這個語法也能跟格式規格併用:{name:>10} 靠右對齊、{value:.2} 取兩位小數、{n:04} 補零,冒號後面的規格與傳統寫法一模一樣。
+至於「未知的名字原樣輸出」:找不到同名變數時是編譯錯誤(cannot find value in this scope),不會默默印出大括號。`,
+      walkthrough: [
+        {
+          label: "🔍 題目程式碼(可正常編譯執行)",
+          lines: [
+            { code: "fn main() {", note: "程式進入點。" },
+            { code: "    let width = 30;", note: "宣告變數,名字待會要直接放進格式化字串。" },
+            { code: "    let height = 50;", note: "同上。" },
+            { code: "", note: "" },
+            { code: "    println!(\"{width}x{height}\");", note: "大括號裡直接寫變數名,完全不需要後面的參數列。印出 30x50。" },
+            { code: "    println!(\"{}\", width * height);", note: "要放運算式就回到傳統寫法:大括號留空,值寫在參數列。印出 1500。" },
+            { code: "}", note: "main 結束。" },
+          ],
+        },
+        {
+          label: "❌ 常見誤解:以為大括號裡能放運算式",
+          lines: [
+            { code: "fn main() {", note: "程式進入點。" },
+            { code: "    let width = 30;", note: "宣告變數。" },
+            { code: "    let height = 50;", note: "宣告變數。" },
+            { code: "", note: "" },
+            { code: "    println!(\"{width * height}\");", note: "⛔ 編譯失敗:invalid format string: expected `}`, found `*`。大括號裡只接受單一識別字,不是運算式求值——格式化字串是巨集在編譯期拆解的,它沒有執行運算式的能力。" },
+            { code: "}", note: "main 結束。" },
+          ],
+        },
+        {
+          label: "✅ 正確寫法(兩種都可以)",
+          lines: [
+            { code: "fn main() {", note: "程式進入點。" },
+            { code: "    let width = 30;", note: "宣告變數。" },
+            { code: "    let height = 50;", note: "宣告變數。" },
+            { code: "", note: "" },
+            { code: "    let area = width * height;", note: "解法一:先把運算式的結果存成變數。" },
+            { code: "    println!(\"{area}\");", note: "現在大括號裡是單純的識別字,合法。印出 1500。" },
+            { code: "", note: "" },
+            { code: "    println!(\"{}\", width * height);", note: "解法二:退回傳統參數列寫法,運算式放在後面,一樣印出 1500。" },
+            { code: "", note: "" },
+            { code: "    let name = \"Derek\";", note: "再示範一次格式規格可以併用。" },
+            { code: "    println!(\"{name:>10}!\");", note: "冒號後面是對齊與寬度規格,靠右對齊到 10 個字元寬,印出「     Derek!」。" },
+            { code: "}", note: "main 結束。" },
+          ],
+        },
+      ],
+      csharp: `這就是 C# 6 的字串插值 $"{width}x{height}",而且 Rust 這個語法比 C# 晚很多年才加進來(2021 版才有)。最大的差異在能力範圍:C# 的 $"" 裡可以放任意運算式,$"{width * height}"、$"{list[0]}"、$"{obj.Prop:N2}" 全都合法,因為它是編譯器層級的語法;Rust 的版本只是巨集在編譯期做的字串比對,所以只認得單一識別字,運算式一律要先取出來。從 C# 搬過來時,這是最容易第一次就踩到的一格。`,
     },
   ],
 };
