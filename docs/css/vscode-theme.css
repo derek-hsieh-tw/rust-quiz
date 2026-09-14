@@ -33,6 +33,9 @@ html, body {
   font-family: var(--font-ui);
   font-size: 14px;
 }
+/* 直向三段:header / 主要區域 / 狀態列。header 高度會變(見 vs-header.css),
+ * 所以用 flex 分配而不是寫死的 calc。 */
+body { display: flex; flex-direction: column; }
 
 /* ---- Title bar ---- */
 #titlebar {
@@ -53,7 +56,7 @@ html, body {
   position: absolute;
   left: 4px;
   top: 0;
-  height: 32px;
+  height: 30px;
   width: 40px;
   background: transparent;
   border: none;
@@ -72,7 +75,8 @@ html, body {
 /* ---- 主要三欄 ---- */
 #main {
   display: flex;
-  height: calc(100% - 32px - 22px); /* titlebar + statusbar */
+  flex: 1;
+  min-height: 0;
 }
 
 /* ---- Activity bar ---- */
@@ -150,8 +154,15 @@ html, body {
   color: var(--vsc-fg-dim);
   flex-shrink: 0;
 }
+/* 內容 + 右側縮圖並排(縮圖見 minimap.css) */
+#editor-body {
+  flex: 1;
+  display: flex;
+  min-height: 0;
+}
 #content {
   flex: 1;
+  min-width: 0;
   overflow-y: auto;
   padding: 16px 32px 64px;
 }
@@ -191,7 +202,7 @@ html, body {
 
   #sidebar {
     position: fixed;
-    top: 32px;
+    top: 31px; /* 行動版 header 只剩功能表列 */
     bottom: 22px;
     left: 0;
     width: min(300px, 85vw);

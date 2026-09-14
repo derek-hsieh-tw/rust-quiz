@@ -1,0 +1,30 @@
+/* 編輯區右側縮圖(見 js/minimap.js)
+ * 單獨一個檔案,app.css 維持原樣,要移除這個功能只要拿掉這裡與 minimap.js。 */
+#minimap {
+  position: relative;
+  width: 64px;
+  flex-shrink: 0;
+  background: var(--vsc-bg);
+  border-left: 1px solid #2a2a2a;
+  overflow: hidden;
+  cursor: pointer;
+}
+#minimap.empty { display: none; } /* 歡迎頁、未建置課程沒有內容可縮 */
+#minimap canvas { display: block; }
+
+/* 目前視窗範圍;捲動時只改 transform,不重畫 canvas */
+#minimap .mm-slider {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  background: rgba(121, 121, 121, 0.18);
+  pointer-events: none;
+  will-change: transform;
+}
+#minimap:hover .mm-slider { background: rgba(121, 121, 121, 0.28); }
+
+/* 手機/窄視窗沒空間放縮圖 */
+@media (max-width: 800px) {
+  #minimap { display: none; }
+}

@@ -1,0 +1,103 @@
+/* 編輯區下方的假終端機(見 js/terminal.js)
+ * 只是裝飾:可以打字、Enter 會把那行回顯上去,但不執行任何東西。
+ * 單獨一個檔案,要移除只要拿掉這裡、terminal.js 與 index.html 的那段 markup。 */
+#terminal {
+  display: flex;
+  flex-direction: column;
+  height: 190px;
+  flex-shrink: 0;
+  border-top: 1px solid var(--vsc-border);
+  background: var(--vsc-bg);
+  font-family: var(--font-code);
+  font-size: 12.5px;
+}
+#terminal.collapsed { height: auto; }
+#terminal.collapsed .term-body { display: none; }
+
+/* ---- 分頁列 ---- */
+.term-tabs {
+  display: flex;
+  align-items: stretch;
+  height: 28px;
+  background: var(--vsc-tab-inactive-bg);
+  flex-shrink: 0;
+}
+.term-tab {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 0 14px;
+  color: var(--vsc-fg-dim);
+  border-right: 1px solid var(--vsc-border);
+  white-space: nowrap;
+  user-select: none;
+}
+.term-tab.active {
+  background: var(--vsc-bg);
+  color: #ffffff;
+  border-top: 1px solid var(--vsc-accent);
+}
+.term-tab .ti {
+  color: var(--vsc-accent);
+  font-weight: 700;
+  font-size: 11px;
+}
+.term-actions {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 0 8px;
+}
+.term-actions .ta {
+  width: 22px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #c5c5c5;
+  border-radius: 2px;
+  cursor: pointer;
+  user-select: none;
+}
+.term-actions .ta:hover { background: #3f3f46; }
+
+/* ---- 內容 ---- */
+.term-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 6px 12px 10px;
+  line-height: 1.55;
+  cursor: text;
+  color: #cccccc;
+}
+.term-body .tl { white-space: pre-wrap; word-break: break-all; min-height: 1.55em; }
+
+/* 終端機配色(VS Code Dark+ 的 ANSI 色) */
+.c-dim { color: #9a9a9a; }
+.c-green { color: #23d18b; }
+.c-cyan { color: #29b8db; }
+.c-white { color: #ffffff; }
+.c-vite { color: #23d18b; font-weight: 700; }
+
+/* ---- 輸入列 ---- */
+.term-prompt { display: flex; align-items: baseline; gap: 6px; }
+.term-prompt .ps { color: #23d18b; flex-shrink: 0; }
+.term-prompt input {
+  flex: 1;
+  min-width: 0;
+  background: transparent;
+  border: none;
+  outline: none;
+  padding: 0;
+  color: #cccccc;
+  font-family: inherit;
+  font-size: inherit;
+  line-height: inherit;
+  caret-color: #cccccc;
+}
+
+/* 視窗不高或手機:終端機會把題目擠掉,直接收起來 */
+@media (max-height: 700px), (max-width: 800px) {
+  #terminal { display: none; }
+}

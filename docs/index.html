@@ -7,12 +7,63 @@
   <link rel="stylesheet" href="./vendor/highlight-vs2015.css">
   <link rel="stylesheet" href="./css/vscode-theme.css">
   <link rel="stylesheet" href="./css/app.css">
+  <link rel="stylesheet" href="./css/vs-header.css">
+  <link rel="stylesheet" href="./css/minimap.css">
+  <link rel="stylesheet" href="./css/terminal.css">
+  <link rel="stylesheet" href="./css/diagnostics.css">
 </head>
 <body>
   <div id="titlebar">
-    <button id="menu-toggle" aria-label="切換課程選單">☰</button>
-    <span class="titlebar-logo">🦀</span>
-    <span class="titlebar-text">Rust Tutorial</span>
+
+    <!-- 第一列:功能表 -->
+    <div class="vs-row vs-menubar">
+      <button id="menu-toggle" aria-label="切換課程選單">☰</button>
+      <span class="vs-logo">∞</span>
+      <span class="vs-menu">檔案(F)</span><span class="vs-menu">編輯(E)</span><span class="vs-menu">檢視(V)</span><span class="vs-menu">Git(G)</span><span class="vs-menu">專案(P)</span><span class="vs-menu">建置(B)</span><span class="vs-menu">偵錯(D)</span><span class="vs-menu">架構(C)</span><span class="vs-menu">測試(S)</span><span class="vs-menu">分析(N)</span><span class="vs-menu">工具(T)</span><span class="vs-menu">延伸模組(X)</span><span class="vs-menu">視窗(W)</span><span class="vs-menu">說明(H)</span>
+      <span class="vs-sp"></span>
+      <span class="vs-search">⌕ 搜尋 <span class="vs-caret">▾</span></span>
+      <span class="vs-solution titlebar-text">🦀 RustLesson</span>
+      <span class="vs-sp"></span>
+      <span class="vs-avatar"></span>
+      <span class="vs-wbtn">─</span>
+      <span class="vs-wbtn" id="win-maximize" title="全螢幕">▢</span>
+      <span class="vs-wbtn close">✕</span>
+    </div>
+
+    <!-- 第二列:標準工具列 -->
+    <div class="vs-row vs-toolbar">
+      <span class="vs-ico blue">←</span><span class="vs-caret">▾</span><span class="vs-ico dim">→</span>
+      <span class="vs-sep"></span>
+      <span class="vs-ico dim" title="新增">🗋</span><span class="vs-ico gold" title="開啟">▤</span><span class="vs-ico blue" title="儲存">▣</span><span class="vs-ico blue" title="全部儲存">▩</span>
+      <span class="vs-sep"></span>
+      <span class="vs-ico blue">↶</span><span class="vs-caret">▾</span><span class="vs-ico dim">↷</span><span class="vs-caret">▾</span>
+      <span class="vs-sep"></span>
+      <span class="vs-combo wide dim">Debug<span class="vs-caret">▾</span></span>
+      <span class="vs-combo wide dim">Any CPU<span class="vs-caret">▾</span></span>
+      <span class="vs-run">⚙ RustLesson<span class="vs-caret">▾</span></span>
+      <span class="vs-sep"></span>
+      <span class="vs-run"><span class="vs-ico green">▶</span>繼續(C)<span class="vs-caret">▾</span></span>
+      <span class="vs-ico red" title="熱重載">◉</span><span class="vs-caret">▾</span><span class="vs-ico green" title="重新啟動">↻</span><span class="vs-ico blue">▤</span><span class="vs-ico blue">▥</span><span class="vs-ico" title="全部中斷">❙❙</span><span class="vs-ico red" title="停止偵錯">■</span><span class="vs-ico blue">↻</span>
+      <span class="vs-sep"></span>
+      <span class="vs-ico dim" title="逐步執行">⤓</span><span class="vs-ico dim" title="跳離">⤒</span><span class="vs-ico dim" title="不進入函式">⤵</span><span class="vs-ico dim">⇥</span><span class="vs-ico blue" title="拼字檢查">𝐴</span><span class="vs-ico dim">⌸</span><span class="vs-ico dim">🔖</span>
+      <span class="vs-sp"></span>
+      <span class="vs-copilot"><span class="ok">✓</span> GitHub Copilot</span>
+    </div>
+
+    <!-- 第三列:偵錯 / 處理序 -->
+    <div class="vs-row vs-debugbar">
+      <span class="vs-label">處理序:</span>
+      <span class="vs-combo wider">[32056] iisexpress.exe<span class="vs-caret">▾</span></span>
+      <span class="vs-ico dim">▤</span>
+      <span class="vs-label">週期事件<span class="vs-caret">▾</span></span>
+      <span class="vs-label">執行緒:</span>
+      <span class="vs-combo wider dim"><span class="vs-caret">▾</span></span>
+      <span class="vs-ico dim">⚑</span>
+      <span class="vs-ico dim">⚐</span>
+      <span class="vs-label">堆疊框架:</span>
+      <span class="vs-combo wider dim"><span class="vs-caret">▾</span></span>
+      <span class="vs-ico dim">⇥</span>
+    </div>
   </div>
   <div id="backdrop"></div>
 
@@ -33,7 +84,134 @@
     <div id="editor">
       <div id="tabbar"></div>
       <div id="breadcrumb"></div>
-      <div id="content"></div>
+      <div id="editor-body">
+        <div id="content"></div>
+        <!-- 編輯區右側縮圖(js/minimap.js);歡迎頁沒內容時自動收起 -->
+        <div id="minimap"><canvas></canvas><div class="mm-slider"></div></div>
+      </div>
+      <!-- 裝飾用的假終端機:可以打字,Enter 只回顯,不執行任何東西 -->
+      <div id="terminal">
+        <div class="term-tabs">
+          <span class="term-tab active"><span class="ti">&gt;_</span>frontend — powershell.exe</span>
+          <span class="term-actions">
+            <span class="ta" title="新增終端機">＋</span>
+            <span class="ta" title="分割終端機">▯▯</span>
+            <span class="ta" title="終止終端機">🗑</span>
+            <span class="ta" id="term-toggle" title="收合面板">⌄</span>
+          </span>
+        </div>
+        <div class="term-body" id="term-body">
+          <div class="tl"><span class="c-vite">VITE</span> <span class="c-white">v5.4.21</span>  <span class="c-dim">ready in</span> <span class="c-white">8705</span> <span class="c-dim">ms</span></div>
+          <div class="tl"></div>
+          <div class="tl"><span class="c-green">➜</span>  <span class="c-green">Local:</span>   <span class="c-cyan">http://localhost:<span class="c-white">3015</span>/</span></div>
+          <div class="tl"><span class="c-green">➜</span>  <span class="c-green">Network:</span> <span class="c-dim">use</span> <span class="c-white">--host</span> <span class="c-dim">to expose</span></div>
+          <div class="tl"><span class="c-green">➜</span>  <span class="c-dim">press</span> <span class="c-white">h + enter</span> <span class="c-dim">to show help</span></div>
+          <div class="tl"></div>
+          <div class="tl"><span class="c-dim" id="term-stamp">上午10:05:00</span> <span class="c-cyan">[vite]</span> <span class="c-green">hmr update</span> <span class="c-dim">/docs/js/quiz.js</span></div>
+          <div class="tl term-prompt">
+            <span class="ps">PS D:\Projects\RustLesson&gt;</span>
+            <input id="term-input" type="text" spellcheck="false" autocomplete="off" aria-label="假終端機輸入框">
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- 裝飾用的假面板:模仿 Visual Studio「診斷工具」視窗。
+         資料是固定的向量圖,動畫只有 CSS transform 位移,不做任何量測。 -->
+    <div id="diagnostics">
+      <div class="diag-panel">
+        <div class="diag-title">
+          <span class="dt-name">診斷工具</span>
+          <span class="dt-live"></span>
+          <span class="dt-actions">
+            <span class="dt-btn" title="工具視窗選項">▾</span>
+            <span class="dt-btn" title="停駐">📌</span>
+            <span class="dt-btn" id="diag-close" title="關閉">✕</span>
+          </span>
+        </div>
+
+        <div class="diag-toolbar">
+          <span class="tb-ico" title="設定">⚙</span>
+          <span class="tb-ico" title="跳至來源">⇥</span>
+          <span class="tb-sep"></span>
+          <span class="tb-ico" title="放大">⊕</span>
+          <span class="tb-ico" title="縮小">⊖</span>
+          <span class="tb-sep"></span>
+          <span class="tb-ico" title="選取計數器">▦</span>
+        </div>
+
+        <div class="diag-session">診斷工作階段: <span id="diag-clock">0:00</span> 分鐘</div>
+        <div class="diag-ruler">
+          <div class="ruler-track"></div>
+          <div class="ruler-label">4:30 分鐘</div>
+        </div>
+        <div class="diag-hint">從計數器選項檢查計數器以新增計數器圖表</div>
+
+        <div class="diag-graphs">
+          <div class="diag-sec">
+            <div class="diag-sec-head"><span class="caret">▾</span>事件</div>
+            <div class="lanes">
+              <div class="lane">
+                <span class="lane-ico"><span class="pause-ico"><b></b><b></b></span></span>
+                <span class="lane-body"><span class="lane-track"><span style="left:9%"></span><span style="left:27%"></span><span style="left:38%"></span><span style="left:59%"></span><span style="left:77%"></span><span style="left:88%"></span></span></span>
+              </div>
+              <div class="lane">
+                <span class="lane-ico">◆</span>
+                <span class="lane-body"><span class="lane-track"><span class="hollow" style="left:15%"></span><span class="hollow" style="left:44%"></span><span class="hollow" style="left:65%"></span><span class="hollow" style="left:94%"></span></span></span>
+              </div>
+              <div class="lane">
+                <span class="lane-ico" style="color:#e8c14a">◉</span>
+                <span class="lane-body"><span class="lane-track"></span></span>
+              </div>
+            </div>
+          </div>
+
+          <div class="diag-sec">
+            <div class="diag-sec-head">
+              <span class="caret">▾</span>處理序記憶體 (MB)
+              <span class="legend"><i style="color:#e8c14a">▮</i><i style="color:#569cd6">▼</i><i style="color:#7fb3c8">●</i>私</span>
+            </div>
+            <div class="chart mem">
+              <span class="axis"><span>748</span><span>0</span></span>
+              <span class="plot"><span class="track"><svg viewBox="0 0 240 100" preserveAspectRatio="none" aria-hidden="true"><path d="M0,100 L0,44 C20,40 40,48 60,42 S100,32 120,36 S160,46 180,38 S220,42 240,44 L240,100 Z" fill="#4e7f95"/><path d="M0,44 C20,40 40,48 60,42 S100,32 120,36 S160,46 180,38 S220,42 240,44" fill="none" stroke="#a8cbd9" stroke-width="1.5"/></svg><svg viewBox="0 0 240 100" preserveAspectRatio="none" aria-hidden="true"><path d="M0,100 L0,44 C20,40 40,48 60,42 S100,32 120,36 S160,46 180,38 S220,42 240,44 L240,100 Z" fill="#4e7f95"/><path d="M0,44 C20,40 40,48 60,42 S100,32 120,36 S160,46 180,38 S220,42 240,44" fill="none" stroke="#a8cbd9" stroke-width="1.5"/></svg></span></span>
+              <span class="axis right"><span>748</span><span>0</span></span>
+            </div>
+          </div>
+
+          <div class="diag-sec">
+            <div class="diag-sec-head"><span class="caret">▾</span>CPU (所有處理器的 %)</div>
+            <div class="chart cpu">
+              <span class="axis"><span>100</span><span>0</span></span>
+              <span class="plot"><span class="track"><svg viewBox="0 0 240 100" preserveAspectRatio="none" aria-hidden="true"><path d="M0,100 L0,92 L18,92 L24,58 L30,92 L64,92 L70,76 L76,92 L118,92 L124,36 L130,92 L172,92 L178,80 L184,92 L240,92 L240,100 Z" fill="#46786a"/><path d="M0,92 L18,92 L24,58 L30,92 L64,92 L70,76 L76,92 L118,92 L124,36 L130,92 L172,92 L178,80 L184,92 L240,92" fill="none" stroke="#6fbfa4" stroke-width="1.5"/></svg><svg viewBox="0 0 240 100" preserveAspectRatio="none" aria-hidden="true"><path d="M0,100 L0,92 L18,92 L24,58 L30,92 L64,92 L70,76 L76,92 L118,92 L124,36 L130,92 L172,92 L178,80 L184,92 L240,92 L240,100 Z" fill="#46786a"/><path d="M0,92 L18,92 L24,58 L30,92 L64,92 L70,76 L76,92 L118,92 L124,36 L130,92 L172,92 L178,80 L184,92 L240,92" fill="none" stroke="#6fbfa4" stroke-width="1.5"/></svg></span></span>
+              <span class="axis right"><span>100</span><span>0</span></span>
+            </div>
+          </div>
+        </div>
+
+        <div class="diag-tabs">
+          <span class="dtab active">摘要</span>
+          <span class="dtab">事件</span>
+          <span class="dtab">計數器</span>
+          <span class="dtab">記憶體使用量</span>
+          <span class="dtab">CPU</span>
+          <span class="dtab-more">◀ ▶</span>
+        </div>
+
+        <div class="diag-list">
+          <div class="grp">事件</div>
+          <div class="item"><span class="ico">⋯</span>顯示事件 (4/4)</div>
+          <div class="item"><span class="ico red">◆</span>例外狀況 (0/0)</div>
+          <div class="item"><span class="ico">◆</span>IntelliTrace 事件 (4/4)</div>
+          <div class="item"><span class="ico yellow">◉</span>Application Insights 事件 (0/0)</div>
+          <div class="grp">.NET 計數器</div>
+          <div class="item"><span class="ico">⋯</span>檢視效能計數器</div>
+          <div class="grp">記憶體使用量</div>
+          <div class="item"><span class="ico blue">▣</span>擷取快照</div>
+          <div class="grp">CPU 使用量</div>
+          <div class="item"><span class="ico blue">●</span>Record CPU Profile</div>
+        </div>
+      </div>
+
+      <div class="diag-rail" title="診斷工具"><span>診斷工具</span></div>
     </div>
   </div>
 
@@ -47,6 +225,10 @@
   <script src="./js/progress.js"></script>
   <script src="./js/sidebar.js"></script>
   <script src="./js/quiz.js"></script>
+  <script src="./js/minimap.js"></script>
+  <script src="./js/vs-header.js"></script>
+  <script src="./js/terminal.js"></script>
+  <script src="./js/diagnostics.js"></script>
   <script src="./js/app.js"></script>
 </body>
 </html>

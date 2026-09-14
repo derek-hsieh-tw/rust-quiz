@@ -1,0 +1,296 @@
+/* 診斷工具面板(裝飾用的假面板,模仿 Visual Studio 的「診斷工具」視窗)
+ *
+ * 效能策略:所有動畫都是單一 transform: translateX 的無限線性位移,
+ * 只在合成層跑,不觸發 layout / paint;圖表用兩份相同的 SVG 併排、
+ * 位移 -50% 後接回原點,所以看起來是連續捲動的即時圖,實際上是靜態向量圖。
+ * 唯一的 JS 是每秒一次的工作階段計時器(見 diagnostics.js)。
+ */
+
+#diagnostics {
+  display: flex;
+  flex-shrink: 0;
+  background: var(--vsc-sidebar-bg);
+  border-left: 1px solid var(--vsc-border);
+  font-size: 12px;
+  color: var(--vsc-fg);
+  user-select: none;
+}
+
+.diag-panel {
+  width: 300px;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+#diagnostics.collapsed .diag-panel { display: none; }
+
+/* ---- 標題列 ---- */
+.diag-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 26px;
+  padding: 0 6px 0 10px;
+  border-bottom: 1px solid var(--vsc-border);
+  flex-shrink: 0;
+}
+.diag-title .dt-name { font-weight: 600; }
+/* 錄製中的紅點:唯一一個會改變不透明度的動畫,面積 6px 見方 */
+.diag-title .dt-live {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #e05252;
+  animation: diag-blink 2s ease-in-out infinite;
+}
+.diag-title .dt-actions { margin-left: auto; display: flex; gap: 2px; }
+.diag-title .dt-btn {
+  width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--vsc-fg-dim);
+  cursor: pointer;
+  border-radius: 2px;
+}
+.diag-title .dt-btn:hover { background: #3f3f46; color: #fff; }
+
+/* ---- 工具列 ---- */
+.diag-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  height: 28px;
+  padding: 0 8px;
+  border-bottom: 1px solid var(--vsc-border);
+  flex-shrink: 0;
+}
+.diag-toolbar .tb-ico {
+  width: 22px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #c5c5c5;
+  border-radius: 2px;
+}
+.diag-toolbar .tb-ico:hover { background: #3f3f46; }
+.diag-toolbar .tb-sep { width: 1px; height: 14px; background: var(--vsc-border); margin: 0 4px; }
+
+/* ---- 工作階段時間 + 時間軸 ---- */
+.diag-session { padding: 6px 10px 2px; color: #d4d4d4; flex-shrink: 0; }
+
+.diag-ruler {
+  position: relative;
+  height: 22px;
+  margin: 4px 10px 0;
+  border-bottom: 1px solid #4a4a4a;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+/* 刻度用 repeating gradient 畫在一條兩倍寬的軌道上,整條軌道平移 */
+.diag-ruler .ruler-track {
+  position: absolute;
+  inset: 0;
+  width: 200%;
+  /* 刻度間距用百分比,讓一個週期整除軌道的 50%,平移回原點時才不會跳格 */
+  background-image: linear-gradient(to right, #9a9a9a 0 2px, transparent 2px);
+  background-size: 12.5% 8px;
+  background-position: bottom left;
+  background-repeat: repeat-x;
+  animation: diag-drift 30s linear infinite;
+  will-change: transform;
+}
+.diag-ruler .ruler-label {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #d4d4d4;
+}
+
+.diag-hint {
+  padding: 6px 10px 8px;
+  color: #9cc3e0;
+  line-height: 1.5;
+  flex-shrink: 0;
+}
+
+/* ---- 圖表區 ---- */
+.diag-graphs { flex: 0 1 auto; overflow: hidden; }
+
+.diag-sec { border-top: 1px solid #333; }
+.diag-sec-head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  color: #d4d4d4;
+}
+.diag-sec-head .caret { color: var(--vsc-fg-dim); font-size: 9px; }
+.diag-sec-head .legend { margin-left: auto; display: flex; gap: 5px; align-items: center; }
+.diag-sec-head .legend i { font-style: normal; font-size: 10px; }
+
+/* 圖表本體:左右軸標 + 中間繪圖區 */
+.chart { display: flex; align-items: stretch; gap: 6px; padding: 0 10px 8px; }
+.chart .axis {
+  width: 26px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  color: #d4d4d4;
+  font-size: 11px;
+  flex-shrink: 0;
+}
+.chart .axis.right { text-align: right; }
+.chart .plot {
+  flex: 1;
+  min-width: 0;
+  height: 72px;
+  border: 1px solid #5a5a5a;
+  overflow: hidden;
+  position: relative;
+}
+/* 兩份相同的 SVG 併排,位移 -50% 剛好接回起點,所以循環看不出接縫 */
+.chart .track {
+  display: flex;
+  width: 200%;
+  height: 100%;
+  will-change: transform;
+  animation: diag-drift 30s linear infinite;
+}
+.chart .track > svg { flex: 0 0 50%; width: 50%; height: 100%; display: block; }
+.chart.cpu .track { animation-duration: 21s; }
+
+/* ---- 事件泳道 ---- */
+.lanes { padding: 0 10px 8px; }
+.lane {
+  position: relative;
+  display: flex;
+  align-items: center;
+  height: 26px;
+  border: 1px solid #5a5a5a;
+  border-bottom: none;
+  overflow: hidden;
+}
+.lane:last-child { border-bottom: 1px solid #5a5a5a; }
+.lane .lane-ico {
+  width: 34px;
+  text-align: center;
+  border-right: 1px solid #5a5a5a;
+  align-self: stretch;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.lane .lane-body { position: relative; flex: 1; height: 100%; overflow: hidden; }
+.lane .lane-track {
+  position: absolute;
+  inset: 0;
+  width: 200%;
+  will-change: transform;
+  animation: diag-drift 30s linear infinite;
+}
+.lane .lane-track span {
+  position: absolute;
+  top: 50%;
+  width: 7px;
+  height: 7px;
+  margin-top: -4px;
+  transform: rotate(45deg);
+  background: #d4d4d4;
+}
+.lane .lane-track span.hollow { background: transparent; border: 1px solid #d4d4d4; }
+.pause-ico { display: inline-flex; gap: 2px; }
+.pause-ico b { width: 3px; height: 11px; background: #c5c5c5; }
+
+/* ---- 底部分頁與清單 ---- */
+.diag-tabs {
+  display: flex;
+  align-items: stretch;
+  height: 26px;
+  border-top: 1px solid var(--vsc-border);
+  border-bottom: 1px solid var(--vsc-border);
+  flex-shrink: 0;
+  overflow: hidden;
+}
+.diag-tabs .dtab {
+  display: flex;
+  align-items: center;
+  padding: 0 8px;
+  color: var(--vsc-fg-dim);
+  border-right: 1px solid var(--vsc-border);
+  white-space: nowrap;
+}
+.diag-tabs .dtab.active { background: var(--vsc-bg); color: #fff; }
+.diag-tabs .dtab-more { margin-left: auto; display: flex; align-items: center; gap: 4px; padding: 0 6px; color: var(--vsc-fg-dim); }
+
+.diag-list { flex: 1 1 auto; overflow-y: auto; padding-bottom: 8px; }
+.diag-list .grp {
+  padding: 5px 10px;
+  background: #2d2d30;
+  border-bottom: 1px solid #3f3f46;
+  color: #d4d4d4;
+}
+.diag-list .item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 10px 5px 18px;
+  border-bottom: 1px solid #333;
+  color: #cccccc;
+}
+.diag-list .item:hover { background: var(--vsc-list-hover); }
+.diag-list .item .ico { width: 14px; text-align: center; flex-shrink: 0; }
+.diag-list .item .ico.red { color: #e05252; }
+.diag-list .item .ico.yellow { color: #e8c14a; }
+.diag-list .item .ico.blue { color: #569cd6; }
+
+/* ---- 右側直立索引標籤(收合後靠它叫回來) ---- */
+.diag-rail {
+  width: 22px;
+  flex-shrink: 0;
+  background: var(--vsc-activitybar-bg);
+  border-left: 1px solid var(--vsc-border);
+  display: flex;
+  justify-content: center;
+  padding-top: 8px;
+  cursor: pointer;
+}
+.diag-rail span {
+  writing-mode: vertical-rl;
+  font-size: 11px;
+  color: var(--vsc-fg-dim);
+  letter-spacing: 1px;
+}
+.diag-rail:hover span { color: #fff; }
+#diagnostics.collapsed .diag-rail span { color: #fff; }
+
+/* ---- 動畫(全部只動 transform / opacity) ---- */
+@keyframes diag-drift {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+@keyframes diag-blink {
+  0%, 45%  { opacity: 1; }
+  55%, 100% { opacity: 0.25; }
+}
+
+/* 使用者要求減少動態效果時,整個面板靜止 */
+@media (prefers-reduced-motion: reduce) {
+  .diag-ruler .ruler-track,
+  .chart .track,
+  .lane .lane-track,
+  .diag-title .dt-live { animation: none; }
+}
+
+/* ---- RWD:視窗不夠寬就整欄收起來,不跟內容搶空間 ---- */
+@media (max-width: 1400px) {
+  .diag-panel { width: 260px; }
+}
+@media (max-width: 1150px) {
+  #diagnostics { display: none; }
+}
