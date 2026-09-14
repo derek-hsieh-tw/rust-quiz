@@ -8,7 +8,7 @@ Learn Rust from the ground up through multiple-choice questions, presented in a 
 
 | Category | Lessons | Scope |
 |---|---|---|
-| **Basic** | lesson1-1 ~ 1-15 | Toolchain, variables, control flow, **ownership & borrowing**, structs, enums & `match`, collections, error handling, generics, traits, lifetimes, modules, testing |
+| **Basic** | lesson1-1 ~ 1-16 | Toolchain, variables, control flow, **ownership & borrowing**, structs, enums & `match`, collections, error handling, generics, traits, lifetimes, modules, **a tour of `std`**, testing |
 | **Advanced** | lesson2-1 ~ 2-12 | Closures, iterators, smart pointers, advanced lifetimes, trait objects, concurrency, async/await, macros, Cargo ecosystem |
 | **Supplement (the deep 30%)** | lesson2-13 ~ 2-20 | Unsafe Rust, UTF-8 internals, memory layout, Drop/RAII, `Future` internals, proc macros, FFI, compiler deep dive |
 

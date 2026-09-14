@@ -437,7 +437,8 @@ Rust 沒有建構子語法,new 只是「最常見的關聯函式名字」,不是
       ],
       answer: 0,
       explanation: `{} 佔位符走 Display trait(「給使用者看的格式」),{:?} 走 Debug trait(「給開發者看的格式」)。#[derive(Debug)] 只自動生成後者,所以 println!("{:?}", r) 可以印出 Rectangle { width: 3, height: 4 },{} 則編譯錯誤——Display 被認為該由人來設計,編譯器不代勞。
-除錯還有個更方便的 dbg! 巨集:dbg!(&r) 會連檔名行號一起印。derive 屬性正是為 struct/enum 設計的。`,
+除錯還有個更方便的 dbg! 巨集:dbg!(&r) 會連檔名行號一起印。derive 屬性正是為 struct/enum 設計的。
+逐行說明裡會出現 impl std::fmt::Display——那一串冒號只是「路徑」:std 是標準函式庫,fmt 是它底下負責格式化的模組,Display 是模組裡的 trait。路徑與 use 的規則在 lesson1-14,標準函式庫有哪些模組則在 lesson1-15,現在照抄即可,不影響本題重點。`,
       walkthrough: [
         {
           label: "❌ 題目程式碼(無法編譯)",
@@ -463,7 +464,7 @@ Rust 沒有建構子語法,new 只是「最常見的關聯函式名字」,不是
             { code: "    height: u32,", note: "欄位。" },
             { code: "}", note: "struct 定義結束。" },
             { code: "", note: "" },
-            { code: "impl std::fmt::Display for Rectangle {", note: "寫法二:自己實作 Display,決定「給使用者看」的樣子。" },
+            { code: "impl std::fmt::Display for Rectangle {", note: "寫法二:自己實作 Display,決定「給使用者看」的樣子。std::fmt::Display 是「路徑」——標準函式庫 std 底下的 fmt 模組裡的 Display trait;路徑寫法見 lesson1-14,標準函式庫地圖見 lesson1-15。" },
             { code: "    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {", note: "唯一要實作的方法,把內容寫進格式化器。" },
             { code: "        write!(f, \"{}x{}\", self.width, self.height)", note: "自訂輸出格式,這裡寫成 3x4。" },
             { code: "    }", note: "方法結束。" },

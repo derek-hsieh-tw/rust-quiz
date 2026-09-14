@@ -23,7 +23,8 @@ window.RUST_INDEX = {
         { id: "lesson1-12", title: "Trait 基礎",                 file: "data/basic/lesson1-12.js", available: true },
         { id: "lesson1-13", title: "生命週期入門",               file: "data/basic/lesson1-13.js", available: true },
         { id: "lesson1-14", title: "模組系統與專案結構",         file: "data/basic/lesson1-14.js", available: true },
-        { id: "lesson1-15", title: "測試、文件與基礎總整理",     file: "data/basic/lesson1-15.js", available: true },
+        { id: "lesson1-15", title: "標準函式庫巡覽(std 地圖)", file: "data/basic/lesson1-15.js", available: true },
+        { id: "lesson1-16", title: "測試、文件與基礎總整理",     file: "data/basic/lesson1-16.js", available: true },
       ],
     },
     {
