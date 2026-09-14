@@ -7,7 +7,7 @@ window.RUST_INDEX = {
   categories: [
     {
       id: "basic",
-      title: "基礎",
+      title: "Basic",
       lessons: [
         { id: "lesson1-1",  title: "Rust 全貌與開發環境",        file: "data/basic/lesson1-1.js",  available: true },
         { id: "lesson1-2",  title: "變數、可變性與基本型別",      file: "data/basic/lesson1-2.js",  available: true },
@@ -29,7 +29,7 @@ window.RUST_INDEX = {
     },
     {
       id: "advanced",
-      title: "進階",
+      title: "Advanced",
       lessons: [
         { id: "lesson2-1",  title: "閉包(Closures)",           file: "data/advanced/lesson2-1.js",  available: false },
         { id: "lesson2-2",  title: "迭代器(Iterators)",        file: "data/advanced/lesson2-2.js",  available: false },
@@ -47,7 +47,7 @@ window.RUST_INDEX = {
     },
     {
       id: "supplement",
-      title: "進階・補充教材(底層 30%)",
+      title: "Supplement (the deep 30%)",
       lessons: [
         { id: "lesson2-13", title: "Unsafe Rust",                file: "data/supplement/lesson2-13.js", available: false },
         { id: "lesson2-14", title: "String 與 UTF-8 底層",       file: "data/supplement/lesson2-14.js", available: false },

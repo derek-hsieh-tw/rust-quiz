@@ -81,7 +81,7 @@ const App = (() => {
   function updateGlobalStatus() {
     const stats = Progress.categoryStats(RUST_INDEX);
     document.getElementById("status-progress").textContent =
-      "進度: " + stats.map(s => `${s.title} ${s.done}/${s.total}`).join(" · ");
+      "Progress: " + stats.map(s => `${s.title} ${s.done}/${s.total}`).join(" · ");
   }
 
   /* 行動版抽屜選單 */
