@@ -1,10 +1,11 @@
 /* 編輯區下方的假終端機(見 js/terminal.js)
  * 只是裝飾:可以打字、Enter 會把那行回顯上去,但不執行任何東西。
+ * 高度可由頂緣的把手拖曳(見 terminal.js),存在 localStorage。
  * 單獨一個檔案,要移除只要拿掉這裡、terminal.js 與 index.html 的那段 markup。 */
 #terminal {
   display: flex;
   flex-direction: column;
-  height: 190px;
+  height: var(--term-h, 190px); /* 可由頂緣把手拖曳,見 js/terminal.js */
   flex-shrink: 0;
   border-top: 1px solid var(--vsc-border);
   background: var(--vsc-bg);
@@ -13,6 +14,21 @@
 }
 #terminal.collapsed { height: auto; }
 #terminal.collapsed .term-body { display: none; }
+
+/* ---- 頂緣拖曳把手:調整終端機高度 ---- */
+.term-resize {
+  height: 5px;
+  flex-shrink: 0;
+  margin-bottom: -1px; /* 蓋在分頁列上緣,視覺上看不出多一條 */
+  cursor: row-resize;
+  background: transparent;
+  transition: background 0.12s;
+}
+.term-resize:hover,
+#terminal.resizing .term-resize { background: #0078d4; }
+#terminal.collapsed .term-resize { display: none; } /* 收起來就沒什麼好拉的 */
+#terminal.resizing { user-select: none; }
+#terminal.resizing .term-body { pointer-events: none; } /* 拖曳時別去選到終端機文字 */
 
 /* ---- 分頁列 ---- */
 .term-tabs {

@@ -18,7 +18,7 @@
 
 - `docs/{js,css}/vs-header.*` — 頂部 Visual Studio 功能表與工具列(只有全螢幕鈕是真的)
 - `docs/{js,css}/minimap.*` — 編輯區右側縮圖(色塊由實際內容的幾何位置算出,位置是準的)
-- `docs/{js,css}/terminal.*` — 底部假終端機(可以打字,Enter 只回顯,不執行)
+- `docs/{js,css}/terminal.*` — 底部假終端機(可以打字,Enter 只回顯,不執行;頂緣可拖曳調高度,存 localStorage)
 - `docs/{js,css}/diagnostics.*` — 右側「診斷工具」面板(CSS transform 動畫;左緣可拖曳調寬,寬度記在 localStorage)
 - `docs/{js,css}/find-widget.*` — 編輯區右上角的假「尋找及取代」浮動面板(可打字但不搜尋;✕ 收成小按鈕)
 
