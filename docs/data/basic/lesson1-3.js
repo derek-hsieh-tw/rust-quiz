@@ -68,7 +68,7 @@ window.RUST_LESSONS["lesson1-3"] = {
       explanation: `if 是運算式,會產出值,可以直接接在 let 後面。condition 為 true,取第一個分支的 5。
 每個分支同樣遵守「尾端運算式無分號即為該分支的值」。這讓 Rust 不需要三元運算子 ?:——if/else 本身就能當值用。`,
       walkthrough: {
-        label: "🔍 Question code — walkthrough (runs successfully)",
+        label: "⊕ Question code — walkthrough (runs successfully)",
         lines: [
           { code: "fn main() {", note: "程式進入點。" },
           { code: "    let condition = true;", note: "建立一個 bool 變數。注意 Rust 的 if 條件必須是 bool,不接受整數當真假值。" },
@@ -170,7 +170,7 @@ Rust 是靜態型別語言,每個變數的型別必須在編譯期完全確定�
       explanation: `loop 是無條件迴圈,但它也是「運算式」:break 後面接的值就是整個 loop 的值。counter 累加到 10 時,break 10 * 2 讓 loop 以 20 作結,賦給 result。
 這個模式常用於「重試直到成功並取得結果」的場景。注意只有 loop 能 break 帶值,while/for 不行(因為它們可能因條件不成立而正常結束,無值可回)。`,
       walkthrough: {
-        label: "🔍 Question code — walkthrough (runs successfully)",
+        label: "⊕ Question code — walkthrough (runs successfully)",
         lines: [
           { code: "fn main() {", note: "程式進入點。" },
           { code: "    let mut counter = 0;", note: "計數器,因為要累加所以宣告成 mut。" },
@@ -201,7 +201,7 @@ Rust 是靜態型別語言,每個變數的型別必須在編譯期完全確定�
       explanation: `1..4 是「半開區間」:含 1 不含 4,產出 1 2 3。1..=3 是「閉區間」:含尾端,產出 1 2 3,.rev() 反轉成 3 2 1。合計輸出 1 2 3 3 2 1。
 ..(不含尾)與 ..=(含尾)的區別是高頻考點,配合切片時尤其重要。`,
       walkthrough: {
-        label: "🔍 Question code — walkthrough (runs successfully)",
+        label: "⊕ Question code — walkthrough (runs successfully)",
         lines: [
           { code: "fn main() {", note: "程式進入點。" },
           { code: "    for i in 1..4 {", note: "1..4 是「半開區間」:含起點、不含終點,依序產出 1、2、3。" },
@@ -355,7 +355,7 @@ break 2(用數字指定跳幾層)的語法不存在;goto 在 Rust 不存在;「�
       explanation: `{ } 區塊本身是運算式,值為其尾端運算式(x + 1,此處 x 是區塊內 shadowing 的 3,故為 4)。區塊結束後,內部的 x 消失,外部的 x 仍是 5。輸出 5 4。
 這題綜合了三個觀念:區塊是運算式、尾端無分號即值、shadowing 有作用域範圍。`,
       walkthrough: {
-        label: "🔍 Question code — walkthrough (runs successfully)",
+        label: "⊕ Question code — walkthrough (runs successfully)",
         lines: [
           { code: "fn main() {", note: "程式進入點。" },
           { code: "    let x = 5;", note: "外層的 x,值是 5。" },

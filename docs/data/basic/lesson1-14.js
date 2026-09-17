@@ -213,7 +213,7 @@ window.RUST_LESSONS["lesson1-14"] = {
       explanation: `super:: 是「上一層模組」(類比檔案系統的 ..):back_of_house 的父層是 crate 根,super::deliver_order() 正確指到。cook_order 同模組內互相呼叫,不需要 pub。
 關鍵的隱私方向:「子模組可以使用祖先模組的私有項目」(小孩看得到家裡的東西),pub 管的是反方向與旁系——所以沒 pub 的 deliver_order 被子模組呼叫完全合法。連結錯誤發生在編譯期,Rust 沒有「執行期找不到函式」這種事。`,
       walkthrough: {
-        label: "🔍 Question code — walkthrough (runs successfully)",
+        label: "⊕ Question code — walkthrough (runs successfully)",
         lines: [
           { code: "fn deliver_order() {", note: "定義在 crate 根,而且「沒有」pub——它是根模組的私有項目。" },
           { code: "    println!(\"delivered\");", note: "函式內容。" },
@@ -252,7 +252,7 @@ window.RUST_LESSONS["lesson1-14"] = {
 它不是 #include(不能指任意路徑、不是文字貼上);外部套件走 Cargo.toml + use,與 mod 無關;模組內容也只能由被宣告的那個檔案提供,不能四散各處。`,
       walkthrough: [
         {
-          label: "🔍 What the project looks like after splitting into files",
+          label: "⊕ What the project looks like after splitting into files",
           lang: "bash",
           lines: [
             { code: "src/", note: "所有原始碼的固定位置。" },
@@ -298,7 +298,7 @@ window.RUST_LESSONS["lesson1-14"] = {
       explanation: `一般 use 只是「本模組內的別名」,對外不可見;加上 pub 之後,這個名字成為當前模組公開介面的一部分——外部使用者看到的路徑是 my_crate::hosting,內部的 front_of_house 完全隱形。之後內部怎麼重組(改名、搬層),只要 pub use 這行跟著調,外部 API 紋絲不動。
 沒有任何程式碼被複製——匯出的是「名字」,指向同一個實體。實務上大量函式庫的 lib.rs 就是一串 pub use,精心設計「使用者看到的形狀」。`,
       walkthrough: {
-        label: "🔍 pub use decouples internal structure from the public API",
+        label: "⊕ pub use decouples internal structure from the public API",
         lines: [
           { code: "// src/lib.rs", note: "函式庫的根。" },
           { code: "mod front_of_house {", note: "注意這個模組「沒有」pub——它是內部組織,不打算讓使用者看見。" },
@@ -330,7 +330,7 @@ window.RUST_LESSONS["lesson1-14"] = {
       explanation: `兩個工具:(1)as 別名——fmt::Result 與 io::Result 撞名,第二個取名 IoResult 就相安無事(這正是「函式引到父模組」慣例想避免的問題的另一個解法);(2)巢狀 use 的 self——use std::io::{self, Write} 等於 use std::io; 加 use std::io::Write; 兩行,self 代表「路徑本身」。
 use 的 as 純粹是命名(與轉型運算子 as 撞關鍵字但無關);這裡的 self 也不是方法裡的 self。`,
       walkthrough: {
-        label: "🔍 Question code (three use lines) — walkthrough",
+        label: "⊕ Question code (three use lines) — walkthrough",
         lines: [
           { code: "use std::fmt::Result;", note: "引入格式化模組的 Result,之後可以直接寫 Result。" },
           { code: "use std::io::Result as IoResult;", note: "io 也有一個叫 Result 的型別,直接引入會撞名。as 給它取個別名 IoResult,兩者就能共存——注意這個 as 純粹是「命名」,和型別轉換的 as 運算子只是撞關鍵字。" },
@@ -354,7 +354,7 @@ use 的 as 純粹是命名(與轉型運算子 as 撞關鍵字但無關);這裡�
       explanation: `可見性光譜:私有(預設,本模組+子孫)< pub(crate)(整個 crate)< pub(全世界)。pub(crate) 的定位是「內部共用工具」:跨模組要用、但不想寫進公開 API 的東西——函式庫尤其重要,pub 出去的東西就是對使用者的承諾,不能隨便改。
 另有更細的 pub(super)、pub(in path) 可指定範圍。「整個 crate 可用」不等於「只有根模組可用」,也與檔案邊界無關——Rust 的可見性單位永遠是模組。`,
       walkthrough: {
-        label: "🔍 The visibility spectrum: a look at each of the three levels",
+        label: "⊕ The visibility spectrum: a look at each of the three levels",
         lines: [
           { code: "mod util {", note: "一個內部模組。" },
           { code: "    fn only_here() {}", note: "等級一(預設):私有——只有 util 自己與它的子孫模組看得到。" },
@@ -385,7 +385,7 @@ use 的 as 純粹是命名(與轉型運算子 as 撞關鍵字但無關);這裡�
       explanation: `本課總結,mod 一肩挑三職:(1)命名空間(路徑);(2)隱私邊界(pub 以模組為單位,層層把關);(3)編譯結構(mod 宣告決定哪些檔案參與編譯、放在哪)。C# 的 namespace 只做第一件事——任何檔案任意宣告、不設防、與編譯單位無關,封裝粒度只有 assembly 一刀(internal)。
 mod 當然能跨檔案(mod xxx; 拆檔那題);功能是多了不是少了。`,
       walkthrough: {
-        label: "🔍 mod does three jobs at once",
+        label: "⊕ mod does three jobs at once",
         lines: [
           { code: "// src/main.rs", note: "crate 根。" },
           { code: "mod kitchen;", note: "職責三(編譯結構):這行決定了 src/kitchen.rs 會被編譯、而且掛在模組樹的哪個位置。沒有這行,那個檔案在編譯器眼中不存在——C# 的 namespace 完全不管這件事。" },

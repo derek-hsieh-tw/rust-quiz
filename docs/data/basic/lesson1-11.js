@@ -195,7 +195,7 @@ T2 沒有被宣告過;| 分隔與 dynamic 關鍵字都不是 Rust 語法(Rust �
       explanation: `enum Option<T> { Some(T), None } 與 enum Result<T, E> { Ok(T), Err(E) }——你天天在用的東西就是「泛型 enum」的標準定義,一份定義服務所有型別;Vec<T>、HashMap<K, V> 則是泛型 struct。
 它們沒有編譯器魔法(除了 ? 運算子的語法支援),自己完全寫得出同樣的東西。學到這裡回頭看:前十課其實一直在使用泛型,本課只是揭開名字。`,
       walkthrough: {
-        label: "🔍 What the types you use every day actually look like",
+        label: "⊕ What the types you use every day actually look like",
         lines: [
           { code: "enum Option<T> {", note: "泛型 enum:一份定義服務所有型別,不是為每個型別各寫一份。" },
           { code: "    Some(T),", note: "有值的變體,攜帶一個 T。" },
@@ -352,7 +352,7 @@ T2 沒有被宣告過;| 分隔與 dynamic 關鍵字都不是 Rust 語法(Rust �
       explanation: `單態化 = 編譯期把泛型「展開」:你寫一份 fn largest<T>,程式裡用到 i32 和 char 兩種,編譯器就默默生成 largest_i32 和 largest_char 兩份具體程式碼——執行起來與手寫兩份完全相同,這就是「零成本抽象」:抽象不花執行期的錢。
 沒有執行期型別查詢、沒有裝箱、沒有 runtime 代碼生成。代價在編譯期:用的型別多,編譯變慢、執行檔變大——成本被搬到編譯期一次付清。`,
       walkthrough: {
-        label: "🔍 One copy you wrote, several the compiler generates",
+        label: "⊕ One copy you wrote, several the compiler generates",
         lines: [
           { code: "fn largest<T: PartialOrd>(list: &[T]) -> &T {", note: "原始碼裡只有這一份泛型定義。" },
           { code: "    let mut m = &list[0];", note: "先假設第一個最大。" },
@@ -437,7 +437,7 @@ T2 沒有被宣告過;| 分隔與 dynamic 關鍵字都不是 Rust 語法(Rust �
       explanation: `每個「呼叫點」獨立推斷:第一次 T = i32、第二次 T = &str,單態化各生成一份,互不干擾——「T 被第一次呼叫固定」混淆了「函式定義」與「呼叫實例」。
 turbofish(first::<i32>)只在推斷不出來時才需要(例如 collect 的目標型別),這裡參數型別明擺著,不用寫。回傳值是 &list[0](第一個元素的參考),不會是整個陣列。`,
       walkthrough: {
-        label: "🔍 Question code — walkthrough (runs successfully)",
+        label: "⊕ Question code — walkthrough (runs successfully)",
         lines: [
           { code: "fn first<T>(list: &[T]) -> &T {", note: "一份泛型定義。" },
           { code: "    &list[0]", note: "回傳第一個元素的參考。" },
@@ -466,7 +466,7 @@ turbofish(first::<i32>)只在推斷不出來時才需要(例如 collect 的目�
       explanation: `兩個記憶點:(1)機制——Rust 一律編譯期單態化,沒有 typeof(T)、沒有執行期反射泛型;C# 泛型保留執行期型別資訊,能 new T[]、能反射。(2)約束——T: PartialOrd + Clone 這種 trait bound 能要求運算子、關聯函式、甚至靜態方法,C# 的 where T : interface 直到 C# 11 的 static abstract members 才追上一部分。
 「執行期解析」說反了;「不支援約束」與上一題直接矛盾。`,
       walkthrough: {
-        label: "🔍 Two things to remember: monomorphization and trait bounds",
+        label: "⊕ Two things to remember: monomorphization and trait bounds",
         lines: [
           { code: "use std::fmt::Display;", note: "引入一個 trait,準備當約束用。" },
           { code: "", note: "" },
@@ -500,7 +500,7 @@ turbofish(first::<i32>)只在推斷不出來時才需要(例如 collect 的目�
       explanation: `這正是標準函式庫 Option<T> 的定義方式——泛型 enum 沒有任何編譯器魔法,你自己就寫得出來。
 a 的具現是 MyOption<i32>、b 是 MyOption<String>,兩者是「不同的具體型別」,但共用同一份原始碼;編譯器單態化時各生成一份。第二個 match 走 None 分支,印的是 nothing 而不是空字串——None 變體根本不攜帶資料,沒有東西可以印。`,
       walkthrough: {
-        label: "🔍 Question code — walkthrough (runs successfully)",
+        label: "⊕ Question code — walkthrough (runs successfully)",
         lines: [
           { code: "enum MyOption<T> {", note: "泛型 enum:型別參數宣告在 enum 名稱之後,和泛型 struct 同一個位置。" },
           { code: "    Some(T),", note: "帶資料的變體,攜帶的型別就是 T——實際是什麼由使用端決定。" },
@@ -539,7 +539,7 @@ a 的具現是 MyOption<i32>、b 是 MyOption<String>,兩者是「不同的具�
       explanation: `型別參數有兩個層級:impl 上宣告的 <X1, Y1> 綁定 struct 本身,方法上宣告的 <X2, Y2> 只在這個方法的呼叫範圍內有效——所以一次呼叫可以牽涉四個不同型別。
 mixup 回傳 Point<X1, Y2>:x 取自 self(i32 的 5)、y 取自 other(char 的 'c'),印出 5 c。注意接收者是 self(按值)而不是 &self,所以 p1 與 p2 都在這次呼叫中被消耗掉了。`,
       walkthrough: {
-        label: "🔍 Question code — walkthrough (runs successfully)",
+        label: "⊕ Question code — walkthrough (runs successfully)",
         lines: [
           { code: "struct Point<X1, Y1> {", note: "兩個型別參數,兩個欄位各綁一個。" },
           { code: "    x: X1,", note: "第一個欄位。" },
@@ -704,7 +704,7 @@ mixup 回傳 Point<X1, Y2>:x 取自 self(i32 的 5)、y 取自 other(char 的 'c
       explanation: `一個型別可以有任意多個 impl 區塊,而且每個區塊可以帶不同的 bound——這叫「條件式方法實作」:方法會不會出現在某個具現身上,取決於它滿不滿足該區塊的約束。
 所以 Pair<i32> 兩個方法都有(i32 滿足 Display + PartialOrd);而如果你定義一個沒實作 Display 的型別 Foo,Pair<Foo> 依然可以 new,只是身上不會長出 cmp_display——struct 本身完全不受限制。把 bound 寫在 struct 定義上反而是反模式:那會逼「所有」使用者都滿足約束,連只想存放資料的人也不例外。`,
       walkthrough: {
-        label: "🔍 Question code — walkthrough (runs successfully)",
+        label: "⊕ Question code — walkthrough (runs successfully)",
         lines: [
           { code: "use std::fmt::Display;", note: "引入 trait,才能在 bound 裡使用它的短名稱。" },
           { code: "", note: "" },
@@ -881,7 +881,7 @@ mixup 回傳 Point<X1, Y2>:x 取自 self(i32 的 5)、y 取自 other(char 的 'c
           outro: "若不指定 Output = T,只寫 T: Add,函式體的 a + b 會產出型別 T::Output,與宣告的回傳型別 T 對不上,依然編譯失敗——這是 Add 這類「帶關聯型別的 trait」最常見的絆腳石。",
         },
         {
-          label: "🔧 Desugared (what the compiler sees)",
+          label: "△ Desugared (what the compiler sees)",
           intro: "錯誤訊息說 cannot add `T` to `T`,可是你只寫了一個加號。那個加號其實是一次方法呼叫:",
           lines: [
             { code: "a + b", note: "你寫的運算式。" },
@@ -913,7 +913,7 @@ mixup 回傳 Point<X1, Y2>:x 取自 self(i32 的 5)、y 取自 other(char 的 'c
       explanation: `兩句話總結本課:(1)機制——編譯期單態化,用到幾種型別就生成幾份具體程式碼,執行期沒有型別查詢、沒有裝箱,代價是編譯變慢、執行檔變大;(2)紀律——型別參數預設「什麼都不會」,每一項能力都要由 bound 明白授權,而 bound 同時是對呼叫端的要求與對函式體的許可。
 其餘三種說法都各有錯誤:型別擦除是 Java 的做法;bound 是硬性的編譯檢查而非註記;而 enum(自訂 MyOption 那題)與方法(mixup 那題)當然都支援型別參數。`,
       walkthrough: {
-        label: "🔍 One program that walks through this whole lesson",
+        label: "⊕ One program that walks through this whole lesson",
         lines: [
           { code: "use std::fmt::Display;", note: "引入待會要當約束用的 trait。" },
           { code: "", note: "" },

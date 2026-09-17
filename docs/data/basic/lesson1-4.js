@@ -184,7 +184,7 @@ Rust 刻意讓深複製「必須明寫 .clone()」:昂貴的操作要在程式�
       explanation: `Rust 的釋放是「確定性」的:擁有者走出作用域(} 那一刻),值的 drop 就被呼叫,先進後出。沒有 GC 執行緒、沒有手動 free、也不會等到程式結束。
 這個機制(RAII)不只管記憶體:檔案控制代碼、網路連線、鎖,全都在擁有者離開作用域時自動釋放——資源管理跟著所有權走。`,
       walkthrough: {
-        label: "🔍 Verifying drop timing with observable code",
+        label: "⊕ Verifying drop timing with observable code",
         lines: [
           { code: "struct Noisy(&'static str);", note: "定義一個只帶名字的 struct,用來在被釋放時印出訊息。" },
           { code: "", note: "" },
@@ -342,7 +342,7 @@ Rust 刻意讓深複製「必須明寫 .clone()」:昂貴的操作要在程式�
 同一行 let s2 = s1,C# 讀作「兩個名字指向同一物件」,Rust 讀作「所有權從 s1 交給 s2」。這不是語法差異,是整個記憶體管理哲學的差異——理解這一點,後面的借用、生命週期都是這個模型的自然推論。`,
       walkthrough: [
         {
-          label: "🔷 Original C# code — walkthrough",
+          label: "◇ Original C# code — walkthrough",
           lang: "csharp",
           lines: [
             { code: "var s1 = \"hello\";", note: "s1 是一個指向字串物件的參考,物件本身在 managed heap 上。" },
@@ -526,7 +526,7 @@ Rust 刻意讓深複製「必須明寫 .clone()」:昂貴的操作要在程式�
 它示範的是「沒有借用會有多麻煩」:每個只想讀資料的函式,都得把值收下再原封不動地退還,簽名還被 tuple 汙染。下一課的 &(借用)就是為了消滅這種寫法而存在。`,
       walkthrough: [
         {
-          label: "🔍 Question code — walkthrough (compiles, but the style is awkward)",
+          label: "⊕ Question code — walkthrough (compiles, but the style is awkward)",
           lines: [
             { code: "fn calculate_length(s: String) -> (String, usize) {", note: "參數按值收 → 取走所有權;回傳型別是 tuple,第一個成員就是為了「把值還回去」。" },
             { code: "    let length = s.len();", note: "len() 只需要 &self,所以這裡只是借自己來算長度,s 仍屬於本函式。" },
@@ -700,7 +700,7 @@ Rust 刻意讓深複製「必須明寫 .clone()」:昂貴的操作要在程式�
       explanation: `對一個「已經持有值」的可變變數重新賦值時,Rust 會先釋放舊值再寫入新值——這是 drop 規則的一部分,不會洩漏。
 容易搞混的是 shadowing:let s = String::from("second") 是「建立一個新變數遮蔽舊的」,舊變數還活著、要到作用域結束才釋放;而這題的 s = ... 沒有 let,是「同一個變數換內容」,舊值當場釋放。`,
       walkthrough: {
-        label: "🔍 Question code — walkthrough (runs successfully)",
+        label: "⊕ Question code — walkthrough (runs successfully)",
         lines: [
           { code: "fn main() {", note: "程式進入點。" },
           { code: "    let mut s = String::from(\"first\");", note: "配置第一份 heap 資料 \"first\",擁有者是 s;因為之後要重新賦值,必須加 mut。" },
@@ -726,7 +726,7 @@ Rust 刻意讓深複製「必須明寫 .clone()」:昂貴的操作要在程式�
       explanation: `Point 的兩個欄位都是 i32(Copy),所以整個 struct 可以 derive Copy:傳進函式是複製、賦值也是複製,p1 從頭到尾有效。
 兩個細節:一、Copy 必須和 Clone 一起 derive(Copy 是 Clone 的 subtrait,語言規定 Copy: Clone);二、要不要幫自己的型別加 Copy 是設計決定——小而單純、複製成本低的值型別(座標、顏色、ID)適合;一旦型別可能長大或含有資源,就不該加,否則到處隱式複製反而失去「哪裡有成本」的可見性。`,
       walkthrough: {
-        label: "🔍 Question code — walkthrough (runs successfully)",
+        label: "⊕ Question code — walkthrough (runs successfully)",
         lines: [
           { code: "#[derive(Debug, Clone, Copy)]", note: "Debug 讓 {:?} 可以印;Copy 讓賦值/傳參變成位元複製;Copy 必須搭配 Clone(語言規定 Copy: Clone),所以三個一起 derive。" },
           { code: "struct Point {", note: "定義一個小型值型別。" },
@@ -762,7 +762,7 @@ Rust 刻意讓深複製「必須明寫 .clone()」:昂貴的操作要在程式�
       explanation: `官方三條規則:(1) Rust 中每個值都有一個擁有者;(2) 同一時間只能有一個擁有者;(3) 擁有者離開作用域,值就被釋放。本課所有題目都是這三條的推論。
 「多個擁有者 + 參考計數」描述的是 Rc<T>——那是標準函式庫在這三條規則之上刻意打造的例外(進階課會講),不是語言的預設模型。至於 mut,它管的是「能不能改」,和「誰擁有」完全是兩回事:不可變變數一樣是它所持有的值的擁有者。`,
       walkthrough: {
-        label: "🔍 One program that walks through all three rules",
+        label: "⊕ One program that walks through all three rules",
         lines: [
           { code: "fn take(s: String) -> usize {", note: "簽名宣告「我要拿走一個 String」,參數 s 在函式內成為擁有者。" },
           { code: "    s.len()", note: "回傳長度(usize 是 Copy)。函式結束時 s 離開作用域 → 規則三:字串在這裡被釋放。" },

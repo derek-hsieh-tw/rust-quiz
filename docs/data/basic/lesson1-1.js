@@ -30,7 +30,7 @@ rustc 是底層編譯器,只負責編譯單一檔案,沒有 new 子命令;rustup
           outro: "指令跑完會產生這樣的骨架:hello/Cargo.toml(專案設定)、hello/src/main.rs(含一個 Hello, world! 的 main 函式)、以及一個初始化好的 git repo。另外三個寫法都不存在:rustc 是底層編譯器、只吃 .rs 檔,沒有 new 子命令;cargo 沒有 create 子命令;rustup 只負責安裝與切換工具鏈版本。",
         },
         {
-          label: "🔍 The generated project skeleton",
+          label: "⊕ The generated project skeleton",
           lang: "bash",
           lines: [
             { code: "hello/", note: "專案根目錄,名稱來自指令參數。" },
@@ -66,7 +66,7 @@ cargo build 只編譯不執行,而且產出的執行檔在 target/debug/ 底下,
           outro: "其他寫法的問題:cargo build 只編譯不執行,而且產出物在 target/debug/hello 而不是 ./main;rustc 吃的是 .rs 原始碼檔,餵它 Cargo.toml 沒有意義;cargo exec 這個子命令不存在。",
         },
         {
-          label: "🔍 The equivalent two-step version",
+          label: "⊕ The equivalent two-step version",
           lang: "bash",
           lines: [
             { code: "cargo build", note: "只做編譯,產出執行檔但不執行。" },
@@ -89,7 +89,7 @@ cargo build 只編譯不執行,而且產出的執行檔在 target/debug/ 底下,
       explanation: `Cargo.toml 是你手寫維護的設定檔(TOML 格式):[package] 區段放名稱/版本,[dependencies] 區段放相依套件。
 Cargo.lock 也真實存在,但它是 cargo 自動產生的「鎖定版本清單」,記錄實際解析出的精確版本,不該手動編輯——這兩個檔案的分工是常見考點。`,
       walkthrough: {
-        label: "🔍 Cargo.toml — walkthrough (hand-maintained)",
+        label: "⊕ Cargo.toml — walkthrough (hand-maintained)",
         lang: "ini",
         lines: [
           { code: "[package]", note: "套件本身的中繼資料區段。" },
@@ -149,7 +149,7 @@ public static void Main 是 C# 寫法;pub fn Main() -> void 有兩個問題:Rust
 例如 println!("{}") 少給參數會直接編譯失敗,而不是等到執行期才爆。現階段只要記住「看到 ! 就是巨集」,巨集的原理放在進階課程。`,
       walkthrough: [
         {
-          label: "🔍 The macro catches this at compile time",
+          label: "⊕ The macro catches this at compile time",
           lines: [
             { code: "fn main() {", note: "程式進入點。" },
             { code: "    let x = 5;", note: "建立一個 i32 變數。" },
@@ -268,7 +268,7 @@ cargo build --release 反而是最慢的(開最佳化);run 會編譯+執行;test
       explanation: `這對應兩種編譯設定檔(profile):dev(預設)重視編譯速度、保留除錯資訊、會做整數溢位檢查;release 開啟最佳化(執行速度可差數倍到數十倍)。
 日常開發用 debug 版,量測效能或交付一定要用 --release——初學者常犯的錯是用 debug 版跑效能測試,然後懷疑 Rust 很慢。發佈到 crates.io 是另一個指令 cargo publish。`,
       walkthrough: {
-        label: "🔍 The difference between the two build profiles",
+        label: "⊕ The difference between the two build profiles",
         lang: "bash",
         lines: [
           { code: "cargo build", note: "使用 dev profile(預設):不開最佳化、保留完整除錯資訊、編譯速度快,而且會檢查整數溢位並在溢位時 panic。" },
@@ -295,7 +295,7 @@ cargo build --release 反而是最慢的(開最佳化);run 會編譯+執行;test
 一個 package 可以同時擁有兩者(常見做法:邏輯寫在 lib.rs,main.rs 只是薄薄一層呼叫入口,這樣邏輯可以被測試與重用),所以「有了 main.rs 就不能有 lib.rs」是錯的。`,
       walkthrough: [
         {
-          label: "🔍 One package, two crate types",
+          label: "⊕ One package, two crate types",
           lang: "bash",
           lines: [
             { code: "hello/", note: "一個 package(由一份 Cargo.toml 描述)。" },
@@ -306,7 +306,7 @@ cargo build --release 反而是最慢的(開最佳化);run 會編譯+執行;test
           ],
         },
         {
-          label: "🔍 Idiomatic split: logic in lib.rs, main.rs as a thin entry point",
+          label: "⊕ Idiomatic split: logic in lib.rs, main.rs as a thin entry point",
           lines: [
             { code: "// src/lib.rs", note: "library crate 的根檔案。" },
             { code: "pub fn greet(name: &str) -> String {", note: "pub 讓這個函式對外公開,才能被 main.rs 或其他專案使用。" },

@@ -255,14 +255,16 @@ pre.code-block code {
   padding: 0 16px 4px 0;
 }
 
+/* C# 對照區塊改用綠色:標題、左邊那條槓與底色都跟著 --vsc-green 走,
+   底色是同一個綠的 7% 淡色,不要留藍底配綠槓。 */
 .csharp-compare {
   margin-top: 10px;
-  background: rgba(86, 156, 214, 0.07);
-  border-left: 3px solid var(--vsc-blue);
+  background: rgba(87, 166, 74, 0.07);
+  border-left: 3px solid var(--vsc-green);
   padding: 8px 12px;
   border-radius: 0 3px 3px 0;
 }
-.csharp-compare .cs-label { color: var(--vsc-blue); font-weight: 700; margin-bottom: 4px; }
+.csharp-compare .cs-label { color: var(--vsc-green); font-weight: 700; margin-bottom: 4px; }
 .csharp-compare .cs-body { white-space: pre-wrap; color: #989898; line-height: 1.8; }
 
 /* ===== 課程底部 ===== */

@@ -67,7 +67,7 @@ window.RUST_LESSONS["lesson1-16"] = {
       explanation: `測試框架的判定規則:測試函式沒 panic = 通過,panic = 失敗。assert_eq! 失敗時 panic 並印出 left = 4, right = 5 幫你對帳。每個測試跑在獨立執行緒,一個炸了不拖累別人(預設還是並行執行),最後總結 1 passed; 1 failed。
 編譯器不會幫你算 assert 的對錯(那是執行期的事);assert 家族失敗從來不是「警告」,就是 panic。`,
       walkthrough: {
-        label: "🔍 Question code — walkthrough (one passes, one fails)",
+        label: "⊕ Question code — walkthrough (one passes, one fails)",
         lines: [
           { code: "#[cfg(test)]", note: "只在測試建置時編譯。" },
           { code: "mod tests {", note: "測試模組。" },
@@ -100,7 +100,7 @@ window.RUST_LESSONS["lesson1-16"] = {
       explanation: `#[should_panic] 反轉判定:panic = 通過、安然返回 = 失敗——專測「錯誤路徑真的會炸」。不帶 expected 有個陷阱:測試中「任何」panic 都算過(可能是別的 bug 先炸了),加上 expected = "..." 要求 panic 訊息包含該子字串,把驗證釘在你設計的那個 panic 上。
 跳過測試另有屬性(#[ignore]);它是行為改變不是註記;panic 的世界沒有「回傳值」可言。`,
       walkthrough: {
-        label: "🔍 Question code — walkthrough (only passes if it panics)",
+        label: "⊕ Question code — walkthrough (only passes if it panics)",
         lines: [
           { code: "pub fn set_age(age: u32) {", note: "被測函式。" },
           { code: "    if age > 150 {", note: "防衛性檢查:超出合理範圍代表呼叫端有 bug。" },
@@ -137,7 +137,7 @@ window.RUST_LESSONS["lesson1-16"] = {
       explanation: `/// 附著在下一個項目上成為它的文件:cargo doc --open 生成與標準庫同款的 HTML。殺手級特性是最後半句——文件裡的程式碼範例是「doc test」,cargo test 會真的編譯執行它:範例過時(API 改了)測試就紅,文件永遠不會爛掉。
 # Examples 只是 Markdown 標題慣例,不影響編譯;文件註解是給 rustdoc 的,不是執行期輸出;另有 //! 寫在模組/crate 開頭,記述「這整個模組是幹嘛的」。`,
       walkthrough: {
-        label: "🔍 Doc comments — walkthrough",
+        label: "⊕ Doc comments — walkthrough",
         lines: [
           { code: "/// 將兩數相加。", note: "三斜線是「文件註解」,附著在「下一個項目」上成為它的說明;內容支援 Markdown。一般的 // 只是給人看的註解,rustdoc 不會理它。" },
           { code: "///", note: "空行分隔摘要與後續段落,和 Markdown 一樣。" },
@@ -169,7 +169,7 @@ window.RUST_LESSONS["lesson1-16"] = {
 main 不會被執行(它不是測試)。輸出報告也會分三段呈現。`,
       walkthrough: [
         {
-          label: "🔍 Where each of the three test kinds lives",
+          label: "⊕ Where each of the three test kinds lives",
           lang: "bash",
           lines: [
             { code: "my_crate/", note: "專案根目錄。" },
@@ -209,7 +209,7 @@ main 不會被執行(它不是測試)。輸出報告也會分三段呈現。`,
       explanation: `Circle(1.0) 面積 3.14、Rect(2.0, 3.0) 面積 6.0,合計 9.14({:.2} 控制兩位小數)。
 借用鏈完全正確:for s in &shapes 迭代借用,s 就是 &Shape,原樣傳給 area——shapes 全程沒被 move,迴圈後還能用。match 對 &Shape 匹配時自動把 r、w、h 綁定為欄位的參考(match ergonomics),浮點運算對參考直接可用。Shape 只有兩個變體且都列出,窮盡性滿足,不需要 _。`,
       walkthrough: {
-        label: "🔍 Question code — walkthrough (runs successfully)",
+        label: "⊕ Question code — walkthrough (runs successfully)",
         lines: [
           { code: "#[derive(Debug)]", note: "讓 {:?} 可以印(這題沒用到,但慣例會加)。" },
           { code: "enum Shape {", note: "帶資料的 enum(lesson1-8)。" },
@@ -251,7 +251,7 @@ main 不會被執行(它不是測試)。輸出報告也會分三段呈現。`,
       explanation: `find_user(2) 走 Err 路徑。match 當運算式用:Err 分支先印警告,區塊尾端的 String::from("guest") 是分支值——兩個分支都給出 String,型別一致,name 得到 "guest"。輸出兩行。
 這題是基礎篇錯誤處理哲學的縮影:錯誤是值,用 match 接住、印個警告、給預設值,程式優雅降級繼續走——沒有 unwrap、沒有 panic、沒有 try/catch。所有權細節:n 和 e 都是從 Result 裡 move 出來的 String,拿到就是你的。`,
       walkthrough: {
-        label: "🔍 Question code — walkthrough (runs successfully)",
+        label: "⊕ Question code — walkthrough (runs successfully)",
         lines: [
           { code: "fn find_user(id: u32) -> Result<String, String> {", note: "簽名誠實地說:這件事會失敗,而且成功與失敗都帶一段訊息。" },
           { code: "    if id == 1 {", note: "判斷。" },
@@ -406,7 +406,7 @@ main 不會被執行(它不是測試)。輸出報告也會分三段呈現。`,
       explanation: `基礎篇的三根柱子:(1)所有權——唯一擁有者、move 語意、作用域結束即 drop(lesson1-4);(2)借用——多個唯讀「或」一個可寫、參考不活過資料(lesson1-5、1-13);(3)錯誤即值——Option/Result + match/? 強制處理(lesson1-8、1-10)。全部在編譯期執行,這就是無 GC、無例外、卻記憶體安全的完整拼圖。
 Rust 沒有任何形式的 GC,所有權是硬規則不是提示;借用規則單執行緒同樣全額生效(1-5、1-9 一路都在單執行緒裡吃編譯錯誤);unwrap 是「明知可能炸」的快捷方式,match/? 才是正規軍。`,
       walkthrough: {
-        label: "🔍 One program that revisits all three pillars",
+        label: "⊕ One program that revisits all three pillars",
         lines: [
           { code: "fn main() {", note: "程式進入點。" },
           { code: "    let a = String::from(\"own\");", note: "柱子一(所有權):這份 heap 資料有唯一的擁有者 a。" },

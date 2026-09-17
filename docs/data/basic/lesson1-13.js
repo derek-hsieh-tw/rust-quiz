@@ -21,7 +21,7 @@ window.RUST_LESSONS["lesson1-13"] = {
       explanation: `lesson1-5 看過懸空參考被編譯器擋下——那個「擋」的機制就是生命週期分析:每個參考都有一段有效範圍,編譯器檢查它永遠不超過資料本身的範圍。大多數情況編譯器自己推得出來;推不出來的少數場合,才需要你寫 'a 標註「說明關係」。
 Rust 沒有 GC;標註也不會「延長」任何東西的壽命(本課最重要的迷思,後面有專題);跟執行緒排程更是無關。`,
       walkthrough: {
-        label: "🔍 This is exactly what the lifetime is preventing",
+        label: "⊕ This is exactly what the lifetime is preventing",
         lines: [
           { code: "fn main() {", note: "程式進入點。" },
           { code: "    let r;", note: "先宣告一個變數,準備接住某個參考。" },
@@ -99,7 +99,7 @@ Rust 沒有 GC;標註也不會「延長」任何東西的壽命(本課最重要�
       explanation: `'a 是「泛型生命週期參數」,宣告方式和泛型 T 一樣放在角括號。這個簽名說:存在某段範圍 'a,x、y 至少活這麼久,回傳值也只保證活這麼久——實際呼叫時,'a 被推定為「x 與 y 存活範圍的交集(較短者)」,呼叫端把回傳值用超過這個範圍就是編譯錯誤(下一題示範)。
 x、y 可以是完全不同來源的參考;沒有任何東西被強制延命或複製——標註是「描述與檢查」,不是「改變行為」。`,
       walkthrough: {
-        label: "🔍 Breaking down what this signature says, piece by piece",
+        label: "⊕ Breaking down what this signature says, piece by piece",
         lines: [
           { code: "fn longest<'a>(x: &'a str, y: &'a str) -> &'a str {", note: "<'a> 宣告一個「泛型生命週期參數」,位置和泛型 T 一樣。x、y 標 'a 代表「這兩個參考至少活 'a 這麼久」;回傳值標 'a 代表「我保證回傳的參考只活 'a 這麼久」。實際呼叫時 'a 被推定為 x 與 y 存活範圍的「交集」(較短者)。" },
           { code: "    if x.len() > y.len() {", note: "比較長度——注意這是執行期才知道結果的分支。" },
@@ -221,7 +221,7 @@ longest 有兩個參考參數,三條規則都套不上才要手寫。省略是�
       explanation: `'static 是「最長的生命週期」:資料保證撐到程式結束。字面值編譯進執行檔(lesson1-6 見過),自然滿足。這是描述既有事實,不是搬移或複製任何資料。
 變數 s 本身仍是普通區域變數(可以 shadowing、可以離開作用域),'static 修飾的是「它指向的資料」的壽命。進階備註:錯誤訊息建議「加 'static」時通常是誤導,真正該修的多半是所有權結構——先懷疑設計再考慮 'static。`,
       walkthrough: {
-        label: "🔍 'static describes the lifetime of the data",
+        label: "⊕ 'static describes the lifetime of the data",
         lines: [
           { code: "fn main() {", note: "程式進入點。" },
           { code: "    let s: &'static str = \"I have a static lifetime.\";", note: "'static 是「最長的生命週期」:資料保證撐到程式結束。字串字面值編譯進執行檔的唯讀資料段,天生滿足這個條件——這是「描述既有事實」,不是把資料搬到什麼特殊記憶體。" },
@@ -340,7 +340,7 @@ struct 存參考完全允許(解析器、視圖類型的常見設計),只是要�
       explanation: `第三條省略規則專為方法設計:簽名裡有 &self,回傳參考就自動綁定 self——這符合絕大多數方法的實情(回傳的東西來自自己的欄位),所以方法幾乎從不手寫生命週期。本題回傳 self.part 正中規則,不用標註。
 若真要回傳 greeting 的衍生參考,預設綁定就錯了,那時才需要手動標註推翻預設。兩個參考參數在「函式」上無法省略,但「方法」多了 &self 規則,依然免寫。`,
       walkthrough: {
-        label: "🔍 Question code — walkthrough (compiles successfully)",
+        label: "⊕ Question code — walkthrough (compiles successfully)",
         lines: [
           { code: "struct Excerpt<'a> {", note: "struct 上宣告生命週期參數。" },
           { code: "    part: &'a str,", note: "參考欄位。" },
@@ -371,7 +371,7 @@ struct 存參考完全允許(解析器、視圖類型的常見設計),只是要�
 一般的 C# 程式碼沒有隱藏的生命週期分析(不過 ref struct/Span 的逃逸規則確實是縮水版的同類機制);與繼承毫無關係。`,
       walkthrough: [
         {
-          label: "🔷 C#'s approach: the GC covers it at runtime",
+          label: "◇ C#'s approach: the GC covers it at runtime",
           lang: "csharp",
           lines: [
             { code: "string Longest(string x, string y) => x.Length > y.Length ? x : y;", note: "簽名不需要描述任何存活關係。" },
@@ -413,7 +413,7 @@ struct 存參考完全允許(解析器、視圖類型的常見設計),只是要�
       explanation: `回傳值標的是 'a,只跟 x 綁定;y 標 'b,是完全獨立的另一段範圍。編譯器因此只要求「result 不活過 long」——short 在內層作用域結束時死掉,與 result 無關,程式完全合法。
 對比第 4 題:那裡兩個參數都標 'a,'a 被推定為兩者的「交集」(較短者),result 才會被短命的那個拖累。所以標註不是「愈統一愈好」:把不相干的參數綁在一起會過度限制呼叫端,能分開就分開。`,
       walkthrough: {
-        label: "🔍 Question code — walkthrough (runs successfully)",
+        label: "⊕ Question code — walkthrough (runs successfully)",
         lines: [
           { code: "fn pick_first<'a, 'b>(x: &'a str, y: &'b str) -> &'a str {", note: "宣告「兩個」獨立的生命週期參數。x 綁 'a、y 綁 'b,回傳值只綁 'a——等於告訴編譯器「我回傳的東西只可能來自 x,和 y 一點關係都沒有」。" },
           { code: "    println!(\"忽略了 {}\", y);", note: "y 只在函式內被讀取一次,它的參考不會流到回傳值裡。" },
@@ -648,7 +648,7 @@ struct 存參考完全允許(解析器、視圖類型的常見設計),只是要�
       explanation: `逐條套用就有答案。規則一:每個參考參數各得一個獨立的生命週期。規則二:恰好一個輸入生命週期時,回傳參考綁定它。規則三:方法有 &self 時,回傳參考綁定 self。
 兩個字串參數的那個:規則一給了兩個生命週期,規則二要求「恰好一個」不符,規則三沒有 &self 也不符——三條都套不上,必須手寫。只有一個參考參數的命中規則二;方法那個雖有兩個參考參數,但因為有 &self 而命中規則三;回傳 usize 的那個根本沒有回傳參考,不需要推導。`,
       walkthrough: {
-        label: "🔍 Applying the elision rules to four signatures, one by one",
+        label: "⊕ Applying the elision rules to four signatures, one by one",
         lines: [
           { code: "fn longest(x: &str, y: &str) -> &str {", note: "⛔ 無法省略。規則一:x 得到 'a、y 得到 'b(各自獨立)。規則二:要求「恰好一個」輸入生命週期,這裡有兩個,不適用。規則三:沒有 &self,不適用。三條都套不上 → missing lifetime specifier,必須手寫成 <'a>(x: &'a str, y: &'a str) -> &'a str。" },
           { code: "    if x.len() > y.len() { x } else { y }", note: "函式本體無關緊要——省略規則只看簽名,不會去分析函式內容。" },
@@ -932,7 +932,7 @@ struct 存參考完全允許(解析器、視圖類型的常見設計),只是要�
       explanation: `本課四個重點:(1)目的——在沒有 GC 的前提下,於編譯期證明不會出現懸空參考;(2)語法——'a 是泛型生命週期參數,可標在函式、struct、impl 上,角括號裡「生命週期在前、型別在後」;(3)省略——三條規則涵蓋了絕大多數情況,實務上手寫的頻率遠低於教材給人的印象;(4)本質——它「描述」既有的存活關係,不「改變」任何東西,編譯完就消失,執行期零成本。
 其餘三種說法都是本課點名破除的迷思:標註不會延長壽命(第 7 題)、它不是執行期機制(對照 C# 的 GC)、而且大多數函式靠省略規則就夠了(第 5 與第 15 題)。`,
       walkthrough: {
-        label: "🔍 One program that walks through this whole lesson",
+        label: "⊕ One program that walks through this whole lesson",
         lines: [
           { code: "struct Excerpt<'a> {", note: "重點二:struct 持有參考時,必須宣告生命週期參數——語意是「這個實例不能活得比 'a 久」。" },
           { code: "    part: &'a str,", note: "零複製的參考欄位,存的是指向別人資料的指標。" },

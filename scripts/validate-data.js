@@ -9,8 +9,8 @@
  *     code 不得含換行、反面案例(X)必須同時附上正確寫法(√)
  *  7. √ 區塊裡的 Rust 程式碼必須完整可編譯(含 fn main 或測試模組),
  *     讀者要能整段複製去跑
- *  8. 🔧 去糖區塊:錯誤訊息提到讀者沒親手寫過的去糖識別字(Add / From /
- *     IntoIterator / Deref / Display / Ord …)時,該題要附 🔧 區塊把糖攤開
+ *  8. △ 去糖區塊:錯誤訊息提到讀者沒親手寫過的去糖識別字(Add / From /
+ *     IntoIterator / Deref / Display / Ord …)時,該題要附 △ 區塊把糖攤開
  *     ——既有題目已補完,預設與其他規則一樣擋下部署(--no-strict 可降級為警告)。
  * 規範全文見專案根目錄 AUTHORING.md。
  */
@@ -31,7 +31,7 @@ const errors = [];
 const warnings = [];
 const seenIds = new Set();
 
-/* 🔧 去糖檢查(規範見 AUTHORING.md §4 與 §9)
+/* △ 去糖檢查(規範見 AUTHORING.md §4 與 §9)
  * 讀者學到的是語法糖,編譯器罵的是去糖後的東西。這些識別字一旦出現在錯誤訊息裡、
  * 而讀者在該題程式碼中從沒親手寫過,就是「糖底下露出來的實體」,必須攤開給他看。 */
 const DESUGAR_STRICT = !process.argv.includes("--no-strict"); // 既有題目已補完,預設硬擋
@@ -155,13 +155,13 @@ function validateWalkthrough(tag, q, errors) {
   });
 }
 
-/* 🔧 去糖區塊:錯誤訊息提到讀者沒寫過的東西時,必須把糖攤開(AUTHORING.md §4) */
+/* △ 去糖區塊:錯誤訊息提到讀者沒寫過的東西時,必須把糖攤開(AUTHORING.md §4) */
 function validateDesugar(tag, q, sink) {
   const blocks = Array.isArray(q.walkthrough) ? q.walkthrough
     : (q.walkthrough ? [q.walkthrough] : []);
   const labels = blocks.map(b => b.label || "");
   if (!labels.some(l => l.startsWith("X"))) return;       // 只管反面案例
-  if (labels.some(l => l.startsWith("🔧"))) return;       // 已經攤開了
+  if (labels.some(l => l.startsWith("△"))) return;       // 已經攤開了
   if (q.desugarChecked) return;                           // 人工複核過:錯誤訊息沒有隱藏的去糖概念
 
   // 錯誤訊息:⛔ 標記的那幾行註解,加上詳解
@@ -182,7 +182,7 @@ function validateDesugar(tag, q, sink) {
     .map(([, hint]) => hint);
 
   if (hidden.length)
-    sink.push(`${tag}: 錯誤訊息提到讀者沒寫過的去糖概念,建議補 🔧 區塊 —— ${hidden.join(";")}`);
+    sink.push(`${tag}: 錯誤訊息提到讀者沒寫過的去糖概念,建議補 △ 區塊 —— ${hidden.join(";")}`);
 }
 
 if (warnings.length) {

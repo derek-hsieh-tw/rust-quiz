@@ -94,7 +94,7 @@ mut let 的關鍵字順序寫反了;var 是 C#/JS 的關鍵字,Rust 沒有;:= �
       explanation: `這叫 shadowing(遮蔽):用 let 重新宣告同名變數,新變數「遮住」舊變數。計算過程:5 → 5+1=6 → 6*2=12。
 注意這不是修改——每次 let 都建立一個全新的變數,舊的還在只是取不到了。這與 mut 不同:shadowing 不需要 mut,而且(見下一題)連型別都可以換。`,
       walkthrough: {
-        label: "🔍 Question code — walkthrough (runs successfully)",
+        label: "⊕ Question code — walkthrough (runs successfully)",
         lines: [
           { code: "fn main() {", note: "程式進入點。" },
           { code: "    let x = 5;", note: "宣告第一個 x,值是 5(不可變)。" },
@@ -197,7 +197,7 @@ const 在編譯期求值、可宣告在任何作用域(包括全域),慣例命�
 「編譯錯誤」的選項有一半道理——若寫成字面值 let x: u8 = 256; 編譯器確實會直接報錯,但這裡的加法是執行期運算,編譯器不會攔(除非能 const 求值)。想要明確行為可用 wrapping_add / checked_add / saturating_add。`,
       walkthrough: [
         {
-          label: "🔍 Question code — walkthrough (panics at runtime in debug builds)",
+          label: "⊕ Question code — walkthrough (panics at runtime in debug builds)",
           lines: [
             { code: "fn main() {", note: "程式進入點。" },
             { code: "    let x: u8 = 255;", note: "明確標註型別 u8(8 位元無號整數,範圍 0~255)。255 剛好是上限,這一行完全合法。" },
@@ -269,7 +269,7 @@ const 在編譯期求值、可宣告在任何作用域(包括全域),慣例命�
       explanation: `tuple 有兩種取法:解構 let (a, b, c) = t; 一次拆開,或用索引 t.0、t.1、t.2 取單一元素。t.2 是第三個元素 'x',所以印出 500 x。
 變數名前綴底線(_b、_c)是告訴編譯器「我知道沒用到」,壓掉 unused variable 警告。tuple 可以混裝不同型別,長度固定。`,
       walkthrough: {
-        label: "🔍 Question code — walkthrough (runs successfully)",
+        label: "⊕ Question code — walkthrough (runs successfully)",
         lines: [
           { code: "fn main() {", note: "程式進入點。" },
           { code: "    let t = (500, 6.4, 'x');", note: "建立一個 tuple,型別是 (i32, f64, char)。tuple 可以混裝不同型別,長度在編譯期固定。" },
@@ -296,7 +296,7 @@ const 在編譯期求值、可宣告在任何作用域(包括全域),慣例命�
 這就是 Rust 記憶體安全的體現:C/C++ 在這裡是未定義行為(可能讀到垃圾、可能 crash),Rust 保證乾淨地失敗。注意:若索引是編譯期常數(如 a[10]),編譯器甚至能直接在編譯期報錯。`,
       walkthrough: [
         {
-          label: "🔍 Question code — walkthrough (panics at runtime)",
+          label: "⊕ Question code — walkthrough (panics at runtime)",
           lines: [
             { code: "fn main() {", note: "程式進入點。" },
             { code: "    let a = [1, 2, 3, 4, 5];", note: "建立陣列,型別是 [i32; 5]——長度是型別的一部分,在編譯期固定,資料放在 stack 上。" },
@@ -379,7 +379,7 @@ const 在編譯期求值、可宣告在任何作用域(包括全域),慣例命�
 另外兩個「編譯錯誤」的說法都是把可讀性語法誤當成語法錯誤,而「原樣保留」則搞錯了層次:底線與括號都只存在於原始碼,編譯後不留痕跡。`,
       walkthrough: [
         {
-          label: "🔍 Walkthrough (compiles and runs normally)",
+          label: "⊕ Walkthrough (compiles and runs normally)",
           lines: [
             { code: "fn main() {", note: "程式進入點。" },
             { code: "    let population = 1_000_000;", note: "底線是視覺分隔符,編譯期直接被忽略——這個值就是 1000000,型別推斷為 i32。" },

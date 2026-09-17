@@ -66,7 +66,7 @@ window.RUST_LESSONS["lesson1-9"] = {
 選擇準則:索引值來自使用者輸入或計算結果(可能錯)→ 用 get;邏輯上保證合法(剛檢查過長度)→ 用索引,panic 就是抓 bug。編譯器只對「字面值常數索引固定長度陣列」能提前報錯,Vec 是動態長度,編譯期不會攔。`,
       walkthrough: [
         {
-          label: "🔍 Question code — walkthrough (second line panics at runtime)",
+          label: "⊕ Question code — walkthrough (second line panics at runtime)",
           lines: [
             { code: "fn main() {", note: "程式進入點。" },
             { code: "    let v = vec![1, 2, 3];", note: "建立長度 3 的 Vec,合法索引是 0~2。" },
@@ -191,7 +191,7 @@ window.RUST_LESSONS["lesson1-9"] = {
       explanation: `insert 對已存在的 key 直接覆蓋(回傳被擠掉的舊值 Some(10),這裡沒接)。get 回傳 Option<&V>——key 可能不存在,所以是 Option;不複製值,所以是參考:印出 Some(25)。
 注意 HashMap 要 use std::collections::HashMap 引入(不像 Vec 在 prelude 自動可用)。想要「不存在才插入」的語意,用下一題的 entry。`,
       walkthrough: {
-        label: "🔍 Question code — walkthrough (runs successfully)",
+        label: "⊕ Question code — walkthrough (runs successfully)",
         lines: [
           { code: "use std::collections::HashMap;", note: "HashMap 不在 prelude 裡,必須自己引入(Vec 則是自動可用)。" },
           { code: "", note: "" },
@@ -220,7 +220,7 @@ window.RUST_LESSONS["lesson1-9"] = {
       explanation: `entry(key).or_insert(0) 的語意:key 不存在就先插入 0,然後「無論如何」回傳該 value 的可變參考(&mut i32)。*count += 1 就地遞增——"a" 出現三次,最後是 Some(3)。
 這是 HashMap 最重要的慣用法:「查詢 + 不存在就初始化 + 修改」一步完成,不用先 contains_key 再 insert 再 get 跑三趟。or_insert 只在缺席時插入,不會重設既有值;count 是可變借用,+= 正是它的用途。`,
       walkthrough: {
-        label: "🔍 Question code — walkthrough (runs successfully)",
+        label: "⊕ Question code — walkthrough (runs successfully)",
         lines: [
           { code: "use std::collections::HashMap;", note: "引入 HashMap。" },
           { code: "", note: "" },
@@ -354,7 +354,7 @@ window.RUST_LESSONS["lesson1-9"] = {
       explanation: `pop 從「尾端」移除並回傳元素(Vec 是 stack 語意的成長方向):先取走 3、再取走 2,剩 [1]。回傳型別是 Option<T>——空 Vec 時給 None 而不是 panic,所以印出來帶著 Some 外衣。
 從頭部取用 remove(0)(O(n) 搬移,頻繁操作改用 VecDeque)。Option 實作了 Debug,{:?} 印它完全沒問題。`,
       walkthrough: {
-        label: "🔍 Question code — walkthrough (runs successfully)",
+        label: "⊕ Question code — walkthrough (runs successfully)",
         lines: [
           { code: "fn main() {", note: "程式進入點。" },
           { code: "    let mut v = vec![1, 2, 3];", note: "建立可變的 Vec;pop 會修改它,所以必須 mut。" },
@@ -380,7 +380,7 @@ window.RUST_LESSONS["lesson1-9"] = {
       explanation: `兩條主線貫穿本課:(1)失敗是型別不是例外——get 回 Option、pop 回 Option,呼叫端被迫在編譯期面對「沒有」;(2)存取受借用規則管制——持有元素參考時不能 push、走訪時不能改結構,C++ 的迭代器失效與 C# 的「集合已修改」例外都被搬到編譯期。
 Rust 集合當然是可變的(mut 之下),也是完整泛型(單態化,無裝箱)——「不可變集合」與「無泛型」的說法都不對。`,
       walkthrough: {
-        label: "🔍 One snippet for each of the two main threads",
+        label: "⊕ One snippet for each of the two main threads",
         lines: [
           { code: "use std::collections::HashMap;", note: "引入 HashMap。" },
           { code: "", note: "" },

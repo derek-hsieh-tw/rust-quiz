@@ -21,7 +21,7 @@ window.RUST_LESSONS["lesson1-6"] = {
       explanation: `一句話:String 是「擁有者」,&str 是「視圖」。String 在 heap 配置緩衝區,可以 push_str 增長;&str 只是(指標 + 長度)指向某段既有的字串資料——可能指向 String 的內容、也可能指向編譯進執行檔的字面值。
 這組關係之後會一再出現:Vec<T> 對 &[T] 也是同樣的「擁有者 vs 視圖」結構。&str 是唯讀的,可變的字串視圖是 &mut str(極少用)。`,
       walkthrough: {
-        label: "🔍 One snippet that makes 'owner vs. view' clear",
+        label: "⊕ One snippet that makes 'owner vs. view' clear",
         lines: [
           { code: "fn main() {", note: "程式進入點。" },
           { code: "    let mut owned = String::from(\"hello\");", note: "String:在 heap 配置一塊可增長的緩衝區,owned 是這份資料的擁有者;stack 上存的是(指標、長度、容量)。" },
@@ -49,7 +49,7 @@ window.RUST_LESSONS["lesson1-6"] = {
       explanation: `字面值 "hello" 被直接編譯進執行檔的唯讀資料段,s 是指向它的參考,型別是 &'static str——'static 表示「活得跟整個程式一樣久」,現階段記住結論即可(生命週期在 lesson1-13)。
 它不是 String(沒有 heap 配置,要 String 得寫 String::from("hello") 或 "hello".to_string());裸的 str 型別存在但大小不定,無法直接當變數型別用,平常只會以 &str 的形式出現。`,
       walkthrough: {
-        label: "🔍 Question code — walkthrough",
+        label: "⊕ Question code — walkthrough",
         lines: [
           { code: "fn main() {", note: "把題目補成完整程式。" },
           { code: "    let s = \"hello\";", note: "字面值 \"hello\" 被直接編譯進執行檔的唯讀資料段,不做任何 heap 配置;s 是指向它的參考,型別是 &'static str。'static 表示「活得跟整個程式一樣久」(生命週期細節在 lesson1-13)。" },
@@ -105,7 +105,7 @@ window.RUST_LESSONS["lesson1-6"] = {
           ],
         },
         {
-          label: "🔧 Desugared (what the compiler sees)",
+          label: "△ Desugared (what the compiler sees)",
           intro: "「自動轉換」這四個字到底做了什麼?deref coercion 其實是編譯器替你補了一次解參考:",
           lines: [
             { code: "print_it(&owned);", note: "你寫的這一行,&owned 的型別是 &String。" },
@@ -135,7 +135,7 @@ window.RUST_LESSONS["lesson1-6"] = {
       explanation: `&s[0..5] 取位元組 0~4(range 半開,不含 5),得到 "hello";&s[6..] 省略尾端表示到底,得到 "world"。兩個 slice 的型別都是 &str——它們不複製資料,只是指向 s 內部的視圖。
 注意 range 的數字是「位元組」索引不是字元索引,純 ASCII 時兩者一致;切在中文字中間會 panic(下面的題目會考)。`,
       walkthrough: {
-        label: "🔍 Question code — walkthrough (runs successfully)",
+        label: "⊕ Question code — walkthrough (runs successfully)",
         lines: [
           { code: "fn main() {", note: "程式進入點。" },
           { code: "    let s = String::from(\"hello world\");", note: "s 擁有 11 個位元組的 heap 字串。" },
@@ -202,7 +202,7 @@ window.RUST_LESSONS["lesson1-6"] = {
       explanation: `format! 透過格式化機制「借用」參數,s1、s2 的所有權原封不動,產出全新的 String 給 s3——三個變數之後都能用。
 串接多段字串時 format! 是首選:不 move 任何東西、可讀性最好;+ 串接則適合「確定不再需要左邊變數」的場景。`,
       walkthrough: {
-        label: "🔍 Question code — walkthrough (runs successfully)",
+        label: "⊕ Question code — walkthrough (runs successfully)",
         lines: [
           { code: "fn main() {", note: "程式進入點。" },
           { code: "    let s1 = String::from(\"tic\");", note: "s1 擁有第一段字串。" },
@@ -269,7 +269,7 @@ window.RUST_LESSONS["lesson1-6"] = {
 這是處理非 ASCII 文字的第一個必修觀念:len、索引、切片都以位元組為單位。用 &s[0..1] 去切「你好」會 panic(1 不是字元邊界),&s[0..3] 才能取出「你」。`,
       walkthrough: [
         {
-          label: "🔍 Question code — walkthrough (runs successfully)",
+          label: "⊕ Question code — walkthrough (runs successfully)",
           lines: [
             { code: "fn main() {", note: "程式進入點。" },
             { code: "    let s = \"你好\";", note: "&str 內部是 UTF-8 位元組序列;常用中文字在 UTF-8 下各佔 3 個位元組,所以這個字串共 6 個位元組。" },
@@ -317,7 +317,7 @@ window.RUST_LESSONS["lesson1-6"] = {
       explanation: `&a[1..3] 取索引 1、2(不含 3),得到 [2, 3],型別是 &[i32](i32 的 slice)。slice 記著(起點指標、長度),len() 是 2。
 &[T] 與 &str 是同一家族:對「一段連續元素」的借用視圖。函式參數收 &[T] 而非 &Vec<T> 或陣列,就能同時接受陣列、Vec、其他 slice 的借用——與 &str 慣例如出一轍。`,
       walkthrough: {
-        label: "🔍 Question code — walkthrough (runs successfully)",
+        label: "⊕ Question code — walkthrough (runs successfully)",
         lines: [
           { code: "fn main() {", note: "程式進入點。" },
           { code: "    let a = [1, 2, 3, 4, 5];", note: "型別是 [i32; 5],長度是型別的一部分,資料放在 stack 上。" },
@@ -382,7 +382,7 @@ r 前綴把跳脫解釋整個關掉:r"C:\Users\Derek" 裡的每個字元都照�
 「r 會保留跳脫符號」的說法搞反了:r 不是「多印一個反斜線」,而是「原始碼裡有幾個就是幾個」。而「反斜線一律被吃掉」也不對——單獨的反斜線在一般字串裡不是被吃掉,是編譯錯誤(unknown character escape),除非它後面接的剛好是合法跳脫序列。`,
       walkthrough: [
         {
-          label: "🔍 Walkthrough (compiles and runs normally)",
+          label: "⊕ Walkthrough (compiles and runs normally)",
           lines: [
             { code: "fn main() {", note: "程式進入點。" },
             { code: "    let path = \"C:\\\\Users\\\\Derek\";", note: "一般字串:每個反斜線都要寫兩次,第一個是跳脫字元、第二個才是內容。實際內容是 C:\\Users\\Derek。" },
@@ -416,7 +416,7 @@ r 前綴把跳脫解釋整個關掉:r"C:\Users\Derek" 裡的每個字元都照�
 至於「未知的名字原樣輸出」:找不到同名變數時是編譯錯誤(cannot find value in this scope),不會默默印出大括號。`,
       walkthrough: [
         {
-          label: "🔍 Question code (compiles and runs successfully)",
+          label: "⊕ Question code (compiles and runs successfully)",
           lines: [
             { code: "fn main() {", note: "程式進入點。" },
             { code: "    let width = 30;", note: "宣告變數,名字待會要直接放進格式化字串。" },

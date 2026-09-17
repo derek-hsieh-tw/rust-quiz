@@ -70,7 +70,7 @@ use 做的唯一一件事,是把路徑末端的名字綁到當前作用域,讓�
 實務上的取捨:只用一兩次就寫完整路徑,用很多次才 use。這段如果要改寫得清爽,慣例是 use std::fmt;,然後寫 fmt::Display、fmt::Formatter、fmt::Result——留一層模組名當語境。`,
       walkthrough: [
         {
-          label: "🔍 Walkthrough (compiles and runs normally)",
+          label: "⊕ Walkthrough (compiles and runs normally)",
           lines: [
             { code: "struct Point {", note: "定義一個自訂型別。" },
             { code: "    x: i32,", note: "欄位。" },
@@ -108,7 +108,7 @@ use 做的唯一一件事,是把路徑末端的名字綁到當前作用域,讓�
 至於「Display 在 std::string」的說法:String 這個型別確實住在 std::string,但它是格式化的「結果」,不是格式化的「規格」。`,
       walkthrough: [
         {
-          label: "🔍 Walkthrough (compiles and runs normally)",
+          label: "⊕ Walkthrough (compiles and runs normally)",
           lines: [
             { code: "use std::fmt;", note: "只引入模組本身,不引入裡面的個別名字。這是 std::fmt 的慣用寫法:留一層 fmt:: 當語境,讀的人一眼知道 Result 是哪個 Result。" },
             { code: "", note: "" },
@@ -143,7 +143,7 @@ Dictionary<K,V> → HashMap;HashSet<T> → HashSet;SortedDictionary<K,V> → BTr
 三個干擾寫法各有問題:Vec 的 remove(0) 要把後面全部往前搬,是 O(n),資料一多就痛;LinkedList 在 Rust 幾乎沒人用(指標跳躍對快取極不友善,官方文件自己都建議先考慮 VecDeque);BinaryHeap 是優先佇列,pop 出來的是「最大的」而不是「最早進來的」。`,
       walkthrough: [
         {
-          label: "🔍 Typical VecDeque usage (compiles and runs normally)",
+          label: "⊕ Typical VecDeque usage (compiles and runs normally)",
           lines: [
             { code: "use std::collections::VecDeque;", note: "collections 底下的東西一律要自己引入,prelude 不含它們。" },
             { code: "", note: "" },
@@ -179,7 +179,7 @@ lesson1-14 已經看過單層的 use std::io::{self, Write};,這裡只是同一�
 實務建議:std、外部 crate、自己的 crate 分三段寫,同一段裡收成一組巢狀 use,是社群最常見的排版。`,
       walkthrough: [
         {
-          label: "🔍 How to unpack the nested version",
+          label: "⊕ How to unpack the nested version",
           lines: [
             { code: "use std::{", note: "外層共同前綴是 std,底下每一項都會被貼上這個前綴。" },
             { code: "    collections::HashMap,", note: "貼上前綴後是 std::collections::HashMap。" },
@@ -189,7 +189,7 @@ lesson1-14 已經看過單層的 use std::io::{self, Write};,這裡只是同一�
           ],
         },
         {
-          label: "🔍 The fully expanded, equivalent version",
+          label: "⊕ The fully expanded, equivalent version",
           lines: [
             { code: "use std::collections::HashMap;", note: "第一個名字。" },
             { code: "use std::fs::File;", note: "第二個名字。" },
@@ -230,7 +230,7 @@ lesson1-14 已經看過單層的 use std::io::{self, Write};,這裡只是同一�
 順帶一提:如果只是要把整個檔案讀成字串,std 有現成的一行版本 std::fs::read_to_string("config.toml"),連 Read 都不用引入。上面那種寫法是為了示範 trait 與型別的分工。`,
       walkthrough: [
         {
-          label: "🔍 Walkthrough (compiles and runs normally)",
+          label: "⊕ Walkthrough (compiles and runs normally)",
           lines: [
             { code: "use std::fs::File;", note: "引入「檔案」這個型別。fs 管的是檔案系統裡的實體。" },
             { code: "use std::io::Read;", note: "引入「能讀」這個 trait。少了這行,下面的 read_to_string 就叫不到——這是最常見的 std 新手坑。" },
@@ -264,7 +264,7 @@ lesson1-14 已經看過單層的 use std::io::{self, Write};,這裡只是同一�
 真的要做 CLI,實務上不會手刻:用 clap crate(對應 C# 的 System.CommandLine),自動處理旗標、預設值與 --help。`,
       walkthrough: [
         {
-          label: "🔍 Walkthrough (compiles and runs normally)",
+          label: "⊕ Walkthrough (compiles and runs normally)",
           lines: [
             { code: "use std::env;", note: "引入模組本身而不是個別函式——env::args() 這種讀法比單獨一個 args() 清楚得多。" },
             { code: "", note: "" },
@@ -323,7 +323,7 @@ lesson1-14 已經看過單層的 use std::io::{self, Write};,這裡只是同一�
           ],
         },
         {
-          label: "🔧 Desugared (what the compiler sees)",
+          label: "△ Desugared (what the compiler sees)",
           intro: "錯誤訊息 cannot add `&str` to `&Path` 裡沒有出現 trait 的名字,但它講的就是 trait:",
           lines: [
             { code: "Path::new(\"data\") + \"/config\"", note: "你寫的運算式。" },
@@ -355,7 +355,7 @@ Instant 的「單調」是關鍵保證:它只會往前走,不受使用者改時�
 這裡要標出一條 std 的邊界:std 沒有日期時間的「格式化」與「時區」。沒有 ToString("yyyy-MM-dd"),沒有月份、沒有星期幾。要做這些事得用 chrono 或 time crate。std::time 的定位只是「量時間」,不是「處理日期」。`,
       walkthrough: [
         {
-          label: "🔍 Walkthrough (compiles and runs normally)",
+          label: "⊕ Walkthrough (compiles and runs normally)",
           lines: [
             { code: "use std::thread;", note: "引入執行緒模組,這裡只用它的 sleep。" },
             { code: "use std::time::{Duration, Instant};", note: "巢狀 use,一行引入兩個型別。" },
@@ -415,7 +415,7 @@ Instant 的「單調」是關鍵保證:它只會往前走,不受使用者改時�
           ],
         },
         {
-          label: "🔧 Desugared (what the compiler sees)",
+          label: "△ Desugared (what the compiler sees)",
           intro: "你只寫了 xs.sort(),錯誤訊息卻在講 Ord。那個字是從方法簽名來的:",
           lines: [
             { code: "xs.sort();", note: "你寫的這一行,看不到任何 trait。" },
@@ -451,7 +451,7 @@ Instant 的「單調」是關鍵保證:它只會往前走,不受使用者改時�
 這一題在 lesson2-9 會再展開(泛型約束裡的 T: Add<Output = T>),現在只要記住「運算子背後是 trait」這個地圖位置。`,
       walkthrough: [
         {
-          label: "🔍 Walkthrough (compiles and runs normally)",
+          label: "⊕ Walkthrough (compiles and runs normally)",
           lines: [
             { code: "use std::ops::Add;", note: "引入 + 對應的 trait。不 use 也行,那就得寫 impl std::ops::Add for Money。" },
             { code: "", note: "" },
@@ -495,7 +495,7 @@ Instant 的「單調」是關鍵保證:它只會往前走,不受使用者改時�
 順帶一提,失敗版本的 TryFrom 對應 C# 的 TryParse 那一族;lesson1-10 用過的 ? 自動轉換錯誤型別,靠的也是 From。至於 Copy——它跟型別轉換完全沒有關係。`,
       walkthrough: [
         {
-          label: "🔍 Walkthrough (compiles and runs normally)",
+          label: "⊕ Walkthrough (compiles and runs normally)",
           lines: [
             { code: "struct Celsius(f64);", note: "攝氏溫度,用 newtype 包一個 f64——這樣攝氏與華氏在型別上就分得開,不會互相傳錯。" },
             { code: "struct Fahrenheit(f64);", note: "華氏溫度,同樣的手法。" },
@@ -580,7 +580,7 @@ Rc 與 Arc 的內部邏輯幾乎一樣,差別只在計數用不用原子指令�
 記住這組拆分:Arc 解決「誰擁有它」,Mutex 解決「誰能改它」,兩個問題分開處理,所以才寫成 Arc<Mutex<T>>。細節在 lesson2-7 展開。`,
       walkthrough: [
         {
-          label: "🔍 Walkthrough (compiles and runs normally)",
+          label: "⊕ Walkthrough (compiles and runs normally)",
           lines: [
             { code: "use std::sync::{Arc, Mutex};", note: "一行引入兩個工具:共享所有權與互斥鎖。" },
             { code: "use std::thread;", note: "引入執行緒模組。" },
@@ -625,7 +625,7 @@ output() 回傳 Output,裡面有 status、stdout、stderr 三個欄位,後兩者
 干擾說法裡最值得點名的是「output 只拿 stdout」:它兩個都拿,而 status() 是兩個都不拿(直接繼承父行程的終端機)。`,
       walkthrough: [
         {
-          label: "🔍 Walkthrough (compiles and runs normally)",
+          label: "⊕ Walkthrough (compiles and runs normally)",
           lines: [
             { code: "use std::process::Command;", note: "引入行程建構器。" },
             { code: "", note: "" },
@@ -661,7 +661,7 @@ output() 回傳 Output,裡面有 status、stdout、stderr 三個欄位,後兩者
 實務上這一套通常不手寫:應用程式用 anyhow(等同強化版的 Box<dyn Error>),函式庫用 thiserror(自動生成 Display 與 Error 實作)。lesson2-6 會展開。`,
       walkthrough: [
         {
-          label: "🔍 Walkthrough (compiles and runs normally)",
+          label: "⊕ Walkthrough (compiles and runs normally)",
           lines: [
             { code: "use std::error::Error;", note: "引入錯誤的共同介面。" },
             { code: "use std::fmt;", note: "引入格式化模組,因為待會要實作 Display。" },
@@ -704,7 +704,7 @@ output() 回傳 Output,裡面有 status、stdout、stderr 三個欄位,後兩者
 什麼時候該用它:寫函式庫、處理大量字串、而且「需要修改」是少數情況。一般應用程式碼直接回傳 String 通常就夠了,不必過早優化。`,
       walkthrough: [
         {
-          label: "🔍 Walkthrough (compiles and runs normally)",
+          label: "⊕ Walkthrough (compiles and runs normally)",
           lines: [
             { code: "use std::borrow::Cow;", note: "引入這個 enum。std::borrow 裡還有 Borrow 與 ToOwned 兩個 trait,是 Cow 背後的機制。" },
             { code: "", note: "" },
@@ -742,7 +742,7 @@ std::net 只有最底層的 TcpListener、TcpStream、UdpSocket、SocketAddr—�
 常用對照:HttpClient → reqwest;System.Text.Json → serde + serde_json;Task / async → tokio;ILogger → tracing 或 log;System.CommandLine → clap;Regex → regex;DateTime → chrono。唯一的例外是 LINQ——它對應的 Iterator 就在 std 裡,而且是標準庫最強大的部分之一(lesson2-2 的主題)。`,
       walkthrough: [
         {
-          label: "🔍 How this is done in practice",
+          label: "⊕ How this is done in practice",
           lang: "ini",
           lines: [
             { code: "# Cargo.toml", note: "所有外部相依都宣告在這裡,對應 .NET 的 PackageReference。" },
@@ -773,7 +773,7 @@ std::net 只有最底層的 TcpListener、TcpStream、UdpSocket、SocketAddr—�
 cargo doc --open 的價值在於:它產生的文件包含你專案用到的每一個 crate,版本跟你鎖定的完全一致——不會發生「照網站文件寫卻對不上」的情況。至於 cargo search 是用來找套件的,rustc --help 則只列編譯器旗標。`,
       walkthrough: [
         {
-          label: "🔍 Three commands for looking up documentation",
+          label: "⊕ Three commands for looking up documentation",
           lang: "bash",
           lines: [
             { code: "rustup doc --std", note: "開啟離線版標準庫文件,版本與你安裝的工具鏈一致。沒有網路也能查,而且不會誤看到不同版本的頁面。" },

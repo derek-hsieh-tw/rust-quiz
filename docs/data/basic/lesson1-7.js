@@ -251,7 +251,7 @@ window.RUST_LESSONS["lesson1-7"] = {
       explanation: `tuple struct 是「有名字的 tuple」:欄位沒有名字,用 .0、.1 存取。適合欄位意義不言自明的場景(Point 的 x、y)。
 單欄位的 Meters(i32) 是 newtype 模式:給 i32 一個獨立型別,讓「公尺」和「秒」即使底層都是 i32 也不能混用——編譯器幫你擋掉單位錯誤,零執行期成本。這個模式在 Rust 生態使用頻率很高。`,
       walkthrough: {
-        label: "🔍 Question code — walkthrough (runs successfully)",
+        label: "⊕ Question code — walkthrough (runs successfully)",
         lines: [
           { code: "struct Point(i32, i32);", note: "tuple struct:欄位只寫型別、不寫名稱,像是「有名字的 tuple」。適合欄位意義不言自明的場景。" },
           { code: "struct Meters(i32);", note: "單欄位的 tuple struct = newtype 模式:給 i32 包一層獨立型別,讓「公尺」和「秒」即使底層都是 i32 也不能互相混用。" },
@@ -400,7 +400,7 @@ window.RUST_LESSONS["lesson1-7"] = {
       explanation: `沒有 self 參數的函式叫「關聯函式」,掛在型別上、用 Rectangle::square(3) 呼叫(:: 而非 .)。impl 區塊裡 Self 就是當前型別的別名,回傳型別與建構處都能用。
 Rust 沒有建構子語法,new 只是「最常見的關聯函式名字」,不是關鍵字——square、from_size、with_capacity 都是合法慣用的建構名,一個型別可以有很多個。`,
       walkthrough: {
-        label: "🔍 Question code — walkthrough (runs successfully)",
+        label: "⊕ Question code — walkthrough (runs successfully)",
         lines: [
           { code: "struct Rectangle {", note: "定義 struct。" },
           { code: "    width: u32,", note: "欄位。" },
@@ -494,7 +494,7 @@ Rust 沒有建構子語法,new 只是「最常見的關聯函式名字」,不是
       explanation: `兩個根本差異:(1)沒有實作繼承——Rust 沒有基底類別、沒有 virtual/override,共享行為用 trait(介面 + 預設實作)、共享資料用組合,直接跳過「繼承階層深不可測」的老問題。(2)記憶體語意——C# class 實例是 GC 堆上的共享參考;Rust struct 是「值」,擁有它的變數遵守 move/borrow 規則。
 struct 當然能有方法(impl 區塊);struct 本體在 stack 但欄位可以擁有 heap 資料(String、Vec 的緩衝區在 heap,由 struct 擁有並隨之 drop)。`,
       walkthrough: {
-        label: "🔍 No inheritance — composition + trait instead",
+        label: "⊕ No inheritance — composition + trait instead",
         lines: [
           { code: "trait Greet {", note: "trait 定義「共享的行為」,角色接近 C# 的介面(而且可以有預設實作)。" },
           { code: "    fn hello(&self) -> String;", note: "宣告方法簽名,由各型別自己實作。" },

@@ -100,7 +100,7 @@ window.RUST_LESSONS["lesson1-8"] = {
       explanation: `match 到 Coin::Quarter(state) 分支時,變體攜帶的 String 被「綁定」到變數 state,分支區塊裡就能使用——這是 enum 帶資料與 match 的合體技:分辨是哪種情況「同時」取出該情況的資料,一步完成。
 分支可以是單一運算式,也可以是 { } 區塊(區塊尾端運算式 25 就是該分支的值)。輸出兩行:State: Alaska、25。`,
       walkthrough: {
-        label: "🔍 Question code — walkthrough (runs successfully)",
+        label: "⊕ Question code — walkthrough (runs successfully)",
         lines: [
           { code: "enum Coin {", note: "定義一個帶資料的 enum。" },
           { code: "    Penny,", note: "不帶資料的變體。" },
@@ -188,7 +188,7 @@ window.RUST_LESSONS["lesson1-8"] = {
 None 時 panic 的版本語意不同(if let 靜默跳過,不會炸);Some(3) 的版本只匹配「值恰好是 3」,不是綁定任意值;用 != None 判斷後直接印 config_max 則印出的是 Some(3) 而非 3,而且失去了「取出內部值」的能力。if let 也可以接 else 區塊處理其餘情況。`,
       walkthrough: [
         {
-          label: "🔍 Question code (the if let) — walkthrough",
+          label: "⊕ Question code (the if let) — walkthrough",
           lines: [
             { code: "let config_max = Some(3u8);", note: "建立一個 Option<u8>,值是 Some(3)。" },
             { code: "if let Some(max) = config_max {", note: "if let 是「只關心一種模式」的語法糖:模式 Some(max) 匹配成功就把內部值綁定到 max 並執行區塊;不成功就整個跳過。" },
@@ -273,7 +273,7 @@ None 時 panic 的版本語意不同(if let 靜默跳過,不會炸);Some(3) 的�
       explanation: `match 是運算式,每個分支的值就是整個 match 的值,直接當函式回傳值。1..=9 是「range 模式」:匹配 1 到 9(含),所以 5 落在 single digit;42 沒被前兩個分支接住,落到萬用的 _。
 三個分支的型別必須一致(都是 &'static str)——和 if 運算式同一條規則。分支由上往下依序嘗試,第一個匹配的獲勝。`,
       walkthrough: {
-        label: "🔍 Question code — walkthrough (runs successfully)",
+        label: "⊕ Question code — walkthrough (runs successfully)",
         lines: [
           { code: "fn describe(n: i32) -> &'static str {", note: "回傳字串字面值的參考;'static 表示它活得跟整個程式一樣久(字面值編譯進執行檔)。" },
           { code: "    match n {", note: "match 是運算式,它的值就是函式的回傳值(尾端沒有分號)。分支由上往下依序嘗試,第一個匹配的獲勝。" },
@@ -304,7 +304,7 @@ None 時 panic 的版本語意不同(if let 靜默跳過,不會炸);Some(3) 的�
       explanation: `Vec::pop 從「尾端」取出元素,回傳 Option<T>:有元素給 Some(值),空了給 None。while let 的語意:模式匹配成功就繼續迴圈,失敗(None)就結束——所以依序印出 3 2 1,棧空後乾淨地停下。
 這是「用型別驅動迴圈終止」的漂亮示範:不用先檢查 is_empty 再取值,pop 的回傳型別本身就攜帶了「還有沒有」的資訊。`,
       walkthrough: {
-        label: "🔍 Question code — walkthrough (runs successfully)",
+        label: "⊕ Question code — walkthrough (runs successfully)",
         lines: [
           { code: "fn main() {", note: "程式進入點。" },
           { code: "    let mut stack = vec![1, 2, 3];", note: "建立可變的 Vec,當成堆疊使用。" },
@@ -332,7 +332,7 @@ None 時 panic 的版本語意不同(if let 靜默跳過,不會炸);Some(3) 的�
 家族還有:unwrap_or_default()(用型別的 Default,i32 是 0)、unwrap_or_else(|| 昂貴計算)(只在 None 時才執行計算)。先用 match/if let 思考,熟了之後這些方法讓程式碼更精簡。`,
       walkthrough: [
         {
-          label: "🔍 Question code — walkthrough (runs successfully)",
+          label: "⊕ Question code — walkthrough (runs successfully)",
           lines: [
             { code: "fn main() {", note: "程式進入點。" },
             { code: "    let a: Option<i32> = Some(5);", note: "有值的 Option。" },
@@ -342,7 +342,7 @@ None 時 panic 的版本語意不同(if let 靜默跳過,不會炸);Some(3) 的�
           ],
         },
         {
-          label: "🔍 Other members of the same family",
+          label: "⊕ Other members of the same family",
           lines: [
             { code: "let b: Option<i32> = None;", note: "同樣是沒有值。" },
             { code: "let v1 = b.unwrap_or_default();", note: "用型別的 Default 當預設值,i32 的預設是 0——不必自己寫那個 0。" },
@@ -369,7 +369,7 @@ None 時 panic 的版本語意不同(if let 靜默跳過,不會炸);Some(3) 的�
 檢查全部發生在編譯期,「執行期檢查比較慢」的說法正好說反。`,
       walkthrough: [
         {
-          label: "🔷 C#'s approach: it compiles, but the protection is optional",
+          label: "◇ C#'s approach: it compiles, but the protection is optional",
           lang: "csharp",
           lines: [
             { code: "string? name = GetName();", note: "NRT 註記說「這個字串可能是 null」——但這只是給編譯器的提示。" },
@@ -415,7 +415,7 @@ None 時 panic 的版本語意不同(if let 靜默跳過,不會炸);Some(3) 的�
 「let 後面不能接 else」在 1.65 之前確實如此,現在是穩定語法;而「一律走 else」則是把它跟 else 的一般語意搞混了——比對成功時 else 整段不會執行。`,
       walkthrough: [
         {
-          label: "🔍 Question code (compiles and runs successfully)",
+          label: "⊕ Question code (compiles and runs successfully)",
           lines: [
             { code: "fn parse_port(text: &str) -> u16 {", note: "回傳一個埠號。" },
             { code: "    let Ok(port) = text.parse::<u16>() else {", note: "parse 回傳 Result<u16, _>。比對成功就把裡面的 u16 綁給 port,而且 port 活在「這個函式」的作用域,不是活在下面的大括號裡。" },
@@ -465,7 +465,7 @@ None 時 panic 的版本語意不同(if let 靜默跳過,不會炸);Some(3) 的�
           ],
         },
         {
-          label: "🔧 Desugared (what the compiler sees)",
+          label: "△ Desugared (what the compiler sees)",
           intro: "為什麼 else 非離開不可?把糖攤開就一目了然:",
           lines: [
             { code: "let Ok(port) = text.parse::<u16>() else { return 8080; };", note: "你寫的這一行。" },

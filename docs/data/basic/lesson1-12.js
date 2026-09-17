@@ -100,7 +100,7 @@ interface 關鍵字與冒號繼承是 C# 語法;impl Article for Summary 把 tra
       explanation: `trait 方法可以附帶預設實作(有本體);實作者沒覆寫就直接繼承,所以空的 impl 完全合法,輸出預設的 (Read more...)。實作者也可以覆寫,呼叫時用覆寫版。
 預設實作看不見具體型別的欄位(它只認識 trait 自己),要用欄位資料得透過「呼叫 trait 的其他方法」的模式組合(預設方法呼叫必須實作的方法)。`,
       walkthrough: {
-        label: "🔍 Question code — walkthrough (runs successfully)",
+        label: "⊕ Question code — walkthrough (runs successfully)",
         lines: [
           { code: "trait Summary {", note: "定義 trait。" },
           { code: "    fn summarize(&self) -> String {", note: "注意這個方法「有本體」——這叫預設實作,實作者沒覆寫就直接繼承。" },
@@ -261,7 +261,7 @@ interface 關鍵字與冒號繼承是 C# 語法;impl Article for Summary 把 tra
       explanation: `impl Trait 回傳型別 = 「我回傳某個實作了 Summary 的東西,具體是誰不告訴你」。編譯器知道真身(零成本),但呼叫端的合約只有 Summary——只能呼叫 summarize(),碰 .content 是編譯錯誤。這是刻意的抽象:實作可以換,呼叫端不受影響。
 限制:函式所有路徑必須回傳「同一個」具體型別——if 分支回 Tweet、else 回 Article 是編譯錯誤(那需要 Box<dyn Summary>,進階課)。這個語法最重要的舞台是閉包與迭代器(型別寫不出名字,只能 impl Fn / impl Iterator)。`,
       walkthrough: {
-        label: "🔍 Question code — walkthrough (valid)",
+        label: "⊕ Question code — walkthrough (valid)",
         lines: [
           { code: "trait Summary {", note: "定義 trait。" },
           { code: "    fn summarize(&self) -> String;", note: "宣告方法。" },
@@ -289,7 +289,7 @@ interface 關鍵字與冒號繼承是 C# 語法;impl Article for Summary 把 tra
     },
     {
       id: "1-12-06",
-      // 詳解裡的 Add<Output = T> 是拿來示範「關聯型別語法」的例子,不是隱藏的去糖概念,不需要 🔧 區塊
+      // 詳解裡的 Add<Output = T> 是拿來示範「關聯型別語法」的例子,不是隱藏的去糖概念,不需要 △ 區塊
       desugarChecked: true,
       question: "多重約束與 where 子句。以下哪個改寫與原簽名等價且合法?",
       questionCode: "use std::fmt::{Debug, Display};\n\nfn stats<T: Display + Clone, U: Clone + Debug>(t: &T, u: &U) -> i32 {\n    42\n}",
@@ -437,7 +437,7 @@ where 裡用等號、把 + 串接寫成逗號(變成宣告了叫 Clone、Debug �
       explanation: `greet 是泛型函式(impl Trait 參數 = trait bound 泛型),兩次呼叫各自單態化:greet::<English> 與 greet::<Chinese> 是兩份獨立程式碼,各呼叫各的 hello——這就是「編譯期多型」,輸出 Hello 與你好。
 參數型別「不一致」不是問題,那正是泛型的意義;單態化是每個型別一份,不會「以第一次為準」;unit struct(English、Chinese 這種無欄位 struct)是完整的型別,實作 trait 毫無問題,English 這個運算式本身就是它的實例。`,
       walkthrough: {
-        label: "🔍 Question code — walkthrough (runs successfully)",
+        label: "⊕ Question code — walkthrough (runs successfully)",
         lines: [
           { code: "trait Greet {", note: "定義共享行為。" },
           { code: "    fn hello(&self) -> String;", note: "宣告方法。" },
@@ -537,7 +537,7 @@ where 裡用等號、把 + 串接寫成逗號(變成宣告了叫 Clone、Debug �
       explanation: `最本質的差異是「誰能建立實作、什麼時候」:C# 的 class F : IFoo 寫死在型別定義;Rust 的 impl 是獨立區塊——你可以為標準庫的型別實作自己的 trait(本課孤兒規則題),第三方也可以為你的型別實作他們的 trait。型別發布多年後仍能長出新能力,不用改原始碼。
 預設實作兩邊都有(trait 從第一天、C# 8 之後);trait 當然是 Rust 設計 API 抽象的主力(整個標準庫:Iterator、Display、From⋯⋯)。`,
       walkthrough: {
-        label: "🔍 The core difference: the impl can be added later",
+        label: "⊕ The core difference: the impl can be added later",
         lines: [
           { code: "// 這個型別是標準函式庫寫的,原始碼你改不到", note: "情境:你想讓 Vec<i32> 具備某個新能力。" },
           { code: "trait Pretty {", note: "你在自己的 crate 裡定義一個 trait。" },
@@ -576,7 +576,7 @@ where 裡用等號、把 + 串接寫成逗號(變成宣告了叫 Clone、Debug �
       explanation: `這是 trait 最重要的組合技:trait 裡同時放「必須實作的方法」(summarize_author,無本體)與「預設方法」(summarize,有本體),預設方法透過 self 呼叫前者——於是預設實作間接拿到了具體型別的資料。
 實作者只需要提供 summarize_author,summarize 自動附送;想要不一樣的行為再覆寫即可。標準函式庫的 Iterator 是極致範例:你只實作 next,map、filter、collect 等七十多個方法全部免費繼承。`,
       walkthrough: {
-        label: "🔍 Question code — walkthrough (runs successfully)",
+        label: "⊕ Question code — walkthrough (runs successfully)",
         lines: [
           { code: "trait Summary {", note: "定義 trait。" },
           { code: "    fn summarize_author(&self) -> String;", note: "「必須實作」的方法:分號結尾、沒有本體,每個實作者都得自己補。" },
@@ -749,7 +749,7 @@ where 裡用等號、把 + 串接寫成逗號(變成宣告了叫 Clone、Debug �
       explanation: `孤兒規則看的是「這個 impl 的 trait 與型別,至少一個屬於本 crate」——Wrapper 是你定義的,條件成立,裡面裝什麼完全不影響。
 輸出由你自己寫的 fmt 決定:self.0 取出被包住的 Vec<String>,join(", ") 串成 hello, world,再套上中括號,所以是 [hello, world]——不會沿用 Vec 的 Debug 格式(那會有引號)。newtype 的代價是失去了被包型別的方法(w.len() 叫不到,要寫 w.0.len()),需要時可以實作 Deref 讓方法穿透,那是進階課的內容。`,
       walkthrough: {
-        label: "🔍 Question code — walkthrough (runs successfully)",
+        label: "⊕ Question code — walkthrough (runs successfully)",
         lines: [
           { code: "use std::fmt;", note: "引入格式化模組。" },
           { code: "", note: "" },
@@ -931,7 +931,7 @@ Point 沒有實作 Display,所以 impl Outline for Point {} 這一行被拒絕,�
       explanation: `同名方法完全可以並存,Rust 有明確的優先順序:p.fly() 優先選「型別自身 impl 區塊裡的方法」(inherent method),所以印出揮手;要叫 trait 版本就把 trait 名寫出來——Pilot::fly(&p) 等於明說「用 Pilot 這個 trait 的 fly」,self 改用一般參數的形式傳入。
 若型別自己沒有同名方法,而兩個 trait 都有,p.fly() 才會報 multiple applicable items in scope,那時同樣用 Trait::method(&p) 消歧義。至於沒有 self 參數的關聯函式無法用這招(沒有值可以傳),必須用完全限定語法 <Human as Pilot>::fly()。`,
       walkthrough: {
-        label: "🔍 Question code — walkthrough (runs successfully)",
+        label: "⊕ Question code — walkthrough (runs successfully)",
         lines: [
           { code: "trait Pilot {", note: "第一個 trait。" },
           { code: "    fn fly(&self);", note: "宣告方法。" },
@@ -1030,7 +1030,7 @@ Point 沒有實作 Display,所以 impl Outline for Point {} 這一行被拒絕,�
       explanation: `標準函式庫裡有一條 impl<T: fmt::Display + ?Sized> ToString for T { ... }——它不是為某個具體型別實作,而是「為所有滿足條件的型別」一次實作,這叫 blanket implementation(涵蓋式實作)。
 所以你只要實作 Display,to_string() 立刻免費附送,而且行為保證一致(內部就是呼叫你的 fmt)。這也是為什麼標準函式庫建議「不要自己實作 ToString」——你實作 Display 就好。同樣的手法還有 impl<T, U: From<T>> Into<U> for T:實作 From 就免費得到 Into。`,
       walkthrough: {
-        label: "🔍 Question code — walkthrough (runs successfully)",
+        label: "⊕ Question code — walkthrough (runs successfully)",
         lines: [
           { code: "use std::fmt;", note: "引入格式化模組。" },
           { code: "", note: "" },
@@ -1068,7 +1068,7 @@ Point 沒有實作 Display,所以 impl Outline for Point {} 這一行被拒絕,�
       explanation: `本課四個重點:(1)內容——trait 可以有必須實作的方法、預設方法、關聯函式,還能宣告 supertrait 當前置需求;(2)位置——實作寫在獨立 impl 區塊,型別發布多年後仍能長出新能力,唯一的限制是孤兒規則(trait 或型別至少一個是自己的);(3)使用——呼叫 trait 方法時該 trait 必須在作用域內,忘了 use 就會看到「方法找不到」;(4)成本——搭配泛型時編譯期單態化,沒有虛擬呼叫(要動態分派得明寫 dyn,那是進階課)。
 其餘三種說法都各有錯誤:trait 不必在型別定義時宣告;預設實作與關聯函式都支援;而預設的分派方式是靜態的,不是虛擬表。`,
       walkthrough: {
-        label: "🔍 One program that walks through this whole lesson",
+        label: "⊕ One program that walks through this whole lesson",
         lines: [
           { code: "use std::fmt;", note: "引入格式化模組——同時也示範了重點三:trait 要在作用域內才用得到它的方法。" },
           { code: "", note: "" },
