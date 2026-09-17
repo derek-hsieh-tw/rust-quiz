@@ -1,7 +1,7 @@
 /* 出題慣例見專案根目錄 AUTHORING.md:
  *   - answer 一律為 0(正確答案寫在第一個選項),顯示順序由 quiz.js 依題目 id 洗牌
  *   - 詳解禁止用「選項 A/B/C」字母指涉,必須直接描述選項內容
- *   - 有程式碼的題目一律附 walkthrough(逐行說明);反面案例必須同時附上 ✅ 正確寫法 */
+ *   - 有程式碼的題目一律附 walkthrough(逐行說明);反面案例必須同時附上 √ 正確寫法 */
 window.RUST_LESSONS = window.RUST_LESSONS || {};
 window.RUST_LESSONS["lesson1-12"] = {
   id: "lesson1-12",
@@ -22,7 +22,7 @@ window.RUST_LESSONS["lesson1-12"] = {
 interface 關鍵字與冒號繼承是 C# 語法;impl Article for Summary 把 trait 和型別寫反了(變成「為 Summary 實作 Article」);trait 裡的方法簽名也必須是完整的 fn 語法。`,
       walkthrough: [
         {
-          label: "✅ 正確寫法(完整可執行)",
+          label: "√ Correct version (complete, runnable)",
           lines: [
             { code: "trait Summary {", note: "trait 定義一組「共享行為」,角色接近 C# 的 interface。" },
             { code: "    fn summarize(&self) -> String;", note: "只宣告方法簽名,用分號結尾、不給實作——實作者必須自己補上。" },
@@ -45,7 +45,7 @@ interface 關鍵字與冒號繼承是 C# 語法;impl Article for Summary 把 tra
           ],
         },
         {
-          label: "❌ 錯誤寫法一:用了 C# 的 interface 與冒號繼承",
+          label: "X Wrong version 1: used C#'s interface and colon inheritance",
           lines: [
             { code: "interface Summary {", note: "⛔ Rust 沒有 interface 關鍵字,共享行為一律用 trait。" },
             { code: "    fn summarize(&self) -> String;", note: "方法簽名本身寫對了。" },
@@ -57,7 +57,7 @@ interface 關鍵字與冒號繼承是 C# 語法;impl Article for Summary 把 tra
           ],
         },
         {
-          label: "❌ 錯誤寫法二:trait 與型別寫反了",
+          label: "X Wrong version 2: swapped the trait and the type",
           lines: [
             { code: "trait Summary {", note: "trait 定義本身沒問題。" },
             { code: "    fn summarize(&self) -> String;", note: "方法簽名。" },
@@ -71,7 +71,7 @@ interface 關鍵字與冒號繼承是 C# 語法;impl Article for Summary 把 tra
           ],
         },
         {
-          label: "❌ 錯誤寫法三:方法簽名不是 Rust 語法",
+          label: "X Wrong version 3: the method signature isn't Rust syntax",
           lines: [
             { code: "trait Summary {", note: "trait 關鍵字用對了。" },
             { code: "    summarize(): String;", note: "⛔ 語法錯誤:少了 fn 關鍵字,回傳型別也不能用冒號標(要用 ->),而且缺少接收者 &self。正確寫法是 fn summarize(&self) -> String;。" },
@@ -100,7 +100,7 @@ interface 關鍵字與冒號繼承是 C# 語法;impl Article for Summary 把 tra
       explanation: `trait 方法可以附帶預設實作(有本體);實作者沒覆寫就直接繼承,所以空的 impl 完全合法,輸出預設的 (Read more...)。實作者也可以覆寫,呼叫時用覆寫版。
 預設實作看不見具體型別的欄位(它只認識 trait 自己),要用欄位資料得透過「呼叫 trait 的其他方法」的模式組合(預設方法呼叫必須實作的方法)。`,
       walkthrough: {
-        label: "🔍 題目程式碼逐行說明(可正常執行)",
+        label: "🔍 Question code — walkthrough (runs successfully)",
         lines: [
           { code: "trait Summary {", note: "定義 trait。" },
           { code: "    fn summarize(&self) -> String {", note: "注意這個方法「有本體」——這叫預設實作,實作者沒覆寫就直接繼承。" },
@@ -139,7 +139,7 @@ interface 關鍵字與冒號繼承是 C# 語法;impl Article for Summary 把 tra
 裸寫 &Summary 是被淘汰的舊語法(現代 Rust 要寫 &dyn Summary,而且那是動態分派,語意不同——進階課);trait 不能直接當參數型別按值收;where Summary: T 把約束方向寫反了(變成要求 trait 實作型別)。`,
       walkthrough: [
         {
-          label: "✅ 等價的兩種寫法(完整可執行)",
+          label: "√ Two equivalent versions (complete, runnable)",
           lines: [
             { code: "trait Summary {", note: "先定義一個 trait 當作約束。" },
             { code: "    fn summarize(&self) -> String;", note: "宣告方法。" },
@@ -171,7 +171,7 @@ interface 關鍵字與冒號繼承是 C# 語法;impl Article for Summary 把 tra
           ],
         },
         {
-          label: "❌ 錯誤寫法一:裸寫 trait 名當參數型別",
+          label: "X Wrong version 1: used the bare trait name as the parameter type",
           lines: [
             { code: "fn notify(item: &Summary) {", note: "⛔ 這是被淘汰的舊語法,現代 Rust 會報 trait objects must include the `dyn` keyword。而且就算改成 &dyn Summary,語意也不同——那是「動態分派」(執行期查 vtable),不是零成本的泛型。" },
             { code: "    println!(\"{}\", item.summarize());", note: "函式本體本身沒問題。" },
@@ -179,7 +179,7 @@ interface 關鍵字與冒號繼承是 C# 語法;impl Article for Summary 把 tra
           ],
         },
         {
-          label: "❌ 錯誤寫法二:trait 按值當參數型別",
+          label: "X Wrong version 2: used the trait by value as the parameter type",
           lines: [
             { code: "fn notify(item: Summary) {", note: "⛔ 編譯失敗:the size for values of type `(dyn Summary + 'static)` cannot be known at compilation time。trait 沒有固定大小(不同實作者大小不同),編譯器不知道要在 stack 上留多少空間,所以只能透過參考或 Box 使用。" },
             { code: "    println!(\"{}\", item.summarize());", note: "函式本體。" },
@@ -187,7 +187,7 @@ interface 關鍵字與冒號繼承是 C# 語法;impl Article for Summary 把 tra
           ],
         },
         {
-          label: "❌ 錯誤寫法三:約束方向寫反",
+          label: "X Wrong version 3: the bound direction is backwards",
           lines: [
             { code: "fn notify<T>(item: &T) where Summary: T {", note: "⛔ where 子句的左邊是「被約束的型別」、右邊是「要求的能力」。這樣寫等於要求「Summary 這個 trait 實作了 T」,方向完全相反;正確寫法是 where T: Summary。" },
             { code: "    println!(\"{}\", item.summarize());", note: "函式本體。" },
@@ -213,7 +213,7 @@ interface 關鍵字與冒號繼承是 C# 語法;impl Article for Summary 把 tra
 常用 derive 清單:Debug(能 {:?})、Clone(能 .clone())、Copy(賦值複製)、PartialEq(能 ==)、Default(能 ::default())——每個能力都是顯式選擇,不存在「預設用位址比較」這種隱含行為。`,
       walkthrough: [
         {
-          label: "❌ 題目程式碼(無法編譯)",
+          label: "X Question code (won't compile)",
           lines: [
             { code: "struct Point {", note: "⛔ 問題所在:沒有任何 derive,這個型別預設什麼能力都沒有——不能比較、不能印、不能複製。" },
             { code: "    x: i32,", note: "欄位。" },
@@ -228,7 +228,7 @@ interface 關鍵字與冒號繼承是 C# 語法;impl Article for Summary 把 tra
           ],
         },
         {
-          label: "✅ 正確寫法(derive 需要的能力)",
+          label: "√ Correct version (derive the required capability)",
           lines: [
             { code: "#[derive(PartialEq, Debug)]", note: "改動處:PartialEq 自動生成「逐欄位比較」的實作,== 就能用了;順手加 Debug 讓 {:?} 也能印。" },
             { code: "struct Point {", note: "struct 定義本身不變。" },
@@ -261,7 +261,7 @@ interface 關鍵字與冒號繼承是 C# 語法;impl Article for Summary 把 tra
       explanation: `impl Trait 回傳型別 = 「我回傳某個實作了 Summary 的東西,具體是誰不告訴你」。編譯器知道真身(零成本),但呼叫端的合約只有 Summary——只能呼叫 summarize(),碰 .content 是編譯錯誤。這是刻意的抽象:實作可以換,呼叫端不受影響。
 限制:函式所有路徑必須回傳「同一個」具體型別——if 分支回 Tweet、else 回 Article 是編譯錯誤(那需要 Box<dyn Summary>,進階課)。這個語法最重要的舞台是閉包與迭代器(型別寫不出名字,只能 impl Fn / impl Iterator)。`,
       walkthrough: {
-        label: "🔍 題目程式碼逐行說明(合法)",
+        label: "🔍 Question code — walkthrough (valid)",
         lines: [
           { code: "trait Summary {", note: "定義 trait。" },
           { code: "    fn summarize(&self) -> String;", note: "宣告方法。" },
@@ -304,7 +304,7 @@ interface 關鍵字與冒號繼承是 C# 語法;impl Article for Summary 把 tra
 where 裡用等號、把 + 串接寫成逗號(變成宣告了叫 Clone、Debug 的型別參數!)、把 trait 直接當參數型別,都不是合法語法。`,
       walkthrough: [
         {
-          label: "✅ 等價且合法的 where 版本(完整可執行)",
+          label: "√ An equivalent, valid where version (complete, runnable)",
           lines: [
             { code: "use std::fmt::{Debug, Display};", note: "引入兩個 trait,才能在 bound 裡使用短名稱。" },
             { code: "", note: "" },
@@ -324,7 +324,7 @@ where 裡用等號、把 + 串接寫成逗號(變成宣告了叫 Clone、Debug �
           ],
         },
         {
-          label: "❌ 錯誤寫法一:where 裡用了等號",
+          label: "X Wrong version 1: used an equals sign in where",
           lines: [
             { code: "fn stats<T, U>(t: &T, u: &U) -> i32", note: "簽名前半沒問題。" },
             { code: "where T = Display + Clone, U = Clone + Debug", note: "⛔ where 裡用的是冒號不是等號。等號在型別層面代表「關聯型別等於某型別」(例如 Add<Output = T>),不是約束。" },
@@ -334,7 +334,7 @@ where 裡用等號、把 + 串接寫成逗號(變成宣告了叫 Clone、Debug �
           ],
         },
         {
-          label: "❌ 錯誤寫法二:把 + 串接誤寫成逗號",
+          label: "X Wrong version 2: mistakenly used a comma instead of + to chain bounds",
           lines: [
             { code: "fn stats<T: Display, Clone, U: Clone, Debug>(t: &T, u: &U) -> i32 {", note: "⛔ 逗號在角括號裡是「分隔型別參數」,所以這行等於宣告了四個型別參數:T、Clone、U、Debug——後兩個變成型別參數名而不是約束,函式體立刻對不上。多個能力必須用 + 串接。" },
             { code: "    42", note: "回傳值。" },
@@ -342,7 +342,7 @@ where 裡用等號、把 + 串接寫成逗號(變成宣告了叫 Clone、Debug �
           ],
         },
         {
-          label: "❌ 錯誤寫法三:把 trait 直接當參數型別",
+          label: "X Wrong version 3: used the trait directly as the parameter type",
           lines: [
             { code: "fn stats(t: &(Display + Clone), u: &(Clone + Debug)) -> i32 {", note: "⛔ trait 不能直接當型別用,而且這個寫法連 dyn 都沒寫。要寫成 &(impl Display + Clone) 這種 impl Trait 參數,或 &(dyn Display) 這種 trait 物件(但 dyn 只能有一個非自動 trait)。" },
             { code: "    42", note: "回傳值。" },
@@ -366,7 +366,7 @@ where 裡用等號、把 + 串接寫成逗號(變成宣告了叫 Clone、Debug �
 為什麼禁止:若兩個相依套件都幫 Vec<i32> 實作了 Display,用到它們的程式該聽誰的?孤兒規則從根源保證全世界不會出現衝突的實作。突圍方法就是選項中的 Wrapper(newtype 模式,lesson1-7 的 tuple struct 再就業)。`,
       walkthrough: [
         {
-          label: "❌ 不被允許的那一個(孤兒規則)",
+          label: "X The one that's not allowed (the orphan rule)",
           lines: [
             { code: "use std::fmt::Display;", note: "Display 定義在標準函式庫,對你的 crate 來說是「外部 trait」。" },
             { code: "", note: "" },
@@ -379,7 +379,7 @@ where 裡用等號、把 + 串接寫成逗號(變成宣告了叫 Clone、Debug �
           outro: "為什麼要禁止:若兩個相依套件都幫 Vec<i32> 實作了 Display,用到它們的程式該聽誰的?孤兒規則從根源保證全世界不會出現衝突的實作。",
         },
         {
-          label: "✅ 三種合法的情況(完整可執行)",
+          label: "√ Three legal cases (complete, runnable)",
           lines: [
             { code: "use std::fmt;", note: "引入格式化模組。" },
             { code: "", note: "" },
@@ -437,7 +437,7 @@ where 裡用等號、把 + 串接寫成逗號(變成宣告了叫 Clone、Debug �
       explanation: `greet 是泛型函式(impl Trait 參數 = trait bound 泛型),兩次呼叫各自單態化:greet::<English> 與 greet::<Chinese> 是兩份獨立程式碼,各呼叫各的 hello——這就是「編譯期多型」,輸出 Hello 與你好。
 參數型別「不一致」不是問題,那正是泛型的意義;單態化是每個型別一份,不會「以第一次為準」;unit struct(English、Chinese 這種無欄位 struct)是完整的型別,實作 trait 毫無問題,English 這個運算式本身就是它的實例。`,
       walkthrough: {
-        label: "🔍 題目程式碼逐行說明(可正常執行)",
+        label: "🔍 Question code — walkthrough (runs successfully)",
         lines: [
           { code: "trait Greet {", note: "定義共享行為。" },
           { code: "    fn hello(&self) -> String;", note: "宣告方法。" },
@@ -486,7 +486,7 @@ where 裡用等號、把 + 串接寫成逗號(變成宣告了叫 Clone、Debug �
 把 name 換成 u32 之類就能通過。Copy 與 Clone 必須同時 derive(Copy 是 Clone 的子集,語言規定 Copy: Clone);「共享記憶體的複製」正是 Copy 被設計來杜絕的東西。`,
       walkthrough: [
         {
-          label: "❌ 題目程式碼(無法編譯)",
+          label: "X Question code (won't compile)",
           lines: [
             { code: "#[derive(Copy, Clone)]", note: "⛔ 編譯失敗:the trait `Copy` cannot be implemented for this type。derive(Copy) 不是「宣告」而是「申請」:編譯器會檢查所有欄位是否都是 Copy。" },
             { code: "struct User {", note: "定義型別。" },
@@ -505,7 +505,7 @@ where 裡用等號、把 + 串接寫成逗號(變成宣告了叫 Clone、Debug �
           ],
         },
         {
-          label: "✅ 兩種修法",
+          label: "√ Two fixes",
           lines: [
             { code: "#[derive(Clone)]", note: "修法一:拿掉 Copy 只留 Clone——複製仍然做得到,但必須明寫 .clone(),成本看得見。" },
             { code: "struct User {", note: "型別定義不變。" },
@@ -537,7 +537,7 @@ where 裡用等號、把 + 串接寫成逗號(變成宣告了叫 Clone、Debug �
       explanation: `最本質的差異是「誰能建立實作、什麼時候」:C# 的 class F : IFoo 寫死在型別定義;Rust 的 impl 是獨立區塊——你可以為標準庫的型別實作自己的 trait(本課孤兒規則題),第三方也可以為你的型別實作他們的 trait。型別發布多年後仍能長出新能力,不用改原始碼。
 預設實作兩邊都有(trait 從第一天、C# 8 之後);trait 當然是 Rust 設計 API 抽象的主力(整個標準庫:Iterator、Display、From⋯⋯)。`,
       walkthrough: {
-        label: "🔍 最本質的差異:實作可以事後補上",
+        label: "🔍 The core difference: the impl can be added later",
         lines: [
           { code: "// 這個型別是標準函式庫寫的,原始碼你改不到", note: "情境:你想讓 Vec<i32> 具備某個新能力。" },
           { code: "trait Pretty {", note: "你在自己的 crate 裡定義一個 trait。" },
@@ -576,7 +576,7 @@ where 裡用等號、把 + 串接寫成逗號(變成宣告了叫 Clone、Debug �
       explanation: `這是 trait 最重要的組合技:trait 裡同時放「必須實作的方法」(summarize_author,無本體)與「預設方法」(summarize,有本體),預設方法透過 self 呼叫前者——於是預設實作間接拿到了具體型別的資料。
 實作者只需要提供 summarize_author,summarize 自動附送;想要不一樣的行為再覆寫即可。標準函式庫的 Iterator 是極致範例:你只實作 next,map、filter、collect 等七十多個方法全部免費繼承。`,
       walkthrough: {
-        label: "🔍 題目程式碼逐行說明(可正常執行)",
+        label: "🔍 Question code — walkthrough (runs successfully)",
         lines: [
           { code: "trait Summary {", note: "定義 trait。" },
           { code: "    fn summarize_author(&self) -> String;", note: "「必須實作」的方法:分號結尾、沒有本體,每個實作者都得自己補。" },
@@ -622,7 +622,7 @@ where 裡用等號、把 + 串接寫成逗號(變成宣告了叫 Clone、Debug �
 所以要用 {} 就得自己寫 impl std::fmt::Display for Point,實作唯一的 fmt 方法。順帶一提,實作了 Display 之後 to_string() 會自動附送,原因見本課後面關於 blanket implementation 的題目。`,
       walkthrough: [
         {
-          label: "❌ 題目程式碼(無法編譯)",
+          label: "X Question code (won't compile)",
           lines: [
             { code: "#[derive(Display)]", note: "⛔ 編譯失敗:cannot find derive macro `Display` in this scope。標準函式庫只為 Debug、Clone、Copy、PartialEq、Default 等提供 derive,Display 不在其中。" },
             { code: "struct Point {", note: "型別定義本身沒問題。" },
@@ -637,7 +637,7 @@ where 裡用等號、把 + 串接寫成逗號(變成宣告了叫 Clone、Debug �
           ],
         },
         {
-          label: "✅ 正確寫法(手寫 impl Display)",
+          label: "√ Correct version (implement Display by hand)",
           lines: [
             { code: "use std::fmt;", note: "改動處:引入格式化模組,才能寫出 fmt::Display、fmt::Formatter 這些短名稱。" },
             { code: "", note: "" },
@@ -678,7 +678,7 @@ where 裡用等號、把 + 串接寫成逗號(變成宣告了叫 Clone、Debug �
 這是新手最常撞、也最容易一頭霧水的錯誤之一(「方法明明實作了為什麼找不到」)。實務上讀 io::Read、io::Write 這些標準函式庫功能時也一樣,忘了 use 那個 trait 就叫不到方法。至於 trait 內的方法不需要也不能標 pub——它們的可見性跟著 trait 本身走。`,
       walkthrough: [
         {
-          label: "❌ 題目程式碼(無法編譯)",
+          label: "X Question code (won't compile)",
           lines: [
             { code: "mod shapes {", note: "宣告一個模組。" },
             { code: "    pub trait Area {", note: "trait 本身標了 pub,模組外可以看到它。" },
@@ -705,7 +705,7 @@ where 裡用等號、把 + 串接寫成逗號(變成宣告了叫 Clone、Debug �
           ],
         },
         {
-          label: "✅ 正確寫法(把 trait 也引進作用域)",
+          label: "√ Correct version (bring the trait into scope too)",
           lines: [
             { code: "mod shapes {", note: "模組內容完全不用改。" },
             { code: "    pub trait Area {", note: "trait 定義。" },
@@ -749,7 +749,7 @@ where 裡用等號、把 + 串接寫成逗號(變成宣告了叫 Clone、Debug �
       explanation: `孤兒規則看的是「這個 impl 的 trait 與型別,至少一個屬於本 crate」——Wrapper 是你定義的,條件成立,裡面裝什麼完全不影響。
 輸出由你自己寫的 fmt 決定:self.0 取出被包住的 Vec<String>,join(", ") 串成 hello, world,再套上中括號,所以是 [hello, world]——不會沿用 Vec 的 Debug 格式(那會有引號)。newtype 的代價是失去了被包型別的方法(w.len() 叫不到,要寫 w.0.len()),需要時可以實作 Deref 讓方法穿透,那是進階課的內容。`,
       walkthrough: {
-        label: "🔍 題目程式碼逐行說明(可正常執行)",
+        label: "🔍 Question code — walkthrough (runs successfully)",
         lines: [
           { code: "use std::fmt;", note: "引入格式化模組。" },
           { code: "", note: "" },
@@ -785,7 +785,7 @@ where 裡用等號、把 + 串接寫成逗號(變成宣告了叫 Clone、Debug �
 一般方法可以寫 a.name(),因為接收者 a 的型別已經告訴編譯器要用哪份實作;但 new 沒有接收者,回傳型別 Self 又是未知數,編譯器無從決定要建出 Dog 還是別的實作者,於是報 cannot call associated function of trait。解法是明說型別:Dog::new("Rex"),或在有歧義時用完全限定語法 <Dog as Animal>::new("Rex")。`,
       walkthrough: [
         {
-          label: "❌ 題目程式碼(無法編譯)",
+          label: "X Question code (won't compile)",
           lines: [
             { code: "trait Animal {", note: "定義 trait。" },
             { code: "    fn new(name: &str) -> Self;", note: "關聯函式:沒有 self 參數。Self 代表「實作這個 trait 的那個型別」,當回傳型別很常見(工廠函式)。宣告本身完全合法。" },
@@ -814,7 +814,7 @@ where 裡用等號、把 + 串接寫成逗號(變成宣告了叫 Clone、Debug �
           ],
         },
         {
-          label: "✅ 正確寫法(明說要建哪個型別)",
+          label: "√ Correct version (say explicitly which type to build)",
           lines: [
             { code: "trait Animal {", note: "trait 定義完全不用改。" },
             { code: "    fn new(name: &str) -> Self;", note: "關聯函式。" },
@@ -860,7 +860,7 @@ where 裡用等號、把 + 串接寫成逗號(變成宣告了叫 Clone、Debug �
 Point 沒有實作 Display,所以 impl Outline for Point {} 這一行被拒絕,錯誤訊息還會註明 required by a bound in \`Outline\`。impl 區塊是空的完全合法(outline 有預設實作);而 trait 當然可以有前置需求,只是別把它想成「繼承」——它是「約束」,語意接近「T: Display 這個 bound 被寫進了 trait 定義」。`,
       walkthrough: [
         {
-          label: "❌ 題目程式碼(無法編譯)",
+          label: "X Question code (won't compile)",
           lines: [
             { code: "use std::fmt::Display;", note: "引入要當前置需求的 trait。" },
             { code: "", note: "" },
@@ -884,7 +884,7 @@ Point 沒有實作 Display,所以 impl Outline for Point {} 這一行被拒絕,�
           ],
         },
         {
-          label: "✅ 正確寫法(先滿足前置需求)",
+          label: "√ Correct version (satisfy the prerequisite first)",
           lines: [
             { code: "use std::fmt;", note: "改動處:引入整個 fmt 模組,待會要用 fmt::Display、fmt::Formatter、fmt::Result。" },
             { code: "", note: "" },
@@ -931,7 +931,7 @@ Point 沒有實作 Display,所以 impl Outline for Point {} 這一行被拒絕,�
       explanation: `同名方法完全可以並存,Rust 有明確的優先順序:p.fly() 優先選「型別自身 impl 區塊裡的方法」(inherent method),所以印出揮手;要叫 trait 版本就把 trait 名寫出來——Pilot::fly(&p) 等於明說「用 Pilot 這個 trait 的 fly」,self 改用一般參數的形式傳入。
 若型別自己沒有同名方法,而兩個 trait 都有,p.fly() 才會報 multiple applicable items in scope,那時同樣用 Trait::method(&p) 消歧義。至於沒有 self 參數的關聯函式無法用這招(沒有值可以傳),必須用完全限定語法 <Human as Pilot>::fly()。`,
       walkthrough: {
-        label: "🔍 題目程式碼逐行說明(可正常執行)",
+        label: "🔍 Question code — walkthrough (runs successfully)",
         lines: [
           { code: "trait Pilot {", note: "第一個 trait。" },
           { code: "    fn fly(&self);", note: "宣告方法。" },
@@ -987,7 +987,7 @@ Point 沒有實作 Display,所以 impl Outline for Point {} 這一行被拒絕,�
 所以要排序得一路 derive 上去:#[derive(PartialEq, Eq, PartialOrd, Ord)]。順帶一提浮點數只有 PartialOrd 沒有 Ord(因為 NaN 與任何數都比不出大小),所以 Vec<f64> 不能直接 sort,要用 sort_by(|a, b| a.partial_cmp(b).unwrap())。`,
       walkthrough: [
         {
-          label: "❌ 題目程式碼(無法編譯)",
+          label: "X Question code (won't compile)",
           lines: [
             { code: "#[derive(PartialEq, Debug)]", note: "⛔ 問題所在:只 derive 了「能判斷相等」與「能除錯輸出」,沒有任何「能比較大小」的能力。" },
             { code: "struct Score(u32);", note: "newtype 包裝一個分數。" },
@@ -1000,7 +1000,7 @@ Point 沒有實作 Display,所以 impl Outline for Point {} 這一行被拒絕,�
           ],
         },
         {
-          label: "✅ 正確寫法(把比較相關的 trait 補齊)",
+          label: "√ Correct version (fill in the comparison-related traits)",
           lines: [
             { code: "#[derive(PartialEq, Eq, PartialOrd, Ord, Debug)]", note: "改動處:四個比較相關的 trait 是層層堆疊的——PartialEq(能判斷相等)→ Eq(相等具反身性)→ PartialOrd(能比較,但可能有無法比較的組合)→ Ord(任兩者必可比較)。derive 出來的實作會依欄位宣告順序逐一比較。" },
             { code: "struct Score(u32);", note: "型別定義不變。" },
@@ -1030,7 +1030,7 @@ Point 沒有實作 Display,所以 impl Outline for Point {} 這一行被拒絕,�
       explanation: `標準函式庫裡有一條 impl<T: fmt::Display + ?Sized> ToString for T { ... }——它不是為某個具體型別實作,而是「為所有滿足條件的型別」一次實作,這叫 blanket implementation(涵蓋式實作)。
 所以你只要實作 Display,to_string() 立刻免費附送,而且行為保證一致(內部就是呼叫你的 fmt)。這也是為什麼標準函式庫建議「不要自己實作 ToString」——你實作 Display 就好。同樣的手法還有 impl<T, U: From<T>> Into<U> for T:實作 From 就免費得到 Into。`,
       walkthrough: {
-        label: "🔍 題目程式碼逐行說明(可正常執行)",
+        label: "🔍 Question code — walkthrough (runs successfully)",
         lines: [
           { code: "use std::fmt;", note: "引入格式化模組。" },
           { code: "", note: "" },
@@ -1068,7 +1068,7 @@ Point 沒有實作 Display,所以 impl Outline for Point {} 這一行被拒絕,�
       explanation: `本課四個重點:(1)內容——trait 可以有必須實作的方法、預設方法、關聯函式,還能宣告 supertrait 當前置需求;(2)位置——實作寫在獨立 impl 區塊,型別發布多年後仍能長出新能力,唯一的限制是孤兒規則(trait 或型別至少一個是自己的);(3)使用——呼叫 trait 方法時該 trait 必須在作用域內,忘了 use 就會看到「方法找不到」;(4)成本——搭配泛型時編譯期單態化,沒有虛擬呼叫(要動態分派得明寫 dyn,那是進階課)。
 其餘三種說法都各有錯誤:trait 不必在型別定義時宣告;預設實作與關聯函式都支援;而預設的分派方式是靜態的,不是虛擬表。`,
       walkthrough: {
-        label: "🔍 一支程式走完本課",
+        label: "🔍 One program that walks through this whole lesson",
         lines: [
           { code: "use std::fmt;", note: "引入格式化模組——同時也示範了重點三:trait 要在作用域內才用得到它的方法。" },
           { code: "", note: "" },

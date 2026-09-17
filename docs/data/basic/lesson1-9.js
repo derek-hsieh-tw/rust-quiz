@@ -1,7 +1,7 @@
 /* 出題慣例見專案根目錄 AUTHORING.md:
  *   - answer 一律為 0(正確答案寫在第一個選項),顯示順序由 quiz.js 依題目 id 洗牌
  *   - 詳解禁止用「選項 A/B/C」字母指涉,必須直接描述選項內容
- *   - 有程式碼的題目一律附 walkthrough(逐行說明);反面案例必須同時附上 ✅ 正確寫法 */
+ *   - 有程式碼的題目一律附 walkthrough(逐行說明);反面案例必須同時附上 √ 正確寫法 */
 window.RUST_LESSONS = window.RUST_LESSONS || {};
 window.RUST_LESSONS["lesson1-9"] = {
   id: "lesson1-9",
@@ -23,7 +23,7 @@ window.RUST_LESSONS["lesson1-9"] = {
 「必須標註型別」的說法不對:這裡編譯器能從後面的 push(1) 推斷出 Vec<i32>(推斷會往後看用法);真正孤零零的 let v = Vec::new(); 沒有任何用法時才需要標註。另外有字面值時慣用 vec! 巨集:let v = vec![1, 2];,一行完成建立加填充。`,
       walkthrough: [
         {
-          label: "❌ 題目程式碼(無法編譯)",
+          label: "X Question code (won't compile)",
           lines: [
             { code: "fn main() {", note: "程式進入點。" },
             { code: "    let v = Vec::new();", note: "⛔ 問題所在:沒有 mut。集合和一般變數遵守同一套可變性規則,沒有例外。(型別倒是推得出來,見下方說明。)" },
@@ -35,7 +35,7 @@ window.RUST_LESSONS["lesson1-9"] = {
           outro: "「必須標註元素型別」的說法不對:編譯器會往後看用法,從 push(1) 推斷出 Vec<i32>。真正孤零零、完全沒有任何用法的 let v = Vec::new(); 才需要標註。",
         },
         {
-          label: "✅ 兩種正確寫法",
+          label: "√ Two correct versions",
           lines: [
             { code: "fn main() {", note: "程式進入點。" },
             { code: "    let mut v = Vec::new();", note: "改動處:加上 mut。型別仍由後面的 push 推斷成 Vec<i32>。" },
@@ -66,7 +66,7 @@ window.RUST_LESSONS["lesson1-9"] = {
 選擇準則:索引值來自使用者輸入或計算結果(可能錯)→ 用 get;邏輯上保證合法(剛檢查過長度)→ 用索引,panic 就是抓 bug。編譯器只對「字面值常數索引固定長度陣列」能提前報錯,Vec 是動態長度,編譯期不會攔。`,
       walkthrough: [
         {
-          label: "🔍 題目程式碼逐行說明(第二行執行期 panic)",
+          label: "🔍 Question code — walkthrough (second line panics at runtime)",
           lines: [
             { code: "fn main() {", note: "程式進入點。" },
             { code: "    let v = vec![1, 2, 3];", note: "建立長度 3 的 Vec,合法索引是 0~2。" },
@@ -77,7 +77,7 @@ window.RUST_LESSONS["lesson1-9"] = {
           ],
         },
         {
-          label: "✅ 索引可能越界時就用 get",
+          label: "√ Use get when the index might be out of bounds",
           lines: [
             { code: "fn main() {", note: "程式進入點。" },
             { code: "    let v = vec![1, 2, 3];", note: "同樣的 Vec。" },
@@ -107,7 +107,7 @@ window.RUST_LESSONS["lesson1-9"] = {
 用 &v(不可變借用)拿到的 x 是 &i32,*x += 50 是「不能對唯讀參考賦值」的編譯錯誤;for x in v(沒有 &)把整個 Vec move 進迴圈,之後 println 用 v 是 borrow of moved value;for mut x in &v 只是讓「參考變數本身」可重新指向,依然改不了指到的唯讀內容。`,
       walkthrough: [
         {
-          label: "✅ 正確寫法逐行說明",
+          label: "√ Correct version — walkthrough",
           lines: [
             { code: "fn main() {", note: "把選項補成完整程式。" },
             { code: "    let mut v = vec![100, 32, 57];", note: "要修改內容就必須宣告 mut。" },
@@ -119,7 +119,7 @@ window.RUST_LESSONS["lesson1-9"] = {
           ],
         },
         {
-          label: "❌ 三個錯誤寫法錯在哪",
+          label: "X What's wrong with the three versions",
           lines: [
             { code: "for x in &v {", note: "走訪不可變借用,x 的型別是 &i32(唯讀)。" },
             { code: "    *x += 50;", note: "⛔ 編譯失敗:cannot assign to `*x`, which is behind a `&` reference。唯讀參考不能寫。" },
@@ -150,7 +150,7 @@ window.RUST_LESSONS["lesson1-9"] = {
 這是 lesson1-5 借用規則在集合上最經典的應用,也是 C++ 迭代器失效(iterator invalidation)這類未定義行為在 Rust 變成編譯錯誤的原因。修法:先用完 first 再 push,或 push 後重新取参考。`,
       walkthrough: [
         {
-          label: "❌ 題目程式碼(無法編譯)",
+          label: "X Question code (won't compile)",
           lines: [
             { code: "fn main() {", note: "程式進入點。" },
             { code: "    let mut v = vec![1, 2, 3];", note: "建立可變的 Vec。" },
@@ -162,7 +162,7 @@ window.RUST_LESSONS["lesson1-9"] = {
           outro: "直覺上「讀頭、加尾」井水不犯河水,但 push 可能觸發擴容:配置更大的緩衝區、搬走全部元素、釋放舊緩衝區——first 指向的舊位置瞬間變成懸空指標。借用檢查器不去猜「這次會不會真的擴容」,規則一刀切。",
         },
         {
-          label: "✅ 正確寫法(先用完參考,再修改集合)",
+          label: "√ Correct version (finish using the reference before modifying the collection)",
           lines: [
             { code: "fn main() {", note: "程式進入點。" },
             { code: "    let mut v = vec![1, 2, 3];", note: "建立可變的 Vec。" },
@@ -191,7 +191,7 @@ window.RUST_LESSONS["lesson1-9"] = {
       explanation: `insert 對已存在的 key 直接覆蓋(回傳被擠掉的舊值 Some(10),這裡沒接)。get 回傳 Option<&V>——key 可能不存在,所以是 Option;不複製值,所以是參考:印出 Some(25)。
 注意 HashMap 要 use std::collections::HashMap 引入(不像 Vec 在 prelude 自動可用)。想要「不存在才插入」的語意,用下一題的 entry。`,
       walkthrough: {
-        label: "🔍 題目程式碼逐行說明(可正常執行)",
+        label: "🔍 Question code — walkthrough (runs successfully)",
         lines: [
           { code: "use std::collections::HashMap;", note: "HashMap 不在 prelude 裡,必須自己引入(Vec 則是自動可用)。" },
           { code: "", note: "" },
@@ -220,7 +220,7 @@ window.RUST_LESSONS["lesson1-9"] = {
       explanation: `entry(key).or_insert(0) 的語意:key 不存在就先插入 0,然後「無論如何」回傳該 value 的可變參考(&mut i32)。*count += 1 就地遞增——"a" 出現三次,最後是 Some(3)。
 這是 HashMap 最重要的慣用法:「查詢 + 不存在就初始化 + 修改」一步完成,不用先 contains_key 再 insert 再 get 跑三趟。or_insert 只在缺席時插入,不會重設既有值;count 是可變借用,+= 正是它的用途。`,
       walkthrough: {
-        label: "🔍 題目程式碼逐行說明(可正常執行)",
+        label: "🔍 Question code — walkthrough (runs successfully)",
         lines: [
           { code: "use std::collections::HashMap;", note: "引入 HashMap。" },
           { code: "", note: "" },
@@ -253,7 +253,7 @@ window.RUST_LESSONS["lesson1-9"] = {
 這是 lesson1-4「集合擁有元素」在 HashMap 的版本。要保留原變數:insert(field_name.clone(), ...) 付複製成本;i32 這類 Copy 型別則直接複製進去,原變數照用。存參考進 map(&str 當 key)可行但牽涉生命週期,入門階段先用擁有的 String。`,
       walkthrough: [
         {
-          label: "❌ 題目程式碼(無法編譯)",
+          label: "X Question code (won't compile)",
           lines: [
             { code: "use std::collections::HashMap;", note: "引入 HashMap。" },
             { code: "", note: "" },
@@ -269,7 +269,7 @@ window.RUST_LESSONS["lesson1-9"] = {
           ],
         },
         {
-          label: "✅ 兩種正確寫法",
+          label: "√ Two correct versions",
           lines: [
             { code: "use std::collections::HashMap;", note: "引入 HashMap。" },
             { code: "", note: "" },
@@ -302,7 +302,7 @@ window.RUST_LESSONS["lesson1-9"] = {
 正解是用 enum 包裝:enum Cell { Int(i32), Text(String), Float(f64) },然後 Vec<Cell>——「不同form的資料」變成「同一個 enum 的不同變體」,取用時 match 解開,型別安全全程在線。這正是上一課 enum 帶資料能力的實戰應用;完全動態的場景(型別事先未知)才需要 trait 物件(進階課程)。`,
       walkthrough: [
         {
-          label: "❌ 題目程式碼(無法編譯)",
+          label: "X Question code (won't compile)",
           lines: [
             { code: "fn main() {", note: "程式進入點。" },
             { code: "    let v = vec![1, \"two\", 3.0];", note: "⛔ 編譯失敗:mismatched types。Vec<T> 只有「一個」元素型別參數,整數、&str、浮點混在一起,編譯器無法統一 T。" },
@@ -311,7 +311,7 @@ window.RUST_LESSONS["lesson1-9"] = {
           ],
         },
         {
-          label: "✅ 正確寫法(用 enum 把「有哪幾種」列出來)",
+          label: "√ Correct version (use an enum to list out every variant)",
           lines: [
             { code: "#[derive(Debug)]", note: "讓 {:?} 可以印。" },
             { code: "enum Cell {", note: "改動處:定義一個 enum 把所有可能的資料形狀收攏成「同一個型別」。" },
@@ -354,7 +354,7 @@ window.RUST_LESSONS["lesson1-9"] = {
       explanation: `pop 從「尾端」移除並回傳元素(Vec 是 stack 語意的成長方向):先取走 3、再取走 2,剩 [1]。回傳型別是 Option<T>——空 Vec 時給 None 而不是 panic,所以印出來帶著 Some 外衣。
 從頭部取用 remove(0)(O(n) 搬移,頻繁操作改用 VecDeque)。Option 實作了 Debug,{:?} 印它完全沒問題。`,
       walkthrough: {
-        label: "🔍 題目程式碼逐行說明(可正常執行)",
+        label: "🔍 Question code — walkthrough (runs successfully)",
         lines: [
           { code: "fn main() {", note: "程式進入點。" },
           { code: "    let mut v = vec![1, 2, 3];", note: "建立可變的 Vec;pop 會修改它,所以必須 mut。" },
@@ -380,7 +380,7 @@ window.RUST_LESSONS["lesson1-9"] = {
       explanation: `兩條主線貫穿本課:(1)失敗是型別不是例外——get 回 Option、pop 回 Option,呼叫端被迫在編譯期面對「沒有」;(2)存取受借用規則管制——持有元素參考時不能 push、走訪時不能改結構,C++ 的迭代器失效與 C# 的「集合已修改」例外都被搬到編譯期。
 Rust 集合當然是可變的(mut 之下),也是完整泛型(單態化,無裝箱)——「不可變集合」與「無泛型」的說法都不對。`,
       walkthrough: {
-        label: "🔍 兩條主線各看一段程式",
+        label: "🔍 One snippet for each of the two main threads",
         lines: [
           { code: "use std::collections::HashMap;", note: "引入 HashMap。" },
           { code: "", note: "" },

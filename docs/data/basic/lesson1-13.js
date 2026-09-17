@@ -1,7 +1,7 @@
 /* 出題慣例見專案根目錄 AUTHORING.md:
  *   - answer 一律為 0(正確答案寫在第一個選項),顯示順序由 quiz.js 依題目 id 洗牌
  *   - 詳解禁止用「選項 A/B/C」字母指涉,必須直接描述選項內容
- *   - 有程式碼的題目一律附 walkthrough(逐行說明);反面案例必須同時附上 ✅ 正確寫法 */
+ *   - 有程式碼的題目一律附 walkthrough(逐行說明);反面案例必須同時附上 √ 正確寫法 */
 window.RUST_LESSONS = window.RUST_LESSONS || {};
 window.RUST_LESSONS["lesson1-13"] = {
   id: "lesson1-13",
@@ -21,7 +21,7 @@ window.RUST_LESSONS["lesson1-13"] = {
       explanation: `lesson1-5 看過懸空參考被編譯器擋下——那個「擋」的機制就是生命週期分析:每個參考都有一段有效範圍,編譯器檢查它永遠不超過資料本身的範圍。大多數情況編譯器自己推得出來;推不出來的少數場合,才需要你寫 'a 標註「說明關係」。
 Rust 沒有 GC;標註也不會「延長」任何東西的壽命(本課最重要的迷思,後面有專題);跟執行緒排程更是無關。`,
       walkthrough: {
-        label: "🔍 生命週期在擋的就是這件事",
+        label: "🔍 This is exactly what the lifetime is preventing",
         lines: [
           { code: "fn main() {", note: "程式進入點。" },
           { code: "    let r;", note: "先宣告一個變數,準備接住某個參考。" },
@@ -51,7 +51,7 @@ Rust 沒有 GC;標註也不會「延長」任何東西的壽命(本課最重要�
 函式回傳參考本身完全合法(lesson1-4 的 gives_ownership 回傳「值」,&self 方法天天回傳參考);「可能懸空」永遠不會發生——Rust 的立場是編譯不過,而不是編譯過但危險。`,
       walkthrough: [
         {
-          label: "❌ 題目程式碼(無法編譯)",
+          label: "X Question code (won't compile)",
           lines: [
             { code: "fn longest(x: &str, y: &str) -> &str {", note: "⛔ 編譯失敗:missing lifetime specifier, this function's return type contains a borrowed value, but the signature does not say whether it is borrowed from `x` or `y`。編譯器的困境:回傳的參考有時是 x、有時是 y,呼叫端拿到後該被限制活多久?簽名沒說,就無法檢查。" },
             { code: "    if x.len() > y.len() {", note: "比較兩者長度。" },
@@ -64,7 +64,7 @@ Rust 沒有 GC;標註也不會「延長」任何東西的壽命(本課最重要�
           outro: "函式回傳參考本身完全合法(&self 方法天天這麼做);問題只在「來源不只一個時,關係必須由你說明」。而且 Rust 的立場永遠是「編譯不過」,不會出現「編譯過但可能懸空」。",
         },
         {
-          label: "✅ 正確寫法(完整可執行)",
+          label: "√ Correct version (complete, runnable)",
           lines: [
             { code: "fn longest<'a>(x: &'a str, y: &'a str) -> &'a str {", note: "改動處:宣告一個生命週期參數 'a,並把兩個參數與回傳值都標上它——意思是「回傳的參考,壽命不長於 x 與 y 之中較短的那一個」。標註不產生任何執行期成本,純粹是給編譯器的約定。" },
             { code: "    if x.len() > y.len() {", note: "函式本體一字未改。" },
@@ -99,7 +99,7 @@ Rust 沒有 GC;標註也不會「延長」任何東西的壽命(本課最重要�
       explanation: `'a 是「泛型生命週期參數」,宣告方式和泛型 T 一樣放在角括號。這個簽名說:存在某段範圍 'a,x、y 至少活這麼久,回傳值也只保證活這麼久——實際呼叫時,'a 被推定為「x 與 y 存活範圍的交集(較短者)」,呼叫端把回傳值用超過這個範圍就是編譯錯誤(下一題示範)。
 x、y 可以是完全不同來源的參考;沒有任何東西被強制延命或複製——標註是「描述與檢查」,不是「改變行為」。`,
       walkthrough: {
-        label: "🔍 逐段拆解這個簽名在說什麼",
+        label: "🔍 Breaking down what this signature says, piece by piece",
         lines: [
           { code: "fn longest<'a>(x: &'a str, y: &'a str) -> &'a str {", note: "<'a> 宣告一個「泛型生命週期參數」,位置和泛型 T 一樣。x、y 標 'a 代表「這兩個參考至少活 'a 這麼久」;回傳值標 'a 代表「我保證回傳的參考只活 'a 這麼久」。實際呼叫時 'a 被推定為 x 與 y 存活範圍的「交集」(較短者)。" },
           { code: "    if x.len() > y.len() {", note: "比較長度——注意這是執行期才知道結果的分支。" },
@@ -128,7 +128,7 @@ x、y 可以是完全不同來源的參考;沒有任何東西被強制延命或�
 「實際上回傳的是 string1 所以沒事」是最誘人的錯誤答案:編譯器做的是「最壞情況」的靜態分析,不會執行你的程式看實際走哪條分支——只要「可能」指向 string2,就按 string2 的壽命算。這保守性正是安全的來源:換個輸入走另一條分支,保證依然成立。`,
       walkthrough: [
         {
-          label: "❌ 題目程式碼(無法編譯)",
+          label: "X Question code (won't compile)",
           lines: [
             { code: "fn longest<'a>(x: &'a str, y: &'a str) -> &'a str {", note: "簽名說:回傳值只活到 x、y 中較短者。" },
             { code: "    if x.len() > y.len() { x } else { y }", note: "函式本體完全正確。" },
@@ -147,7 +147,7 @@ x、y 可以是完全不同來源的參考;沒有任何東西被強制延命或�
           outro: "「實際上較長的是 string1,所以回傳的一定是 string1」是最誘人的錯誤答案:編譯器做的是「最壞情況」的靜態分析,不會執行你的程式看走哪條分支。只要「可能」指向 string2,就按 string2 的壽命算——換個輸入結論依然成立,這保守性正是安全的來源。",
         },
         {
-          label: "✅ 正確寫法(在資料還活著時用完)",
+          label: "√ Correct version (finish using it while the data is still alive)",
           lines: [
             { code: "fn main() {", note: "函式 longest 完全不用改,要改的是呼叫端的結構。" },
             { code: "    let string1 = String::from(\"long string is long\");", note: "活到 main 結束。" },
@@ -178,7 +178,7 @@ x、y 可以是完全不同來源的參考;沒有任何東西被強制延命或�
 longest 有兩個參考參數,三條規則都套不上才要手寫。省略是「按固定規則填空」,不是分析函式內容(簽名是唯一依據);規則對所有型別的參考一視同仁。`,
       walkthrough: [
         {
-          label: "✅ 編譯器幫你補了什麼(完整可執行)",
+          label: "√ What the compiler fills in for you (complete, runnable)",
           lines: [
             { code: "fn first_word(s: &str) -> &str {", note: "你寫的版本,一個標註都沒有。編譯器套用省略規則後,實際看到的是 fn first_word<'a>(s: &'a str) -> &'a str ——恰好一個參考參數時,回傳參考自動綁定它。" },
             { code: "    s.split_whitespace().next().unwrap_or(\"\")", note: "回傳的切片指向 s 內部的資料,和編譯器補出來的關係完全一致。" },
@@ -196,7 +196,7 @@ longest 有兩個參考參數,三條規則都套不上才要手寫。省略是�
           outro: "三條省略規則:(1) 每個參考參數各得一個獨立的生命週期;(2) 恰好一個輸入生命週期時,回傳參考綁定它;(3) 方法有 &self 時,回傳參考綁定 self。這裡命中第二條。",
         },
         {
-          label: "❌ 對照:兩個參考參數就套不上規則",
+          label: "X Comparison: with two reference parameters, the rule no longer applies",
           lines: [
             { code: "fn longest(x: &str, y: &str) -> &str {", note: "⛔ 規則一給了 x、y 兩個「不同」的生命週期;規則二要求「恰好一個」輸入生命週期,不符;規則三要有 &self,也不符——三條都套不上,編譯器只好要求你手寫,報 missing lifetime specifier。" },
             { code: "    if x.len() > y.len() { x } else { y }", note: "函式本體無關緊要:省略規則只看簽名,不會去分析函式內容。" },
@@ -221,7 +221,7 @@ longest 有兩個參考參數,三條規則都套不上才要手寫。省略是�
       explanation: `'static 是「最長的生命週期」:資料保證撐到程式結束。字面值編譯進執行檔(lesson1-6 見過),自然滿足。這是描述既有事實,不是搬移或複製任何資料。
 變數 s 本身仍是普通區域變數(可以 shadowing、可以離開作用域),'static 修飾的是「它指向的資料」的壽命。進階備註:錯誤訊息建議「加 'static」時通常是誤導,真正該修的多半是所有權結構——先懷疑設計再考慮 'static。`,
       walkthrough: {
-        label: "🔍 'static 描述的是「資料」的壽命",
+        label: "🔍 'static describes the lifetime of the data",
         lines: [
           { code: "fn main() {", note: "程式進入點。" },
           { code: "    let s: &'static str = \"I have a static lifetime.\";", note: "'static 是「最長的生命週期」:資料保證撐到程式結束。字串字面值編譯進執行檔的唯讀資料段,天生滿足這個條件——這是「描述既有事實」,不是把資料搬到什麼特殊記憶體。" },
@@ -250,7 +250,7 @@ longest 有兩個參考參數,三條規則都套不上才要手寫。省略是�
 把回傳綁定單一參數 'a 的版本會在「函式體」報錯(else 分支回傳的 y 不符合簽名);給 result 標 'static 只是把矛盾換個位置(string2 給不出 'static 的參考);生命週期的名字('a、'long)純粹是識別符,長短毫無意義。遇到生命週期錯誤的正確反射:先想「這個參考到底該活多久、資料是否真的撐得到」,而不是堆標註。`,
       walkthrough: [
         {
-          label: "✅ 正確修法:調整程式結構",
+          label: "√ Correct fix: restructure the code",
           lines: [
             { code: "fn main() {", note: "函式簽名完全不用動。" },
             { code: "    let string1 = String::from(\"long string is long\");", note: "活到 main 結束。" },
@@ -263,7 +263,7 @@ longest 有兩個參考參數,三條規則都套不上才要手寫。省略是�
           ],
         },
         {
-          label: "❌ 三種「用標註變魔術」的嘗試都不行",
+          label: "X None of the three 'annotate your way out of it' attempts work",
           lines: [
             { code: "fn longest<'a, 'b>(x: &'a str, y: &'b str) -> &'a str {", note: "看似把回傳綁到活得久的那個就好。" },
             { code: "    if x.len() > y.len() { x } else { y }", note: "⛔ 但這次換「函式體」報錯:lifetime may not live long enough——else 分支回傳的 y 只有 'b,給不出簽名承諾的 'a。矛盾只是被搬了個位置。" },
@@ -293,7 +293,7 @@ longest 有兩個參考參數,三條規則都套不上才要手寫。省略是�
 struct 存參考完全允許(解析器、視圖類型的常見設計),只是要標註;不過入門階段的實用建議:優先讓 struct「擁有」資料(String 而非 &str),需要零複製的效能時再引入參考欄位。`,
       walkthrough: [
         {
-          label: "❌ 題目程式碼(無法編譯)",
+          label: "X Question code (won't compile)",
           lines: [
             { code: "struct Excerpt {", note: "⛔ 編譯失敗的起點:missing lifetime specifier。" },
             { code: "    part: &str,", note: "⛔ 欄位要存參考,就必須說明「這個實例不能活過它引用的資料」——沒有生命週期參數,編譯器無從檢查。" },
@@ -308,7 +308,7 @@ struct 存參考完全允許(解析器、視圖類型的常見設計),只是要�
           ],
         },
         {
-          label: "✅ 正確寫法(在 struct 上宣告生命週期參數)",
+          label: "√ Correct version (declare a lifetime parameter on the struct)",
           lines: [
             { code: "struct Excerpt<'a> {", note: "改動處:宣告生命週期參數,和泛型 struct 宣告 <T> 是同一個模式。語意是「Excerpt 的實例不能活過 'a」。" },
             { code: "    part: &'a str,", note: "改動處:欄位標上 'a,編譯器據此檢查每個使用處。" },
@@ -340,7 +340,7 @@ struct 存參考完全允許(解析器、視圖類型的常見設計),只是要�
       explanation: `第三條省略規則專為方法設計:簽名裡有 &self,回傳參考就自動綁定 self——這符合絕大多數方法的實情(回傳的東西來自自己的欄位),所以方法幾乎從不手寫生命週期。本題回傳 self.part 正中規則,不用標註。
 若真要回傳 greeting 的衍生參考,預設綁定就錯了,那時才需要手動標註推翻預設。兩個參考參數在「函式」上無法省略,但「方法」多了 &self 規則,依然免寫。`,
       walkthrough: {
-        label: "🔍 題目程式碼逐行說明(可正常編譯)",
+        label: "🔍 Question code — walkthrough (compiles successfully)",
         lines: [
           { code: "struct Excerpt<'a> {", note: "struct 上宣告生命週期參數。" },
           { code: "    part: &'a str,", note: "參考欄位。" },
@@ -371,7 +371,7 @@ struct 存參考完全允許(解析器、視圖類型的常見設計),只是要�
 一般的 C# 程式碼沒有隱藏的生命週期分析(不過 ref struct/Span 的逃逸規則確實是縮水版的同類機制);與繼承毫無關係。`,
       walkthrough: [
         {
-          label: "🔷 C# 的做法:執行期由 GC 兜底",
+          label: "🔷 C#'s approach: the GC covers it at runtime",
           lang: "csharp",
           lines: [
             { code: "string Longest(string x, string y) => x.Length > y.Length ? x : y;", note: "簽名不需要描述任何存活關係。" },
@@ -381,7 +381,7 @@ struct 存參考完全允許(解析器、視圖類型的常見設計),只是要�
           ],
         },
         {
-          label: "✅ Rust 的做法:編譯期證明同一件事",
+          label: "√ Rust's approach: prove the same thing at compile time",
           lines: [
             { code: "fn longest<'a>(x: &'a str, y: &'a str) -> &'a str {", note: "簽名把存活關係寫出來,讓編譯器有依據可查——這是同一份安全的另一種實現時機。" },
             { code: "    if x.len() > y.len() { x } else { y }", note: "函式本體。" },
@@ -413,7 +413,7 @@ struct 存參考完全允許(解析器、視圖類型的常見設計),只是要�
       explanation: `回傳值標的是 'a,只跟 x 綁定;y 標 'b,是完全獨立的另一段範圍。編譯器因此只要求「result 不活過 long」——short 在內層作用域結束時死掉,與 result 無關,程式完全合法。
 對比第 4 題:那裡兩個參數都標 'a,'a 被推定為兩者的「交集」(較短者),result 才會被短命的那個拖累。所以標註不是「愈統一愈好」:把不相干的參數綁在一起會過度限制呼叫端,能分開就分開。`,
       walkthrough: {
-        label: "🔍 題目程式碼逐行說明(可正常執行)",
+        label: "🔍 Question code — walkthrough (runs successfully)",
         lines: [
           { code: "fn pick_first<'a, 'b>(x: &'a str, y: &'b str) -> &'a str {", note: "宣告「兩個」獨立的生命週期參數。x 綁 'a、y 綁 'b,回傳值只綁 'a——等於告訴編譯器「我回傳的東西只可能來自 x,和 y 一點關係都沒有」。" },
           { code: "    println!(\"忽略了 {}\", y);", note: "y 只在函式內被讀取一次,它的參考不會流到回傳值裡。" },
@@ -449,7 +449,7 @@ struct 存參考完全允許(解析器、視圖類型的常見設計),只是要�
 把 T 寫在 'a 前面是語法錯誤(lifetime parameters must be declared prior to type parameters);ann: Display 是把 trait 直接當型別用,不合法(要寫 impl Display 或 T: Display);而 'a: Display 這種寫法把生命週期當成型別去加 trait bound,更是雙重誤解——生命週期只能和生命週期比較(例如 'a: 'b 表示 'a 至少活得和 'b 一樣久)。`,
       walkthrough: [
         {
-          label: "✅ 正確寫法(完整可執行)",
+          label: "√ Correct version (complete, runnable)",
           lines: [
             { code: "use std::fmt::Display;", note: "引入 trait,才能在 bound 裡寫短名稱。" },
             { code: "", note: "" },
@@ -471,7 +471,7 @@ struct 存參考完全允許(解析器、視圖類型的常見設計),只是要�
           ],
         },
         {
-          label: "❌ 錯誤寫法一:順序顛倒",
+          label: "X Wrong version 1: the order is reversed",
           lines: [
             { code: "fn longest_with_ann<T: Display, 'a>(", note: "⛔ 編譯失敗:lifetime parameters must be declared prior to type parameters。角括號裡的順序是語言規定,不能自由調換。" },
             { code: "    x: &'a str,", note: "參數本身沒問題。" },
@@ -483,7 +483,7 @@ struct 存參考完全允許(解析器、視圖類型的常見設計),只是要�
           ],
         },
         {
-          label: "❌ 錯誤寫法二:把 trait 直接當參數型別",
+          label: "X Wrong version 2: used the trait directly as the parameter type",
           lines: [
             { code: "fn longest_with_ann<'a>(", note: "生命週期宣告沒問題。" },
             { code: "    x: &'a str,", note: "參數。" },
@@ -495,7 +495,7 @@ struct 存參考完全允許(解析器、視圖類型的常見設計),只是要�
           ],
         },
         {
-          label: "❌ 錯誤寫法三:把生命週期當型別用",
+          label: "X Wrong version 3: used a lifetime as if it were a type",
           lines: [
             { code: "fn longest_with_ann<'a: Display>(", note: "⛔ 雙重誤解:生命週期不是型別,不能加 trait bound。冒號在生命週期後面確實有意義,但只能接「另一個生命週期」——'a: 'b 讀作「'a 至少活得和 'b 一樣久」。" },
             { code: "    x: &'a str,", note: "參數。" },
@@ -524,7 +524,7 @@ struct 存參考完全允許(解析器、視圖類型的常見設計),只是要�
 這是初學者看到生命週期錯誤時最常見的錯誤反射:「加個 'static 應該就會過」。實際上它通常只是把矛盾往上推一層(呼叫端得交出 &'static 的參考,而區域變數給不出來)。正確做法是回頭想清楚參考該活多久——這裡把回傳型別改回 &'a str 就好。`,
       walkthrough: [
         {
-          label: "❌ 題目程式碼(無法編譯)",
+          label: "X Question code (won't compile)",
           lines: [
             { code: "fn longest<'a>(x: &'a str, y: &'a str) -> &'static str {", note: "⛔ 問題所在:參數只保證活 'a,回傳型別卻承諾 'static(活到程式結束)。承諾比手上的貨還大,編譯器不會放行。" },
             { code: "    if x.len() > y.len() {", note: "比較長度。" },
@@ -542,7 +542,7 @@ struct 存參考完全允許(解析器、視圖類型的常見設計),只是要�
           ],
         },
         {
-          label: "✅ 正確寫法(誠實標註實際的壽命)",
+          label: "√ Correct version (honestly annotate the actual lifetime)",
           lines: [
             { code: "fn longest<'a>(x: &'a str, y: &'a str) -> &'a str {", note: "改動處:回傳型別改回 &'a str——只承諾「不長於 x 與 y 之中較短的那一個」,這才是函式真正能兌現的。" },
             { code: "    if x.len() > y.len() {", note: "函式本體一字未改。" },
@@ -578,7 +578,7 @@ struct 存參考完全允許(解析器、視圖類型的常見設計),只是要�
 注意 struct 完全沒有「自動複製」的行為:欄位型別是 &'a str,存的就是一根指向別人資料的指標。想讓 e 活得久,要嘛讓 novel 也活在外層(調整結構),要嘛讓 struct 改成擁有資料(part: String)——後者是入門階段的實用建議。`,
       walkthrough: [
         {
-          label: "❌ 題目程式碼(無法編譯)",
+          label: "X Question code (won't compile)",
           lines: [
             { code: "struct Excerpt<'a> {", note: "struct 上宣告生命週期參數,語意是「這個實例不能活得比 'a 久」。" },
             { code: "    part: &'a str,", note: "欄位存的是「一根指向別人資料的指標」,不會自動複製任何東西。" },
@@ -597,7 +597,7 @@ struct 存參考完全允許(解析器、視圖類型的常見設計),只是要�
           ],
         },
         {
-          label: "✅ 修法一:讓資料活得夠久",
+          label: "√ Fix 1: make the data live long enough",
           lines: [
             { code: "struct Excerpt<'a> {", note: "struct 定義完全不用改。" },
             { code: "    part: &'a str,", note: "仍然是零複製的參考欄位。" },
@@ -613,7 +613,7 @@ struct 存參考完全允許(解析器、視圖類型的常見設計),只是要�
           ],
         },
         {
-          label: "✅ 修法二:讓 struct 擁有資料",
+          label: "√ Fix 2: have the struct own the data",
           lines: [
             { code: "struct Excerpt {", note: "改動處:拿掉生命週期參數——沒有參考欄位就不需要它。" },
             { code: "    part: String,", note: "改動處:欄位改成擁有型別。代價是多一次記憶體配置,好處是這個 struct 不再依賴任何人。" },
@@ -648,17 +648,17 @@ struct 存參考完全允許(解析器、視圖類型的常見設計),只是要�
       explanation: `逐條套用就有答案。規則一:每個參考參數各得一個獨立的生命週期。規則二:恰好一個輸入生命週期時,回傳參考綁定它。規則三:方法有 &self 時,回傳參考綁定 self。
 兩個字串參數的那個:規則一給了兩個生命週期,規則二要求「恰好一個」不符,規則三沒有 &self 也不符——三條都套不上,必須手寫。只有一個參考參數的命中規則二;方法那個雖有兩個參考參數,但因為有 &self 而命中規則三;回傳 usize 的那個根本沒有回傳參考,不需要推導。`,
       walkthrough: {
-        label: "🔍 四個簽名逐一套用省略規則",
+        label: "🔍 Applying the elision rules to four signatures, one by one",
         lines: [
           { code: "fn longest(x: &str, y: &str) -> &str {", note: "⛔ 無法省略。規則一:x 得到 'a、y 得到 'b(各自獨立)。規則二:要求「恰好一個」輸入生命週期,這裡有兩個,不適用。規則三:沒有 &self,不適用。三條都套不上 → missing lifetime specifier,必須手寫成 <'a>(x: &'a str, y: &'a str) -> &'a str。" },
           { code: "    if x.len() > y.len() { x } else { y }", note: "函式本體無關緊要——省略規則只看簽名,不會去分析函式內容。" },
           { code: "}", note: "函式結束。" },
           { code: "", note: "" },
-          { code: "fn first_word(s: &str) -> &str {", note: "✅ 可以省略。規則一給 s 一個 'a;規則二:恰好一個輸入生命週期,回傳參考自動綁定它 → 等同 fn first_word<'a>(s: &'a str) -> &'a str。" },
+          { code: "fn first_word(s: &str) -> &str {", note: "√ 可以省略。規則一給 s 一個 'a;規則二:恰好一個輸入生命週期,回傳參考自動綁定它 → 等同 fn first_word<'a>(s: &'a str) -> &'a str。" },
           { code: "    s.split_whitespace().next().unwrap_or(\"\")", note: "回傳指向 s 內部的切片,和補出來的關係一致。" },
           { code: "}", note: "函式結束。" },
           { code: "", note: "" },
-          { code: "fn print_len(s: &str) -> usize {", note: "✅ 根本不需要推導。回傳型別是 usize(不是參考),沒有任何生命週期要決定;規則一給了 s 一個生命週期,但沒人需要用它。" },
+          { code: "fn print_len(s: &str) -> usize {", note: "√ 根本不需要推導。回傳型別是 usize(不是參考),沒有任何生命週期要決定;規則一給了 s 一個生命週期,但沒人需要用它。" },
           { code: "    s.len()", note: "回傳數值,與借用無關。" },
           { code: "}", note: "函式結束。" },
           { code: "", note: "" },
@@ -667,7 +667,7 @@ struct 存參考完全允許(解析器、視圖類型的常見設計),只是要�
           { code: "}", note: "struct 定義結束。" },
           { code: "", note: "" },
           { code: "impl<'a> Excerpt<'a> {", note: "impl 上宣告生命週期參數,和泛型 <T> 同一個模式。" },
-          { code: "    fn announce(&self, greeting: &str) -> &str {", note: "✅ 可以省略。雖然有兩個參考參數(&self 與 greeting),但規則三專為方法設計:有 &self 時回傳參考自動綁定 self。這符合絕大多數方法的實情——回傳的東西來自自己的欄位。" },
+          { code: "    fn announce(&self, greeting: &str) -> &str {", note: "√ 可以省略。雖然有兩個參考參數(&self 與 greeting),但規則三專為方法設計:有 &self 時回傳參考自動綁定 self。這符合絕大多數方法的實情——回傳的東西來自自己的欄位。" },
           { code: "        println!(\"{}\", greeting);", note: "另一個參數只是被讀取,不會流進回傳值。" },
           { code: "        self.part", note: "回傳自己的欄位,正中規則三的假設。" },
           { code: "    }", note: "方法結束。" },
@@ -692,7 +692,7 @@ struct 存參考完全允許(解析器、視圖類型的常見設計),只是要�
 接著 clear(&mut self) 需要可變借用,而 f 在最後一行還要用,兩者衝突:cannot borrow \`p\` as mutable because it is also borrowed as immutable。這條規則擋下的是真實危險:clear 會把 data 的內容清掉(甚至可能改動緩衝區),f 指向的位置立刻失效。修法就是把 f 用完再 clear。`,
       walkthrough: [
         {
-          label: "❌ 題目程式碼(無法編譯)",
+          label: "X Question code (won't compile)",
           lines: [
             { code: "struct Parser {", note: "定義型別。" },
             { code: "    data: String,", note: "擁有一份 heap 字串。" },
@@ -720,7 +720,7 @@ struct 存參考完全允許(解析器、視圖類型的常見設計),只是要�
           outro: "這條規則擋下的是真實危險:clear 會清空 data 的內容、甚至可能改動緩衝區,f 指向的位置立刻失效——在 C++ 這裡就是懸空指標。",
         },
         {
-          label: "✅ 正確寫法(先用完參考,再做修改)",
+          label: "√ Correct version (finish using the reference before modifying)",
           lines: [
             { code: "struct Parser {", note: "struct 與 impl 完全不用改。" },
             { code: "    data: String,", note: "欄位。" },
@@ -765,7 +765,7 @@ struct 存參考完全允許(解析器、視圖類型的常見設計),只是要�
 根本問題是設計:這個資料是函式「生出來」要交給呼叫端的,那就該用擁有型別。把欄位改成 String,連生命週期參數都可以一起拿掉,程式反而更簡單。宣告成 'static 只是把矛盾換位置(區域變數給不出 'static 的參考);static mut 是 unsafe 而且完全不該用在這裡;而回傳自己建立的資料當然可以,只要交出的是「所有權」而不是「參考」。`,
       walkthrough: [
         {
-          label: "❌ 題目程式碼(無法編譯)",
+          label: "X Question code (won't compile)",
           lines: [
             { code: "struct Config<'a> {", note: "struct 持有參考,所以需要生命週期參數——定義本身沒錯。" },
             { code: "    name: &'a str,", note: "參考欄位:存的是指向別人資料的指標。" },
@@ -783,7 +783,7 @@ struct 存參考完全允許(解析器、視圖類型的常見設計),只是要�
           ],
         },
         {
-          label: "✅ 正確寫法(讓 struct 擁有資料)",
+          label: "√ Correct version (have the struct own the data)",
           lines: [
             { code: "struct Config {", note: "改動處:拿掉生命週期參數——沒有參考欄位就不需要它,型別立刻簡單很多。" },
             { code: "    name: String,", note: "改動處:欄位改成擁有型別。這個 struct 從此不依賴任何人,可以自由地被回傳、存進集合、跨執行緒傳遞。" },
@@ -819,7 +819,7 @@ struct 存參考完全允許(解析器、視圖類型的常見設計),只是要�
 接著 push 需要可變借用,而 found 在最後一行還要用——違反讀寫互斥,編譯錯誤。這防住的是真實危險:push 可能觸發擴容搬家,found 指向的舊位置立刻懸空。回傳 Option<&T> 本身完全合法(標準函式庫的 get、first、iter().find() 都這樣做),問題只在呼叫端何時使用。`,
       walkthrough: [
         {
-          label: "❌ 題目程式碼(無法編譯)",
+          label: "X Question code (won't compile)",
           lines: [
             { code: "fn first_even(v: &Vec<i32>) -> Option<&i32> {", note: "回傳 Option<&i32> 完全合法。省略規則第二條:只有一個參考參數,回傳型別裡的那個參考就綁定它——等同 fn first_even<'a>(v: &'a Vec<i32>) -> Option<&'a i32>。" },
             { code: "    v.iter().find(|x| *x % 2 == 0)", note: "iter() 產生元素參考的迭代器,find 回傳第一個符合條件的元素參考(包在 Option 裡);閉包參數 x 的型別是 &&i32,用 * 解一層再取餘數。" },
@@ -835,7 +835,7 @@ struct 存參考完全允許(解析器、視圖類型的常見設計),只是要�
           outro: "這防住的是真實危險:push 可能觸發擴容搬家(重新配置記憶體、搬走全部元素),found 指向的舊位置立刻變成懸空指標。",
         },
         {
-          label: "✅ 正確寫法(先用完借用,再修改集合)",
+          label: "√ Correct version (finish the borrow before modifying the collection)",
           lines: [
             { code: "fn first_even(v: &[i32]) -> Option<&i32> {", note: "改動處(順手改進):參數收 &[i32] 而不是 &Vec<i32>,通用性更好(陣列、Vec、切片都能傳);生命週期一樣靠省略規則補完。" },
             { code: "    v.iter().find(|x| *x % 2 == 0)", note: "函式本體一字未改。" },
@@ -867,7 +867,7 @@ struct 存參考完全允許(解析器、視圖類型的常見設計),只是要�
 其餘三段各踩一個經典錯誤:回傳指向函式區域變數的參考 → missing lifetime specifier,而且本質是懸空參考,補標註也救不了(要改成回傳 String);struct 欄位存參考卻沒宣告生命週期參數 → missing lifetime specifier,要寫成 struct Holder<'a> { part: &'a str };把內層變數的參考存到外層變數 → \`x\` does not live long enough。這三種正是生命週期錯誤的三張紅牌。`,
       walkthrough: [
         {
-          label: "✅ 可以編譯的那一段",
+          label: "√ The version that compiles",
           lines: [
             { code: "fn longest<'a>(x: &'a str, y: &'a str) -> &'a str {", note: "標註完整:回傳值綁 'a,壽命不長於 x 與 y 之中較短的那一個。" },
             { code: "    if x.len() > y.len() { x } else { y }", note: "兩條路徑回傳的參考都滿足 'a。" },
@@ -881,7 +881,7 @@ struct 存參考完全允許(解析器、視圖類型的常見設計),只是要�
           ],
         },
         {
-          label: "❌ 紅牌一:回傳指向區域變數的參考",
+          label: "X Red card 1: returning a reference to a local variable",
           lines: [
             { code: "fn make() -> &String {", note: "⛔ 編譯失敗:missing lifetime specifier。沒有任何參考參數可以當回傳值的來源,編譯器無從推導。" },
             { code: "    let s = String::from(\"hi\");", note: "區域變數擁有這份資料。" },
@@ -890,7 +890,7 @@ struct 存參考完全允許(解析器、視圖類型的常見設計),只是要�
           ],
         },
         {
-          label: "❌ 紅牌二:struct 存參考卻沒宣告生命週期",
+          label: "X Red card 2: struct stores a reference without declaring a lifetime",
           lines: [
             { code: "struct Holder {", note: "⛔ 編譯失敗的起點。" },
             { code: "    part: &str,", note: "⛔ missing lifetime specifier。欄位存參考就必須說明「這個實例不能活過誰」,否則編譯器無從檢查。" },
@@ -904,7 +904,7 @@ struct 存參考完全允許(解析器、視圖類型的常見設計),只是要�
           ],
         },
         {
-          label: "❌ 紅牌三:參考活得比資料久",
+          label: "X Red card 3: the reference outlives the data",
           lines: [
             { code: "fn main() {", note: "程式進入點。" },
             { code: "    let r;", note: "宣告在外層,代表它想活到 main 結束。" },
@@ -932,7 +932,7 @@ struct 存參考完全允許(解析器、視圖類型的常見設計),只是要�
       explanation: `本課四個重點:(1)目的——在沒有 GC 的前提下,於編譯期證明不會出現懸空參考;(2)語法——'a 是泛型生命週期參數,可標在函式、struct、impl 上,角括號裡「生命週期在前、型別在後」;(3)省略——三條規則涵蓋了絕大多數情況,實務上手寫的頻率遠低於教材給人的印象;(4)本質——它「描述」既有的存活關係,不「改變」任何東西,編譯完就消失,執行期零成本。
 其餘三種說法都是本課點名破除的迷思:標註不會延長壽命(第 7 題)、它不是執行期機制(對照 C# 的 GC)、而且大多數函式靠省略規則就夠了(第 5 與第 15 題)。`,
       walkthrough: {
-        label: "🔍 一支程式走完本課",
+        label: "🔍 One program that walks through this whole lesson",
         lines: [
           { code: "struct Excerpt<'a> {", note: "重點二:struct 持有參考時,必須宣告生命週期參數——語意是「這個實例不能活得比 'a 久」。" },
           { code: "    part: &'a str,", note: "零複製的參考欄位,存的是指向別人資料的指標。" },

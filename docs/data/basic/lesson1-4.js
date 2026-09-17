@@ -1,7 +1,7 @@
 /* 出題慣例見專案根目錄 AUTHORING.md:
  *   - answer 一律為 0(正確答案寫在第一個選項),顯示順序由 quiz.js 依題目 id 洗牌
  *   - 詳解禁止用「選項 A/B/C」字母指涉,必須直接描述選項內容
- *   - 有程式碼的題目一律附 walkthrough(逐行說明);反面案例必須同時附上 ✅ 正確寫法 */
+ *   - 有程式碼的題目一律附 walkthrough(逐行說明);反面案例必須同時附上 √ 正確寫法 */
 window.RUST_LESSONS = window.RUST_LESSONS || {};
 window.RUST_LESSONS["lesson1-4"] = {
   id: "lesson1-4",
@@ -23,7 +23,7 @@ window.RUST_LESSONS["lesson1-4"] = {
 為什麼這樣設計?若允許兩個變數都「擁有」同一份 heap 資料,作用域結束時就會釋放兩次(double free)。Rust 的解法:同一時間只有一個擁有者,編譯期就把問題堵死——這就是無 GC 卻記憶體安全的根基。`,
       walkthrough: [
         {
-          label: "❌ 題目程式碼(無法編譯)",
+          label: "X Question code (won't compile)",
           lines: [
             { code: "fn main() {", note: "程式進入點。" },
             { code: "    let s1 = String::from(\"hello\");", note: "在 heap 配置一份 \"hello\",s1 成為這份資料的唯一擁有者;s1 本身在 stack 上只存(指標、長度、容量)三個欄位。" },
@@ -33,7 +33,7 @@ window.RUST_LESSONS["lesson1-4"] = {
           ],
         },
         {
-          label: "✅ 正確寫法(要兩份資料就明寫 clone)",
+          label: "√ Correct version (write clone explicitly when you need two copies)",
           lines: [
             { code: "fn main() {", note: "程式進入點。" },
             { code: "    let s1 = String::from(\"hello\");", note: "s1 擁有第一份 heap 資料。" },
@@ -84,7 +84,7 @@ window.RUST_LESSONS["lesson1-4"] = {
       explanation: `clone() 深複製 heap 資料,s2 得到獨立的一份,s1 保持有效。
 Rust 刻意讓深複製「必須明寫 .clone()」:昂貴的操作要在程式碼上看得見,不會有隱形的效能損耗。.copy() 這個方法不存在(Copy 是隱式的位元複製,不是方法);new String(...) 是 C#/Java 語法;&s1 as String 也不行,as 不能把參考轉成擁有的 String。`,
       walkthrough: {
-        label: "✅ 正確寫法逐行說明",
+        label: "√ Correct version — walkthrough",
         lines: [
           { code: "fn main() {", note: "把選項補成可執行的完整程式。" },
           { code: "    let s1 = String::from(\"hello\");", note: "heap 上配置 \"hello\",s1 是唯一擁有者。" },
@@ -111,7 +111,7 @@ Rust 刻意讓深複製「必須明寫 .clone()」:昂貴的操作要在程式�
 這題是理解借用(下一課)的動機:如果只是想讓函式「看一下」值,每次都被搬走也太痛苦——所以才需要 &(借用)。`,
       walkthrough: [
         {
-          label: "❌ 題目程式碼(無法編譯)",
+          label: "X Question code (won't compile)",
           lines: [
             { code: "fn takes_ownership(s: String) {", note: "參數型別是 String(不是 &String),簽名的意思是「呼叫我就把值交給我」,參數 s 成為新的擁有者。" },
             { code: "    println!(\"{}\", s);", note: "函式內用自己擁有的 s,合法。" },
@@ -125,7 +125,7 @@ Rust 刻意讓深複製「必須明寫 .clone()」:昂貴的操作要在程式�
           ],
         },
         {
-          label: "✅ 正確寫法(改成借用,不搬走所有權)",
+          label: "√ Correct version (borrow instead of moving ownership)",
           lines: [
             { code: "fn takes_ownership(s: &String) {", note: "改動處:參數型別加上 &,語意從「給我」變成「借我看看」,函式只取得讀取權。" },
             { code: "    println!(\"{}\", s);", note: "透過參考讀取內容,println! 會自動解參考,不必寫 *s。" },
@@ -184,7 +184,7 @@ Rust 刻意讓深複製「必須明寫 .clone()」:昂貴的操作要在程式�
       explanation: `Rust 的釋放是「確定性」的:擁有者走出作用域(} 那一刻),值的 drop 就被呼叫,先進後出。沒有 GC 執行緒、沒有手動 free、也不會等到程式結束。
 這個機制(RAII)不只管記憶體:檔案控制代碼、網路連線、鎖,全都在擁有者離開作用域時自動釋放——資源管理跟著所有權走。`,
       walkthrough: {
-        label: "🔍 用可觀察的程式驗證釋放時機",
+        label: "🔍 Verifying drop timing with observable code",
         lines: [
           { code: "struct Noisy(&'static str);", note: "定義一個只帶名字的 struct,用來在被釋放時印出訊息。" },
           { code: "", note: "" },
@@ -221,7 +221,7 @@ Rust 刻意讓深複製「必須明寫 .clone()」:昂貴的操作要在程式�
 其餘三組(整數+浮點+字元、兩個整數、Copy 陣列+bool)的成員全是 Copy,tuple 整體是 Copy,複製後原變數照用。`,
       walkthrough: [
         {
-          label: "❌ 無法編譯的那一組(含 String)",
+          label: "X The version with String that doesn't compile",
           lines: [
             { code: "fn main() {", note: "把選項補成完整程式。" },
             { code: "    let t = (String::from(\"hi\"), 5);", note: "tuple 的成員之一是 String(非 Copy),因此整個 tuple 也不是 Copy。" },
@@ -231,7 +231,7 @@ Rust 刻意讓深複製「必須明寫 .clone()」:昂貴的操作要在程式�
           ],
         },
         {
-          label: "✅ 正確寫法(用解構取代整包搬移)",
+          label: "√ Correct version (destructure instead of moving the whole thing)",
           lines: [
             { code: "fn main() {", note: "程式進入點。" },
             { code: "    let t = (String::from(\"hi\"), 5);", note: "同樣的 tuple。" },
@@ -259,7 +259,7 @@ Rust 刻意讓深複製「必須明寫 .clone()」:昂貴的操作要在程式�
 想繼續用有三個選擇:push(s.clone()) 付複製成本;先用完 s 再 push;或之後從 v 借出來用(&v[0])。「集合擁有元素」這個觀念在 lesson1-9 會全面展開。`,
       walkthrough: [
         {
-          label: "❌ 題目程式碼(無法編譯)",
+          label: "X Question code (won't compile)",
           lines: [
             { code: "fn main() {", note: "程式進入點。" },
             { code: "    let s = String::from(\"hello\");", note: "s 擁有 heap 上的 \"hello\"。" },
@@ -270,7 +270,7 @@ Rust 刻意讓深複製「必須明寫 .clone()」:昂貴的操作要在程式�
           ],
         },
         {
-          label: "✅ 正確寫法(放進去之後從集合借出來用)",
+          label: "√ Correct version (borrow it back from the collection after inserting)",
           lines: [
             { code: "fn main() {", note: "程式進入點。" },
             { code: "    let s = String::from(\"hello\");", note: "s 擁有 heap 上的 \"hello\"。" },
@@ -298,7 +298,7 @@ Rust 刻意讓深複製「必須明寫 .clone()」:昂貴的操作要在程式�
 所以規則是:實作了 Drop(擁有資源)的型別不可能是 Copy,兩者在語言層面互斥。效能顧慮是考量之一但不是根本原因——clone() 慢也照樣提供,重點是「隱式」複製不能有資源歸屬問題。`,
       walkthrough: [
         {
-          label: "❌ 試著硬幫含 String 的型別加上 Copy",
+          label: "X Trying to force Copy onto a type that contains String",
           lines: [
             { code: "#[derive(Copy, Clone)]", note: "要求編譯器自動實作 Copy(隱式位元複製)與 Clone。" },
             { code: "struct User {", note: "定義一個 struct。" },
@@ -308,7 +308,7 @@ Rust 刻意讓深複製「必須明寫 .clone()」:昂貴的操作要在程式�
           ],
         },
         {
-          label: "✅ 正確寫法(只 derive Clone,複製時明寫)",
+          label: "√ Correct version (derive only Clone, write clone explicitly)",
           lines: [
             { code: "#[derive(Clone)]", note: "改動處:拿掉 Copy,只保留 Clone——複製仍然做得到,但必須明寫 .clone(),成本看得見。" },
             { code: "struct User {", note: "同樣的 struct。" },
@@ -342,7 +342,7 @@ Rust 刻意讓深複製「必須明寫 .clone()」:昂貴的操作要在程式�
 同一行 let s2 = s1,C# 讀作「兩個名字指向同一物件」,Rust 讀作「所有權從 s1 交給 s2」。這不是語法差異,是整個記憶體管理哲學的差異——理解這一點,後面的借用、生命週期都是這個模型的自然推論。`,
       walkthrough: [
         {
-          label: "🔷 原始 C# 程式碼逐行說明",
+          label: "🔷 Original C# code — walkthrough",
           lang: "csharp",
           lines: [
             { code: "var s1 = \"hello\";", note: "s1 是一個指向字串物件的參考,物件本身在 managed heap 上。" },
@@ -351,7 +351,7 @@ Rust 刻意讓深複製「必須明寫 .clone()」:昂貴的操作要在程式�
           ],
         },
         {
-          label: "❌ 逐字翻成 Rust(無法編譯)",
+          label: "X Translated word-for-word into Rust (won't compile)",
           lines: [
             { code: "fn main() {", note: "程式進入點。" },
             { code: "    let s1 = String::from(\"hello\");", note: "s1 擁有這份 heap 字串——是「擁有」而不是「指向」。" },
@@ -361,7 +361,7 @@ Rust 刻意讓深複製「必須明寫 .clone()」:昂貴的操作要在程式�
           ],
         },
         {
-          label: "✅ 想「兩個名字都能讀」的 Rust 寫法",
+          label: "√ The Rust way to have both names still readable",
           lines: [
             { code: "fn main() {", note: "程式進入點。" },
             { code: "    let s1 = String::from(\"hello\");", note: "s1 是唯一擁有者。" },
@@ -389,7 +389,7 @@ Rust 刻意讓深複製「必須明寫 .clone()」:昂貴的操作要在程式�
 所以 p.age 照樣可讀(而且 u32 是 Copy),但再讀 p.name 會得到 use of moved value: \`p.name\`。另外要注意:部分移動之後,p 這個「整體」也不能再被使用(例如整包傳給函式或 println!("{:?}", p)),因為它已經不完整了。`,
       walkthrough: [
         {
-          label: "❌ 題目程式碼(最後一行編譯失敗)",
+          label: "X Question code (last line won't compile)",
           lines: [
             { code: "struct Person {", note: "定義一個擁有兩個欄位的 struct。" },
             { code: "    name: String,", note: "非 Copy 欄位,擁有 heap 資源。" },
@@ -405,7 +405,7 @@ Rust 刻意讓深複製「必須明寫 .clone()」:昂貴的操作要在程式�
           ],
         },
         {
-          label: "✅ 正確寫法(要保留 p 就借用而非移出)",
+          label: "√ Correct version (borrow instead of moving out, to keep p)",
           lines: [
             { code: "struct Person {", note: "同樣的定義。" },
             { code: "    name: String,", note: "欄位定義同上,仍是擁有 heap 資源的 String。" },
@@ -438,7 +438,7 @@ Rust 刻意讓深複製「必須明寫 .clone()」:昂貴的操作要在程式�
 所以 s1 被 move 進運算,回傳的新 String 由 s3 接手;s2 只是被借用,依然有效。這個設計是為了效率——直接把右邊的內容附加到左邊已配置好的緩衝區,不必額外配置一塊新記憶體。想保留 s1 就改用 format!。`,
       walkthrough: [
         {
-          label: "❌ 題目程式碼(無法編譯)",
+          label: "X Question code (won't compile)",
           lines: [
             { code: "fn main() {", note: "程式進入點。" },
             { code: "    let s1 = String::from(\"Hello, \");", note: "s1 擁有第一段字串。" },
@@ -449,7 +449,7 @@ Rust 刻意讓深複製「必須明寫 .clone()」:昂貴的操作要在程式�
           ],
         },
         {
-          label: "✅ 正確寫法(用 format! 保留所有輸入)",
+          label: "√ Correct version (use format! to keep every input)",
           lines: [
             { code: "fn main() {", note: "程式進入點。" },
             { code: "    let s1 = String::from(\"Hello, \");", note: "s1 擁有第一段字串。" },
@@ -478,7 +478,7 @@ Rust 刻意讓深複製「必須明寫 .clone()」:昂貴的操作要在程式�
 這是初學者最常撞到的牆之一。解法看需求:函式只需要讀 → 改成借用;函式真的要拿走 → 迴圈內 clone;或者把「建立值」也搬進迴圈裡,每圈生一個新的。`,
       walkthrough: [
         {
-          label: "❌ 題目程式碼(無法編譯)",
+          label: "X Question code (won't compile)",
           lines: [
             { code: "fn consume(s: String) {", note: "參數按值收,呼叫一次就吃掉一個 String 的所有權。" },
             { code: "    println!(\"{}\", s);", note: "印出內容。" },
@@ -493,7 +493,7 @@ Rust 刻意讓深複製「必須明寫 .clone()」:昂貴的操作要在程式�
           ],
         },
         {
-          label: "✅ 正確寫法(函式只需要讀 → 改成借用)",
+          label: "√ Correct version (the function only needs to read → borrow instead)",
           lines: [
             { code: "fn consume(s: &str) {", note: "改動處:參數改成 &str(唯讀借用),呼叫再多次也不會消耗任何所有權;用 &str 而不是 &String 通用性更好。" },
             { code: "    println!(\"{}\", s);", note: "透過參考讀取。" },
@@ -526,7 +526,7 @@ Rust 刻意讓深複製「必須明寫 .clone()」:昂貴的操作要在程式�
 它示範的是「沒有借用會有多麻煩」:每個只想讀資料的函式,都得把值收下再原封不動地退還,簽名還被 tuple 汙染。下一課的 &(借用)就是為了消滅這種寫法而存在。`,
       walkthrough: [
         {
-          label: "🔍 題目程式碼逐行說明(可以編譯,但寫法笨拙)",
+          label: "🔍 Question code — walkthrough (compiles, but the style is awkward)",
           lines: [
             { code: "fn calculate_length(s: String) -> (String, usize) {", note: "參數按值收 → 取走所有權;回傳型別是 tuple,第一個成員就是為了「把值還回去」。" },
             { code: "    let length = s.len();", note: "len() 只需要 &self,所以這裡只是借自己來算長度,s 仍屬於本函式。" },
@@ -541,7 +541,7 @@ Rust 刻意讓深複製「必須明寫 .clone()」:昂貴的操作要在程式�
           ],
         },
         {
-          label: "✅ 實務寫法(改用借用)",
+          label: "√ Practical version (use a borrow instead)",
           lines: [
             { code: "fn calculate_length(s: &str) -> usize {", note: "改動處:參數改成唯讀借用,回傳值只留真正需要的 usize——簽名一眼就看得出「我只讀不拿」。" },
             { code: "    s.len()", note: "透過參考讀取長度並回傳。" },
@@ -572,7 +572,7 @@ Rust 刻意讓深複製「必須明寫 .clone()」:昂貴的操作要在程式�
 三個修法:只想讀就借用 &v[0];要獨立一份就 v[0].clone();真的要拿走就用 v.remove(0)(把後面元素往前搬)或 v.into_iter().next()(消耗整個 vector)。注意 vec![1, 2][0] 反而合法,因為 i32 是 Copy——那是複製而非搬移。`,
       walkthrough: [
         {
-          label: "❌ 題目程式碼(無法編譯)",
+          label: "X Question code (won't compile)",
           lines: [
             { code: "fn main() {", note: "程式進入點。" },
             { code: "    let v = vec![String::from(\"a\"), String::from(\"b\")];", note: "v 擁有這個 Vec,連同裡面兩個 String 的所有權。" },
@@ -582,7 +582,7 @@ Rust 刻意讓深複製「必須明寫 .clone()」:昂貴的操作要在程式�
           ],
         },
         {
-          label: "✅ 正確寫法一(只是要讀 → 借用)",
+          label: "√ Correct version 1 (just reading → borrow)",
           lines: [
             { code: "fn main() {", note: "程式進入點。" },
             { code: "    let v = vec![String::from(\"a\"), String::from(\"b\")];", note: "v 擁有兩個元素。" },
@@ -592,7 +592,7 @@ Rust 刻意讓深複製「必須明寫 .clone()」:昂貴的操作要在程式�
           ],
         },
         {
-          label: "✅ 正確寫法二(真的要拿走 → remove)",
+          label: "√ Correct version 2 (actually taking it → remove)",
           lines: [
             { code: "fn main() {", note: "程式進入點。" },
             { code: "    let mut v = vec![String::from(\"a\"), String::from(\"b\")];", note: "改動處:要修改 vector 就必須宣告 mut。" },
@@ -620,7 +620,7 @@ Rust 刻意讓深複製「必須明寫 .clone()」:昂貴的操作要在程式�
 兩個修法:對參考做匹配 if let Some(n) = &name(n 變成 &String,name 不動),或在模式上寫 ref——現代寫法幾乎都用前者。這也是「match 到底會不會吃掉我的值」這個常見疑問的答案:看你 match 的是值還是參考。`,
       walkthrough: [
         {
-          label: "❌ 題目程式碼(無法編譯)",
+          label: "X Question code (won't compile)",
           lines: [
             { code: "fn main() {", note: "程式進入點。" },
             { code: "    let name = Some(String::from(\"amy\"));", note: "name 的型別是 Option<String>,它擁有裡面那份 heap 字串。" },
@@ -632,7 +632,7 @@ Rust 刻意讓深複製「必須明寫 .clone()」:昂貴的操作要在程式�
           ],
         },
         {
-          label: "✅ 正確寫法(對參考做匹配)",
+          label: "√ Correct version (match on the reference)",
           lines: [
             { code: "fn main() {", note: "程式進入點。" },
             { code: "    let name = Some(String::from(\"amy\"));", note: "name 擁有 Option<String>。" },
@@ -662,7 +662,7 @@ Rust 刻意讓深複製「必須明寫 .clone()」:昂貴的操作要在程式�
 因此 drop(s) 之後 s 是被移動的狀態,再用就是編譯錯誤——這跟把 s 傳給任何吃所有權的函式沒有兩樣。要注意的是不能寫 s.drop()(那是 Drop trait 的方法,禁止手動呼叫,否則值會被釋放兩次)。`,
       walkthrough: [
         {
-          label: "❌ 題目程式碼(無法編譯)",
+          label: "X Question code (won't compile)",
           lines: [
             { code: "fn main() {", note: "程式進入點。" },
             { code: "    let s = String::from(\"hello\");", note: "s 擁有 heap 字串。" },
@@ -672,7 +672,7 @@ Rust 刻意讓深複製「必須明寫 .clone()」:昂貴的操作要在程式�
           ],
         },
         {
-          label: "✅ 正確寫法(先用完再釋放,之後不再碰它)",
+          label: "√ Correct version (finish using it, drop it, then never touch it again)",
           lines: [
             { code: "fn main() {", note: "程式進入點。" },
             { code: "    let s = String::from(\"hello\");", note: "s 擁有 heap 字串。" },
@@ -700,7 +700,7 @@ Rust 刻意讓深複製「必須明寫 .clone()」:昂貴的操作要在程式�
       explanation: `對一個「已經持有值」的可變變數重新賦值時,Rust 會先釋放舊值再寫入新值——這是 drop 規則的一部分,不會洩漏。
 容易搞混的是 shadowing:let s = String::from("second") 是「建立一個新變數遮蔽舊的」,舊變數還活著、要到作用域結束才釋放;而這題的 s = ... 沒有 let,是「同一個變數換內容」,舊值當場釋放。`,
       walkthrough: {
-        label: "🔍 題目程式碼逐行說明(可正常執行)",
+        label: "🔍 Question code — walkthrough (runs successfully)",
         lines: [
           { code: "fn main() {", note: "程式進入點。" },
           { code: "    let mut s = String::from(\"first\");", note: "配置第一份 heap 資料 \"first\",擁有者是 s;因為之後要重新賦值,必須加 mut。" },
@@ -726,7 +726,7 @@ Rust 刻意讓深複製「必須明寫 .clone()」:昂貴的操作要在程式�
       explanation: `Point 的兩個欄位都是 i32(Copy),所以整個 struct 可以 derive Copy:傳進函式是複製、賦值也是複製,p1 從頭到尾有效。
 兩個細節:一、Copy 必須和 Clone 一起 derive(Copy 是 Clone 的 subtrait,語言規定 Copy: Clone);二、要不要幫自己的型別加 Copy 是設計決定——小而單純、複製成本低的值型別(座標、顏色、ID)適合;一旦型別可能長大或含有資源,就不該加,否則到處隱式複製反而失去「哪裡有成本」的可見性。`,
       walkthrough: {
-        label: "🔍 題目程式碼逐行說明(可正常執行)",
+        label: "🔍 Question code — walkthrough (runs successfully)",
         lines: [
           { code: "#[derive(Debug, Clone, Copy)]", note: "Debug 讓 {:?} 可以印;Copy 讓賦值/傳參變成位元複製;Copy 必須搭配 Clone(語言規定 Copy: Clone),所以三個一起 derive。" },
           { code: "struct Point {", note: "定義一個小型值型別。" },
@@ -762,7 +762,7 @@ Rust 刻意讓深複製「必須明寫 .clone()」:昂貴的操作要在程式�
       explanation: `官方三條規則:(1) Rust 中每個值都有一個擁有者;(2) 同一時間只能有一個擁有者;(3) 擁有者離開作用域,值就被釋放。本課所有題目都是這三條的推論。
 「多個擁有者 + 參考計數」描述的是 Rc<T>——那是標準函式庫在這三條規則之上刻意打造的例外(進階課會講),不是語言的預設模型。至於 mut,它管的是「能不能改」,和「誰擁有」完全是兩回事:不可變變數一樣是它所持有的值的擁有者。`,
       walkthrough: {
-        label: "🔍 一支程式走完三條規則",
+        label: "🔍 One program that walks through all three rules",
         lines: [
           { code: "fn take(s: String) -> usize {", note: "簽名宣告「我要拿走一個 String」,參數 s 在函式內成為擁有者。" },
           { code: "    s.len()", note: "回傳長度(usize 是 Copy)。函式結束時 s 離開作用域 → 規則三:字串在這裡被釋放。" },

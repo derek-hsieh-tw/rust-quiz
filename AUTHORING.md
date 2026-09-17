@@ -61,15 +61,52 @@ window.RUST_LESSONS["lesson1-4"] = {
 
 ### 區塊標籤(`label`)慣例
 
+> **符號異動**:反面案例標記已從 `❌` 改成純文字 **`X`**,正確寫法標記已從 `✅` 改成
+> **`√`**(U+221A 根號符號,不是打勾的 `✓`,也不是英文字母 `v`)。`⛔`、`🔍`、`🔧`、
+> `🔷` 維持不變。**改動這些符號前,先看 §7「動符號的鐵則」。**
+
 | 開頭 | 用途 |
 |---|---|
 | `🔍` | 正面案例:題目程式碼可正常編譯執行,逐行說明它做了什麼 |
-| `❌` | 反面案例:編譯失敗或行為錯誤的程式碼,在出錯那行點名錯誤 |
-| `✅` | 正確寫法:完整、可直接編譯執行的修正版 |
+| `X` | 反面案例:**整個區塊**是錯的——編譯失敗或行為錯誤的程式碼 |
+| `⛔` | 標在反面案例 `note` 裡「出錯的那一行」——這一行是錯誤的起因 |
+| `√` | 正確寫法:完整、可直接編譯執行的修正版 |
 | `🔧` | 去糖後:編譯器眼中的樣子(見下節,錯誤訊息提到讀者沒寫過的東西時必附) |
 | `🔷` | C# 對照程式碼(搭配 `lang: "csharp"`) |
 
-**驗證腳本會強制:出現 `❌` 開頭的區塊時,同一題必須另有 `✅` 開頭的區塊。**
+語意分層:**`X` 標整個區塊是錯的,`⛔` 標區塊裡「這一行是起因」,`√` 標正確寫法**——
+三者搭配使用,不是互相替代,不要混用或省略其中一個。
+
+**驗證腳本會強制:出現 `X` 開頭的區塊時,同一題必須另有 `√` 開頭的區塊。**
+
+### `label` 一律英文,內文一律繁中
+
+`walkthrough[].label`(區塊標題)**一律用英文**,語氣是**編譯器 / 測試報告語氣**——
+像 `cargo build`、`cargo test` 印出來的東西,不是教學口吻。其餘所有欄位——`note`、
+`explanation`、`question`、`csharp`、`options[].text`——**維持繁體中文**,這條規則
+沒有例外。
+
+用詞對照(出題時照這張表選字,不要自己造詞):
+
+| 中文概念 | 英文用詞 |
+|---|---|
+| 題目程式碼 | `Question code` |
+| 逐行說明 | `— walkthrough`(em dash) |
+| 正確寫法 | `Correct version` |
+| 錯誤寫法 | `Wrong version` |
+| 去糖後 | `Desugared` |
+| C# 對照 | `C# equivalent` |
+
+技術識別字(`if let`、`?`、`match`、型別名、方法名⋯)原樣保留,不要翻譯。例:
+
+```js
+label: "X Question code (won't compile)"
+label: "√ Correct version (complete, runnable)"
+label: "🔍 Question code — walkthrough (runs successfully)"
+```
+
+`label` 省略時,`quiz.js` 會顯示英文預設值 `Walkthrough`(見 §8),**不是**
+「🔍 逐行說明」——只有單一正面案例區塊、不需要特別標題時才省略。
 
 ### `🔧` 去糖區塊:錯誤訊息提到讀者沒寫過的東西時
 
@@ -78,7 +115,7 @@ window.RUST_LESSONS["lesson1-4"] = {
 `the trait bound ...: From<...> is not satisfied`;他寫 `{}`,編譯器說
 `doesn't implement std::fmt::Display`。錯誤訊息裡的每一個陌生字,都是糖底下露出來的實體。
 
-**規則:當 `❌` 區塊的錯誤訊息(或詳解)出現讀者在這段程式碼裡沒有親手寫過的識別字
+**規則:當 `X` 區塊的錯誤訊息(或詳解)出現讀者在這段程式碼裡沒有親手寫過的識別字
 ——`Add`、`Index`、`From`、`Into`、`IntoIterator`、`Deref`、`Display`、`Ord`、`PartialOrd`、
 `Fn` / `FnMut` / `FnOnce` 這一類——該題必須附一個 `🔧` 區塊,把糖攤開。**
 驗證腳本會掃出漏掉的題目(見 §7)。
@@ -88,7 +125,7 @@ window.RUST_LESSONS["lesson1-4"] = {
 
 ```js
 {
-  label: "🔧 去糖後(編譯器眼中的樣子)",
+  label: "🔧 Desugared (what the compiler sees)",
   intro: "錯誤訊息提到了 From,但你的程式碼裡沒有這個字。因為 ? 不只是「出錯就回傳」:",
   lines: [
     { code: "let f = File::open(\"a.txt\")?;", note: "你寫的這一行。" },
@@ -102,8 +139,8 @@ window.RUST_LESSONS["lesson1-4"] = {
 }
 ```
 
-- `🔧` 區塊**不必是完整可執行的程式**(它是示意,不受 `✅` 的 `fn main` 規則約束)。
-- 放在 `❌` 區塊之後(該題若把 `✅` 排在 `❌` 前面,就擺在最末)——先看錯,再看糖底下是什麼。
+- `🔧` 區塊**不必是完整可執行的程式**(它是示意,不受 `√` 的 `fn main` 規則約束)。
+- 放在 `X` 區塊之後(該題若把 `√` 排在 `X` 前面,就擺在最末)——先看錯,再看糖底下是什麼。
 - 去糖形式請查 §9 的對照表,不要自己臆測。
 
 ### 資料格式
@@ -111,7 +148,7 @@ window.RUST_LESSONS["lesson1-4"] = {
 ```js
 walkthrough: [
   {
-    label: "❌ 題目程式碼(無法編譯)",   // 選填,預設「🔍 逐行說明」
+    label: "X Question code (won't compile)",   // 選填,省略時預設顯示「Walkthrough」
     intro: "先看問題出在哪:",            // 選填,區塊前的一段文字
     lang: "rust",                        // 選填,預設 rust
     lines: [
@@ -134,7 +171,8 @@ walkthrough: [
 
 ### 正面案例(程式碼可正常編譯執行)
 
-一個區塊即可,`label` 用預設的「🔍 逐行說明」或自訂:
+一個區塊即可,省略 `label` 時預設顯示英文「Walkthrough」,也可以自訂(英文,見上方
+用詞對照表):
 
 ```js
 walkthrough: {
@@ -146,20 +184,21 @@ walkthrough: {
 
 **一定要兩個區塊**:
 
-1. `label: "❌ 題目程式碼(無法編譯)"` — 逐行註解原始碼,**在出錯那一行的 note 直接點名錯誤**,
-   例如「`⛔ 這裡編譯失敗:cannot borrow \`s\` as mutable more than once at a time`」。
-2. `label: "✅ 正確寫法"` — 完整、可直接編譯執行的修正版,**同樣每一行都要 note**,
-   並在改動的那幾行說明「改了什麼、為什麼」。
+1. `label: "X Question code (won't compile)"` — 逐行註解原始碼,**在出錯那一行的
+   note 直接點名錯誤**,例如「`⛔ 這裡編譯失敗:cannot borrow \`s\` as mutable more
+   than once at a time`」。
+2. `label: "√ Correct version"` — 完整、可直接編譯執行的修正版,**同樣每一行都要
+   note**,並在改動的那幾行說明「改了什麼、為什麼」。
 
 修正版必須是完整程式(含 `fn main() { ... }`),讀者可以整段複製去跑——
 **驗證腳本會強制檢查這一點**。若同一題有多個錯誤寫法(例如四選一的三個干擾選項),
-不要把它們拼貼成一個區塊,而是**每個錯誤寫法各自一個 `❌` 區塊**,各自完整。
+不要把它們拼貼成一個區塊,而是**每個錯誤寫法各自一個 `X` 區塊**,各自完整。
 
 ### 註解怎麼寫
 
 - 一行一句,講**這行做了什麼、為什麼**,而不是把程式碼翻譯成中文。
-  - ❌ 「`let r = &mut x;`:讓 r 等於 mut x。」
-  - ✅ 「建立可變參考 r 指向 x(此時 r 獨占了對 x 的存取權)。」
+  - X 「`let r = &mut x;`:讓 r 等於 mut x。」
+  - √ 「建立可變參考 r 指向 x(此時 r 獨占了對 x 的存取權)。」
 - 涉及所有權/借用的行,要說明**這一行之後值的狀態**(被 move 走了、借用開始/結束)。
 - 錯誤行要附上編譯器實際的錯誤訊息關鍵字,方便讀者對照終端機輸出。
 
@@ -171,6 +210,8 @@ walkthrough: {
 ## 6. 文字慣例
 
 - 一律**繁體中文**,標點用全形,程式碼識別字保持原文。
+  **例外:`walkthrough[].label` 一律英文**,規則與用詞對照表見 §4「`label` 一律
+  英文,內文一律繁中」。
 - 中文與英文/數字之間**不加空格**(維持既有檔案風格)。
 - 詳解用模板字串(`` ` ``)撰寫多行;內含反引號時要跳脫(`` \` ``)。
 - `questionCode`、`options[].code` 是**單行字串**,換行寫 `\n`,雙引號寫 `\"`。
@@ -190,9 +231,19 @@ node scripts/validate-data.js
 - 詳解沒有出現「選項 A/B/C/D」字母指涉
 - 有程式碼的題目都有 `walkthrough`
 - `walkthrough` 每行 `code` 不含換行,且非空白行都有 `note`
-- 有 `❌` 區塊時必定有 `✅` 區塊
-- `✅` 區塊裡的 Rust 程式碼是完整可執行的(含 `fn main`,或是測試模組)
+- 有 `X` 區塊時必定有 `√` 區塊
+- `√` 區塊裡的 Rust 程式碼是完整可執行的(含 `fn main`,或是測試模組)
 - 錯誤訊息提到讀者沒寫過的去糖識別字時,該題有沒有 `🔧` 區塊(見 §4)
+
+> ⚠️ **動符號的鐵則:改任何區塊標記符號,必須同步改 `scripts/validate-data.js`
+> 的判斷式與錯誤訊息,否則整批題目會驗不過。** 目前寫死依賴這些符號的位置(函式見
+> `scripts/validate-data.js`):`validateWalkthrough()` 裡
+> `labels.some(l => l.startsWith("X"))` 與
+> `labels.some(l => l.startsWith("√"))`(判斷反面案例是否配對正確寫法、
+> 判斷哪個區塊要檢查 `fn main`);`validateDesugar()` 裡
+> `labels.some(l => l.startsWith("🔧"))`(去糖區塊是否已補)與
+> `.filter(n => n.includes("⛔"))`(從 `note` 撈錯誤訊息關鍵字當作去糖判斷依據)。
+> 加符號、改符號都要回頭核對這四處,否則不是誤判通過,就是整批題目卡在 CI。
 
 > `🔧` 這一項與其他規則一樣會擋下部署。人工複核過、確認錯誤訊息裡沒有隱藏去糖概念的題目
 > (例如詳解只是拿 `Add<Output = T>` 當語法範例),在該題加一行 `desugarChecked: true` 豁免,
@@ -203,9 +254,22 @@ node scripts/validate-data.js
 - [ ] `id` 沒有被改動過(改動會重置使用者的作答紀錄)
 - [ ] 模板字串裡的反引號有跳脫(否則是語法錯誤,`node --check` 會擋)
 - [ ] 註解說的是「為什麼」而不是把程式碼翻譯成中文
-- [ ] `✅ 正確寫法` 的程式碼真的能編譯執行(必要時貼進 `practices/` 跑一次)
+- [ ] `√ 正確寫法` 的程式碼真的能編譯執行(必要時貼進 `practices/` 跑一次)
 - [ ] 三個干擾選項都是「真的有人會選」的誤解
 - [ ] 錯誤訊息裡每一個陌生識別字,讀者都能在 `🔧` 區塊裡找到它的出處
+
+### 清點符號時的陷阱:grep 會漏掉四位元組 emoji
+
+在一般 UTF-8 locale 下用交替比對(例如 `grep "🔍\|🔧"`)清點題庫裡的符號,
+**會漏掉 `🔍`、`🔧`、`🔷` 這幾個四位元組 emoji**(三位元組的 `⛔`、`√` 不受影響),
+導致誤判「資料層沒有這個符號」。要精確清點,改用 `LC_ALL=C` 搭配 byte pattern:
+
+```bash
+LC_ALL=C grep -oh $'[\xF0][\x9F][\x80-\xBF][\x80-\xBF]' docs/data/basic/*.js | sort | uniq -c
+```
+
+改動區塊標記符號、或要確認某個符號是否還殘留在題庫裡之前,先跑這條,不要單憑一般
+`grep` 的結果下結論。
 
 ---
 
@@ -226,12 +290,81 @@ node scripts/validate-data.js
 | 詳解、逐行補述、C# 對照 | `#989898` | `#232323` | 5.5:1 |
 | 逐行註解 | `#8697a0` | `#1e1e1e` | 5.5:1 |
 | 程式碼基底字 | `#a0a0a0` | `#1e1e1e` | 6.4:1 |
+| 錯誤訊息(`.answer-feedback.ng`、`.option.wrong .option-label`) | `--answer-red` `#d16969` | `#232323` | 4.5:1 |
 
-不在此列、維持原亮度的是**訊號**:作答對錯的綠/紅、詳解與逐行說明的標籤顏色、
-以及 highlight.js 的語法上色。只有「沒有 token 顏色」的基底字被降下來
-(`.hljs` 等,在 `app.css` 以覆寫處理,`docs/vendor/` 的第三方檔不動)。
+不在此列、維持原亮度的是**訊號**:作答對錯的**綠色**、詳解與逐行說明的標籤顏色、
+以及 highlight.js 的語法上色。
+
+**綠色(`--vsc-green`)**:這一輪從 `#4ec9b0`(偏青綠)換成 **`#57A64A`**(Visual
+Studio 的註解綠),對 `#232323` 約 5.2:1。**這是全站的綠**——`.option.correct`、
+`.answer-feedback.ok` 的答對訊號,以及側邊欄的完成勾勾(`.done-mark`)都跟著換。
+`docs/js/minimap.js` 裡還留著兩處 `#4ec9b0`(`hljs-built_in`、`hljs-type`),
+那是縮圖在模擬 highlight.js 的**語法 token 色**(`built_in`/`type`),跟這裡「答對/
+完成」的訊號綠是兩回事,**刻意不同步**,改動請不要「順手」牽過去。
+
+**紅色訊號已經被壓暗過,不再是例外**——舊值 `--vsc-red`(`#f48771`)對 `#232323` 有
+7.6:1,太亮;現在錯誤訊息與 `.option.wrong` 的標籤改用新變數 `--answer-red`
+(`#d16969`),壓到 4.5:1,剛好卡在 WCAG AA 門檻上,和上面表格其他列一樣是「刻意壓
+低」,只是壓得比 5.4~6.6:1 更低,因為它同時還要維持「訊號」的可辨識度。
+
+**答錯選項的波浪底線色 `#f14c4c`**(`.option.wrong .line-content` 的
+`text-decoration-color`)**是裝飾線,不是內文文字色**,不受這裡 4.5~6.6:1 的內文
+對比規範約束——畫的是底線,選項的字色與標籤色仍然是 `--answer-red`。
+
+只有「沒有 token 顏色」的基底字被降下來(`.hljs` 等,在 `app.css` 以覆寫處理,
+`docs/vendor/` 的第三方檔不動)。
 
 新增顏色時,請照同樣的標準:**內文 4.5~6.6:1,超過 7:1 就太亮了。**
+
+### 作答對錯:文字變色/波浪底線,不是整格色塊
+
+- **答對**:`.option.correct` 沒有綠框、沒有綠底,是整段文字(含程式碼型選項)轉成
+  `var(--vsc-green)`,連 highlight.js 的語法上色都蓋掉——答案本身就是訊號,不需要
+  再看 token 顏色。
+- **答錯**:`.option.wrong` 同樣沒有紅框、沒有紅底,改成 VS Code「error squiggle」
+  風格的紅色波浪底線(`text-decoration: underline wavy`,
+  `text-decoration-color: #f14c4c`)。
+- **這兩條規則刻意掛在 `.option-text` / `.line-content`,不是 `.option-body` 或
+  `.hljs`**。原因是 `codeBlock()` 產生的結構是
+  `pre.code-block > code.hljs > .code-line > (.line-no + .line-content)`,行號
+  `.line-no` 也在 `code.hljs` 裡面——掛在外層會讓行號跟著轉綠、跟著被畫上波浪線。
+  而且 `text-decoration` 是由祖先畫出的,子元素寫 `text-decoration: none` 關不掉,
+  一旦掛錯層,行號沒辦法退出來。**改這兩條規則時,選擇器要留在 `.line-content` /
+  `.option-text`,不要「順手」改成看起來更直覺的 `.option-body` / `.hljs`。**
+
+### 介面文字:`quiz.js` 一律英文,`app.js` 的系統訊息維持中文
+
+`quiz.js` 寫死在渲染邏輯裡的介面文字已經全部英文化,語氣同樣是編譯器 / 測試報告
+語氣。目前的完整清單:
+
+`Passed!` / `Failed — the answer is` 加選項字母(如 `Failed — the answer is B`,
+字母由 `LABELS[order.indexOf(q.answer)]` 決定)/ `Explanation` / `C# comparison` /
+`Walkthrough`(`wt-label` 省略 `label` 時的預設值,見 §4)/ `Show explanations` /
+`Hide explanations` / `Mark as done` / `Done — click to undo` / `Reset answers` /
+`Lesson: n/m correct (k questions)`。
+
+新增這類渲染邏輯裡的標籤文字時比照辦理,一律英文,不要摻中文。
+
+**例外**:`docs/js/app.js` 的 `showNotice` 錯誤訊息(找不到課程、還沒建置、載入
+失敗)**刻意維持中文**——這是給讀者看的系統提示,不是答案區介面文字,不要跟著
+英文化。
+
+### 答案區不放裝飾性 icon
+
+`quiz.js` 渲染答案區時只印純文字標籤,不加裝飾用的 emoji:上一節列出的英文介面
+文字都是純文字;`.note-line .note-content` 也不再有 `↳ ` 前綴,連帶拿掉的懸掛縮排
+(`text-indent` / `padding-left`)一併刪除。新增這類渲染邏輯裡的標籤文字時比照辦理,
+不要加 icon。
+
+**例外、不在此限**:題目資料裡 `walkthrough` 的區塊標籤(`X`/`√`/`🔍`/`🔧`/`🔷`,
+見 §4)與反面案例 `note` 裡點名錯誤用的符號(如 `⛔`),是題目資料的**語意標記**,
+`scripts/validate-data.js`(§7)會依它們判斷區塊種類並強制檢查(例如有 `X` 區塊
+就必須有對應的 `√` 區塊)。**這些是題庫資料的一部分,不是本節說的「裝飾性 icon」,
+絕對不能因為這條規則被順手清掉**——本節管的只是 `quiz.js` 寫死在渲染邏輯裡、
+和題目內容無關的標籤文字。
+
+側邊欄的進度點 `●` 與完成勾勾 `✓`(`.done-mark`)不在答案區範圍,不受此規則約束,
+維持原樣。
 
 ### 題目資料不承載樣式
 

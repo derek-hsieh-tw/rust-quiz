@@ -1,7 +1,7 @@
 /* 出題慣例見專案根目錄 AUTHORING.md:
  *   - answer 一律為 0(正確答案寫在第一個選項),顯示順序由 quiz.js 依題目 id 洗牌
  *   - 詳解禁止用「選項 A/B/C」字母指涉,必須直接描述選項內容
- *   - 有程式碼的題目一律附 walkthrough(逐行說明);反面案例必須同時附上 ✅ 正確寫法 */
+ *   - 有程式碼的題目一律附 walkthrough(逐行說明);反面案例必須同時附上 √ 正確寫法 */
 window.RUST_LESSONS = window.RUST_LESSONS || {};
 window.RUST_LESSONS["lesson1-3"] = {
   id: "lesson1-3",
@@ -22,7 +22,7 @@ window.RUST_LESSONS["lesson1-3"] = {
 編譯器甚至會貼心提示「help: remove this semicolon」。尾端直接寫 5(無分號)是慣用寫法;用 return 5; 也合法(通常只用在提早返回);先 let 再把 x 放在尾端同樣合法。`,
       walkthrough: [
         {
-          label: "❌ 無法編譯的那一段",
+          label: "X The version that doesn't compile",
           lines: [
             { code: "fn five() -> i32 {", note: "宣告回傳 i32 的函式。回傳型別一旦寫上,函式區塊的「值」就必須是 i32。" },
             { code: "    5;", note: "⛔ 問題所在:加了分號,5 從「運算式」變成「陳述式」,這個區塊就沒有尾端運算式了,整個區塊的值變成單位型別 ()。" },
@@ -30,7 +30,7 @@ window.RUST_LESSONS["lesson1-3"] = {
           ],
         },
         {
-          label: "✅ 三種都正確的寫法(完整可執行)",
+          label: "√ Three correct versions (complete, runnable)",
           lines: [
             { code: "fn five_a() -> i32 {", note: "寫法一:最慣用的尾端運算式。" },
             { code: "    5", note: "改動處:沒有分號 = 這是區塊的尾端運算式,也就是函式的回傳值。" },
@@ -68,7 +68,7 @@ window.RUST_LESSONS["lesson1-3"] = {
       explanation: `if 是運算式,會產出值,可以直接接在 let 後面。condition 為 true,取第一個分支的 5。
 每個分支同樣遵守「尾端運算式無分號即為該分支的值」。這讓 Rust 不需要三元運算子 ?:——if/else 本身就能當值用。`,
       walkthrough: {
-        label: "🔍 題目程式碼逐行說明(可正常執行)",
+        label: "🔍 Question code — walkthrough (runs successfully)",
         lines: [
           { code: "fn main() {", note: "程式進入點。" },
           { code: "    let condition = true;", note: "建立一個 bool 變數。注意 Rust 的 if 條件必須是 bool,不接受整數當真假值。" },
@@ -95,7 +95,7 @@ window.RUST_LESSONS["lesson1-3"] = {
 Rust 是靜態型別語言,每個變數的型別必須在編譯期完全確定——不存在「執行時再看情況」。`,
       walkthrough: [
         {
-          label: "❌ 題目程式碼(無法編譯)",
+          label: "X Question code (won't compile)",
           lines: [
             { code: "fn main() {", note: "程式進入點。" },
             { code: "    let condition = false;", note: "建立 bool 變數。" },
@@ -105,7 +105,7 @@ Rust 是靜態型別語言,每個變數的型別必須在編譯期完全確定�
           ],
         },
         {
-          label: "✅ 正確寫法(讓兩個分支型別一致)",
+          label: "√ Correct version (make both branches the same type)",
           lines: [
             { code: "fn main() {", note: "程式進入點。" },
             { code: "    let condition = false;", note: "建立 bool 變數。" },
@@ -133,7 +133,7 @@ Rust 是靜態型別語言,每個變數的型別必須在編譯期完全確定�
 對照:5 + 1 是運算式、函式呼叫是運算式、{ } 區塊是運算式、if/match/loop 都是運算式;let 和以分號結尾的東西是陳述式。`,
       walkthrough: [
         {
-          label: "❌ 題目程式碼(無法編譯)",
+          label: "X Question code (won't compile)",
           lines: [
             { code: "fn main() {", note: "程式進入點。" },
             { code: "    let x = (let y = 6);", note: "⛔ 編譯失敗:expected expression, found `let` statement。let y = 6 是「陳述式」,做事但不產出值,因此不能放在需要值的位置。" },
@@ -143,7 +143,7 @@ Rust 是靜態型別語言,每個變數的型別必須在編譯期完全確定�
           outro: "界線很清楚:陳述式做事不產值(let、以分號結尾的東西);運算式產值(5 + 1、函式呼叫、{ } 區塊、if、match、loop)。",
         },
         {
-          label: "✅ 正確寫法(分成兩個陳述式)",
+          label: "√ Correct version (split into two statements)",
           lines: [
             { code: "fn main() {", note: "程式進入點。" },
             { code: "    let y = 6;", note: "改動處:先獨立宣告 y。" },
@@ -170,7 +170,7 @@ Rust 是靜態型別語言,每個變數的型別必須在編譯期完全確定�
       explanation: `loop 是無條件迴圈,但它也是「運算式」:break 後面接的值就是整個 loop 的值。counter 累加到 10 時,break 10 * 2 讓 loop 以 20 作結,賦給 result。
 這個模式常用於「重試直到成功並取得結果」的場景。注意只有 loop 能 break 帶值,while/for 不行(因為它們可能因條件不成立而正常結束,無值可回)。`,
       walkthrough: {
-        label: "🔍 題目程式碼逐行說明(可正常執行)",
+        label: "🔍 Question code — walkthrough (runs successfully)",
         lines: [
           { code: "fn main() {", note: "程式進入點。" },
           { code: "    let mut counter = 0;", note: "計數器,因為要累加所以宣告成 mut。" },
@@ -201,7 +201,7 @@ Rust 是靜態型別語言,每個變數的型別必須在編譯期完全確定�
       explanation: `1..4 是「半開區間」:含 1 不含 4,產出 1 2 3。1..=3 是「閉區間」:含尾端,產出 1 2 3,.rev() 反轉成 3 2 1。合計輸出 1 2 3 3 2 1。
 ..(不含尾)與 ..=(含尾)的區別是高頻考點,配合切片時尤其重要。`,
       walkthrough: {
-        label: "🔍 題目程式碼逐行說明(可正常執行)",
+        label: "🔍 Question code — walkthrough (runs successfully)",
         lines: [
           { code: "fn main() {", note: "程式進入點。" },
           { code: "    for i in 1..4 {", note: "1..4 是「半開區間」:含起點、不含終點,依序產出 1、2、3。" },
@@ -230,7 +230,7 @@ Rust 是靜態型別語言,每個變數的型別必須在編譯期完全確定�
 break 2(用數字指定跳幾層)的語法不存在;goto 在 Rust 不存在;「只能設旗標變數」也不對,標籤就是官方解法。`,
       walkthrough: [
         {
-          label: "✅ 正確寫法逐行說明",
+          label: "√ Correct version — walkthrough",
           lines: [
             { code: "fn main() {", note: "把選項補成完整程式。" },
             { code: "    'outer: for i in 0..5 {", note: "在迴圈前加上標籤 'outer:(以單引號開頭,和生命週期共用語法形式,但兩者無關)。標籤讓這一層迴圈有了名字。" },
@@ -244,7 +244,7 @@ break 2(用數字指定跳幾層)的語法不存在;goto 在 Rust 不存在;「�
           ],
         },
         {
-          label: "❌ 另外三個寫法錯在哪",
+          label: "X What's wrong with the other three versions",
           lines: [
             { code: "break 2;", note: "用數字指定「跳幾層」的語法在 Rust 不存在(在 loop 裡 break 2 會被理解成「帶值 2 跳出」,型別還會對不上)。" },
             { code: "goto end;", note: "Rust 沒有 goto,連關鍵字都沒有,直接是語法錯誤。" },
@@ -269,7 +269,7 @@ break 2(用數字指定跳幾層)的語法不存在;goto 在 Rust 不存在;「�
 修法是補一個萬用分支:_ => println!("other") 或 other => println!("{}", other)(後者還能拿到值)。窮盡性檢查是 match 的靈魂:未來 enum 增加變體時,所有漏處理的 match 會被編譯器一個個抓出來。`,
       walkthrough: [
         {
-          label: "❌ 題目程式碼(無法編譯)",
+          label: "X Question code (won't compile)",
           lines: [
             { code: "fn main() {", note: "程式進入點。" },
             { code: "    let number = 7;", note: "型別推斷為 i32。" },
@@ -282,7 +282,7 @@ break 2(用數字指定跳幾層)的語法不存在;goto 在 Rust 不存在;「�
           ],
         },
         {
-          label: "✅ 正確寫法(補上萬用分支)",
+          label: "√ Correct version (add a catch-all arm)",
           lines: [
             { code: "fn main() {", note: "程式進入點。" },
             { code: "    let number = 7;", note: "同樣的值。" },
@@ -314,7 +314,7 @@ break 2(用數字指定跳幾層)的語法不存在;goto 在 Rust 不存在;「�
 這是設計取捨:簽名寫死,錯誤訊息就能精準定位在函式內或呼叫端,也讓函式本身成為可靠的文件;若簽名也推斷,改一處內部實作可能讓天邊的呼叫端爆出難解的錯。`,
       walkthrough: [
         {
-          label: "❌ 題目程式碼(無法編譯)",
+          label: "X Question code (won't compile)",
           lines: [
             { code: "fn add(x, y) {", note: "⛔ 編譯失敗:expected one of `:` ... 函式參數「必須」明確標註型別,Rust 不會從呼叫端反推。而且這裡也沒寫回傳型別。" },
             { code: "    x + y", note: "函式本體本身沒問題,但因為簽名不合法,整個函式無法通過。" },
@@ -326,7 +326,7 @@ break 2(用數字指定跳幾層)的語法不存在;goto 在 Rust 不存在;「�
           ],
         },
         {
-          label: "✅ 正確寫法(補上參數與回傳型別)",
+          label: "√ Correct version (add the parameter and return type)",
           lines: [
             { code: "fn add(x: i32, y: i32) -> i32 {", note: "改動處:每個參數都標註型別,並用 -> 宣告回傳型別。函式簽名是刻意的「推斷邊界」——簽名寫死,函式內部才隨你推斷。" },
             { code: "    x + y", note: "尾端運算式沒有分號,就是回傳值。" },
@@ -355,7 +355,7 @@ break 2(用數字指定跳幾層)的語法不存在;goto 在 Rust 不存在;「�
       explanation: `{ } 區塊本身是運算式,值為其尾端運算式(x + 1,此處 x 是區塊內 shadowing 的 3,故為 4)。區塊結束後,內部的 x 消失,外部的 x 仍是 5。輸出 5 4。
 這題綜合了三個觀念:區塊是運算式、尾端無分號即值、shadowing 有作用域範圍。`,
       walkthrough: {
-        label: "🔍 題目程式碼逐行說明(可正常執行)",
+        label: "🔍 Question code — walkthrough (runs successfully)",
         lines: [
           { code: "fn main() {", note: "程式進入點。" },
           { code: "    let x = 5;", note: "外層的 x,值是 5。" },

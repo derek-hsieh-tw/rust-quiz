@@ -116,7 +116,7 @@ const Quiz = (() => {
 
   function walkthroughHtml(wt) {
     let html = `<div class="walkthrough">`;
-    html += `<div class="wt-label">${escapeHtml(wt.label || "🔍 逐行說明")}</div>`;
+    html += `<div class="wt-label">${escapeHtml(wt.label || "Walkthrough")}</div>`;
     if (wt.intro) html += `<div class="wt-note">${escapeHtml(wt.intro)}</div>`;
     html += annotatedBlock(wt);
     if (wt.outro) html += `<div class="wt-note">${escapeHtml(wt.outro)}</div>`;
@@ -206,13 +206,13 @@ const Quiz = (() => {
     // 詳解區(預設隱藏)
     const exp = document.createElement("div");
     exp.className = "explanation";
-    let expHtml = `<div class="exp-label">📖 詳解</div><div class="exp-body">${escapeHtml(q.explanation)}</div>`;
+    let expHtml = `<div class="exp-label">Explanation</div><div class="exp-body">${escapeHtml(q.explanation)}</div>`;
     if (q.walkthrough) {
       const wts = Array.isArray(q.walkthrough) ? q.walkthrough : [q.walkthrough];
       expHtml += wts.map(walkthroughHtml).join("");
     }
     if (q.csharp) {
-      expHtml += `<div class="csharp-compare"><div class="cs-label">🔷 C# 對照</div><div class="cs-body">${escapeHtml(q.csharp)}</div></div>`;
+      expHtml += `<div class="csharp-compare"><div class="cs-label">C# comparison</div><div class="cs-body">${escapeHtml(q.csharp)}</div></div>`;
     }
     exp.innerHTML = expHtml;
     card.appendChild(exp);
@@ -236,11 +236,11 @@ const Quiz = (() => {
     optionEls[q.answer].classList.add("correct");
     if (chosenOrig === q.answer) {
       feedback.className = "answer-feedback ok";
-      feedback.textContent = "✔ 答對了!";
+      feedback.textContent = "Passed!";
     } else {
       optionEls[chosenOrig].classList.add("wrong");
       feedback.className = "answer-feedback ng";
-      feedback.textContent = `✘ 答錯了,正確答案是 ${LABELS[order.indexOf(q.answer)]}`;
+      feedback.textContent = `Failed — the answer is ${LABELS[order.indexOf(q.answer)]}`;
     }
     card.querySelector(".explanation").classList.add("show");
   }
@@ -251,12 +251,12 @@ const Quiz = (() => {
 
     const btnExp = document.createElement("button");
     btnExp.className = "btn";
-    btnExp.textContent = "顯示詳細答案說明";
+    btnExp.textContent = "Show explanations";
     btnExp.addEventListener("click", () => {
       const exps = document.querySelectorAll(".explanation");
       const anyHidden = [...exps].some(e => !e.classList.contains("show"));
       exps.forEach(e => e.classList.toggle("show", anyHidden));
-      btnExp.textContent = anyHidden ? "隱藏詳細答案說明" : "顯示詳細答案說明";
+      btnExp.textContent = anyHidden ? "Hide explanations" : "Show explanations";
     });
 
     const btnDone = document.createElement("button");
@@ -270,9 +270,9 @@ const Quiz = (() => {
 
     const btnClear = document.createElement("button");
     btnClear.className = "btn danger";
-    btnClear.textContent = "清除答案,重新作答";
+    btnClear.textContent = "Reset answers";
     btnClear.addEventListener("click", () => {
-      if (!confirm("確定要清除本課所有作答紀錄嗎?(完成狀態不受影響)")) return;
+      if (!confirm("Clear all answers for this lesson? (Completion status is not affected.)")) return;
       Progress.clearAnswers(lesson.questions.map(q => q.id));
       renderLesson(lesson); // 重新渲染:所有題目回到未作答狀態
     });
@@ -286,10 +286,10 @@ const Quiz = (() => {
   function refreshDoneBtn(btn, lessonId) {
     if (Progress.isCompleted(lessonId)) {
       btn.className = "btn done";
-      btn.textContent = "✓ 已完成本課(點擊取消)";
+      btn.textContent = "Done — click to undo";
     } else {
       btn.className = "btn primary";
-      btn.textContent = "完成本課";
+      btn.textContent = "Mark as done";
     }
   }
 
@@ -297,7 +297,7 @@ const Quiz = (() => {
     const answered = lesson.questions.filter(q => Progress.getAnswer(q.id) !== null);
     const correct = answered.filter(q => Progress.getAnswer(q.id) === q.answer).length;
     document.getElementById("status-lesson").textContent =
-      `本課答對 ${correct}/${answered.length}(共 ${lesson.questions.length} 題)`;
+      `Lesson: ${correct}/${answered.length} correct (${lesson.questions.length} questions)`;
   }
 
   return { renderLesson };

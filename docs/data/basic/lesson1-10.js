@@ -1,7 +1,7 @@
 /* 出題慣例見專案根目錄 AUTHORING.md:
  *   - answer 一律為 0(正確答案寫在第一個選項),顯示順序由 quiz.js 依題目 id 洗牌
  *   - 詳解禁止用「選項 A/B/C」字母指涉,必須直接描述選項內容
- *   - 有程式碼的題目一律附 walkthrough(逐行說明);反面案例必須同時附上 ✅ 正確寫法 */
+ *   - 有程式碼的題目一律附 walkthrough(逐行說明);反面案例必須同時附上 √ 正確寫法 */
 window.RUST_LESSONS = window.RUST_LESSONS || {};
 window.RUST_LESSONS["lesson1-10"] = {
   id: "lesson1-10",
@@ -21,7 +21,7 @@ window.RUST_LESSONS["lesson1-10"] = {
       explanation: `劃分標準是「能不能合理地繼續」:檔案不存在、網路斷線、輸入格式錯——這些是「預期中會發生」的失敗,用 Result 讓呼叫端決定重試、預設值還是回報;陣列越界、違反不變量——這些是「程式寫錯了」,狀態已不可信,panic 直接中止最誠實。
 panic 和 Result 都是執行期機制(編譯期錯誤根本產生不了程式);函式庫/應用程式、嚴重程度都不是劃分標準——同一個「檔案不存在」在哪裡都該是 Result。`,
       walkthrough: {
-        label: "🔍 兩類錯誤各看一段程式",
+        label: "🔍 One snippet for each of the two error kinds",
         lines: [
           { code: "fn parse_port(text: &str) -> Result<u16, std::num::ParseIntError> {", note: "可恢復的失敗:輸入格式錯是「預期中會發生」的事,所以寫進回傳型別交給呼叫端決策。" },
           { code: "    text.parse::<u16>()", note: "parse 本身就回傳 Result,直接把它當回傳值。呼叫端可以選擇重試、給預設值或回報使用者。" },
@@ -51,7 +51,7 @@ panic 和 Result 都是執行期機制(編譯期錯誤根本產生不了程式);
 Vec 是動態長度,編譯器不會提前攔(固定長度陣列的常數索引才會)。Rust 沒有 try/catch;panic 的設計立場就是「不該被常規流程攔截」(邊界處有 catch_unwind,但那是框架級工具,不是錯誤處理手段)。`,
       walkthrough: [
         {
-          label: "🔍 題目程式碼逐行說明(執行期 panic)",
+          label: "🔍 Question code — walkthrough (panics at runtime)",
           lines: [
             { code: "fn main() {", note: "程式進入點。" },
             { code: "    let v = vec![1, 2, 3];", note: "長度 3 的 Vec,合法索引是 0~2。" },
@@ -62,7 +62,7 @@ Vec 是動態長度,編譯器不會提前攔(固定長度陣列的常數索引�
           ],
         },
         {
-          label: "✅ 若這個索引本來就可能越界,就別用索引語法",
+          label: "√ If the index might be out of bounds, don't use indexing syntax",
           lines: [
             { code: "fn main() {", note: "程式進入點。" },
             { code: "    let v = vec![1, 2, 3];", note: "同樣的 Vec。" },
@@ -92,7 +92,7 @@ Vec 是動態長度,編譯器不會提前攔(固定長度陣列的常數索引�
       explanation: `Result<T, E> 就是個普通的 enum:Ok(T) 裝成功值、Err(E) 裝錯誤值。File::open 回傳 Result<File, io::Error>——失敗「不會 panic」,只是回傳 Err 變體,match 接住印出訊息,程式若無其事地往下走。
 這就是「錯誤是值」:錯誤跟整數、字串一樣是普通資料,用普通的 match 處理,沒有特殊的控制流跳躍。Result 和 Option 一樣是 enum,match 是它的原生處理方式。`,
       walkthrough: {
-        label: "🔍 題目程式碼逐行說明(可正常執行到結束)",
+        label: "🔍 Question code — walkthrough (runs to completion)",
         lines: [
           { code: "use std::fs::File;", note: "引入檔案型別。" },
           { code: "", note: "" },
@@ -124,7 +124,7 @@ Vec 是動態長度,編譯器不會提前攔(固定長度陣列的常數索引�
 Option 和 Result 都有 unwrap/expect 這組方法。unwrap/expect 的正當使用場景:範例程式、測試、原型,以及「失敗即代表環境壞到不值得繼續」的啟動階段(如讀取必要設定檔);其餘場合優先用 ?、match 或 unwrap_or 家族。`,
       walkthrough: [
         {
-          label: "🔍 題目程式碼逐行說明(檔案不存在時 panic)",
+          label: "🔍 Question code — walkthrough (panics when the file doesn't exist)",
           lines: [
             { code: "use std::fs::File;", note: "引入檔案型別。" },
             { code: "", note: "" },
@@ -136,7 +136,7 @@ Option 和 Result 都有 unwrap/expect 這組方法。unwrap/expect 的正當使
           outro: "好的 expect 訊息寫的是「為什麼我認為這不會失敗」,出事時直接告訴你哪個假設破了。Option 與 Result 都有 unwrap/expect 這組方法。",
         },
         {
-          label: "✅ 不想中止就改用 Result 或備用值",
+          label: "√ Use Result or a fallback value instead of aborting",
           lines: [
             { code: "use std::fs::File;", note: "引入檔案型別。" },
             { code: "", note: "" },
@@ -166,7 +166,7 @@ Option 和 Result 都有 unwrap/expect 這組方法。unwrap/expect 的正當使
       explanation: `x? 展開等價於:match x { Ok(v) => v, Err(e) => return Err(e.into()) }——成功就地解包、失敗提早返回。兩個 ? 串起來:開檔失敗返回、讀取失敗也返回,主邏輯保持一直線,沒有巢狀 match 的金字塔。
 它與 unwrap 是兩個世界:unwrap 把錯誤變成 panic(自己扛),? 把錯誤交給呼叫端(往上傳)。細節:? 還會呼叫 From::from 自動轉換錯誤型別(進階課展開),也能用在 Option 上(None 提早返回)。`,
       walkthrough: {
-        label: "🔍 題目程式碼逐行說明",
+        label: "🔍 Question code — walkthrough",
         lines: [
           { code: "use std::fs::File;", note: "引入檔案型別。" },
           { code: "use std::io::{self, Read};", note: "引入 io 模組本身與 Read trait(read_to_string 是 Read 的方法,不引入就叫不到)。" },
@@ -196,7 +196,7 @@ Option 和 Result 都有 unwrap/expect 這組方法。unwrap/expect 的正當使
 修法:把簽名改成 fn main() -> Result<(), Box<dyn std::error::Error>>,尾端補 Ok(())——main 回傳 Err 時程式以非零狀態碼結束並印出錯誤。Box<dyn Error> 先當「什麼錯誤都能裝的盒子」記下來,原理在進階課。`,
       walkthrough: [
         {
-          label: "❌ 題目程式碼(無法編譯)",
+          label: "X Question code (won't compile)",
           lines: [
             { code: "use std::fs::File;", note: "引入檔案型別。" },
             { code: "", note: "" },
@@ -207,7 +207,7 @@ Option 和 Result 都有 unwrap/expect 這組方法。unwrap/expect 的正當使
           ],
         },
         {
-          label: "✅ 正確寫法(讓 main 也回傳 Result)",
+          label: "√ Correct version (have main return Result too)",
           lines: [
             { code: "use std::fs::File;", note: "引入檔案型別。" },
             { code: "", note: "" },
@@ -236,7 +236,7 @@ Option 和 Result 都有 unwrap/expect 這組方法。unwrap/expect 的正當使
       explanation: `parse::<i32>() 回傳 Result<i32, ParseIntError>:"42" 給 Ok(42),"abc" 給 Err(...)。unwrap_or(-1) 對 Result 同樣適用:Ok 取值、Err 用備用值——所以是 42 與 -1,全程無 panic。
 ::<i32> 是 turbofish 語法,明確告訴 parse 目標型別(也可寫 let a: i32 = "42".parse().unwrap_or(-1) 靠推斷)。Option 課學的 unwrap_or 家族在 Result 上原班人馬再登場——兩個型別的方法設計是刻意對稱的。`,
       walkthrough: {
-        label: "🔍 題目程式碼逐行說明(可正常執行)",
+        label: "🔍 Question code — walkthrough (runs successfully)",
         lines: [
           { code: "fn main() {", note: "程式進入點。" },
           { code: "    let a = \"42\".parse::<i32>().unwrap_or(-1);", note: "parse::<i32>() 回傳 Result<i32, ParseIntError>;::<i32> 是 turbofish 語法,明確指定目標型別。\"42\" 解析成功給 Ok(42),unwrap_or 取出 42。" },
@@ -263,7 +263,7 @@ Option 和 Result 都有 unwrap/expect 這組方法。unwrap/expect 的正當使
 panic 版把可恢復錯誤變成中止(語意完全不同);給 0 的版本把錯誤吞掉(呼叫端再也不知道失敗過);兩邊都原樣包回 Ok/Err 的版本沒有解包,n 的型別還是 Result,後面 n * 2 無法編譯。嚴格說 ? 還多做一步 From 錯誤轉換,這裡錯誤型別相同所以完全等價。`,
       walkthrough: [
         {
-          label: "🔍 題目的 ? 寫法",
+          label: "🔍 Question code (the ? operator)",
           lines: [
             { code: "fn parse_num(text: &str) -> Result<i32, std::num::ParseIntError> {", note: "回傳 Result,所以函式內可以用 ?。" },
             { code: "    let n = text.parse::<i32>()?;", note: "成功就把裸值 i32 解包給 n;失敗就整個函式 return Err。" },
@@ -272,7 +272,7 @@ panic 版把可恢復錯誤變成中止(語意完全不同);給 0 的版本把�
           ],
         },
         {
-          label: "✅ 等價的 match 寫法",
+          label: "√ The equivalent match version",
           lines: [
             { code: "let n = match text.parse::<i32>() {", note: "對 Result 做匹配,match 的值賦給 n。" },
             { code: "    Ok(v) => v,", note: "成功分支「解包出裸值」,讓後面的程式繼續用。" },
@@ -282,7 +282,7 @@ panic 版把可恢復錯誤變成中止(語意完全不同);給 0 的版本把�
           outro: "嚴格說 ? 還多做一步 From 錯誤轉換(Err(e.into())),這裡因為錯誤型別完全相同,兩者等價。",
         },
         {
-          label: "❌ 另外三個寫法為什麼不等價",
+          label: "X Why the other three versions aren't equivalent",
           lines: [
             { code: "    Err(_) => panic!(\"parse failed\"),", note: "語意完全不同:把可恢復的錯誤升級成程式中止,呼叫端連處理的機會都沒有——那是 unwrap 的行為。" },
             { code: "    Err(_) => 0,", note: "把錯誤「吞掉」:呼叫端再也不知道曾經失敗過,拿到的 0 和真的解析出 0 分不出來。" },
@@ -290,7 +290,7 @@ panic 版把可恢復錯誤變成中止(語意完全不同);給 0 的版本把�
           ],
         },
         {
-          label: "🔧 去糖後(編譯器眼中的樣子)",
+          label: "🔧 Desugared (what the compiler sees)",
           intro: "上面的 match 版本少講了一步。? 完整展開長這樣——注意 From 這個字:你的程式碼裡從來沒出現過它,但錯誤訊息會。",
           lines: [
             { code: "let n = text.parse::<i32>()?;", note: "你寫的這一行。" },
@@ -319,7 +319,7 @@ panic 版把可恢復錯誤變成中止(語意完全不同);給 0 的版本把�
       explanation: `準則:「這個失敗是不是 API 契約的一部分?」檔案打不開、解析失敗——是,給 Result;傳入的索引越界、在錯誤狀態下呼叫——這是呼叫端的 bug,panic 合理(標準函式庫的 v[i] 就是這麼做的,並同時提供 get 讓你選)。
 「絕不 panic」做不到也不該做:對 bug 回傳 Result 只是把爛攤子往後傳;「用 catch_unwind 當 try/catch」違反設計意圖(它是給 FFI 邊界、執行緒池用的,panic = abort 的編譯設定下它根本接不到)。`,
       walkthrough: {
-        label: "🔍 同一個型別上,兩種失敗兩種做法",
+        label: "🔍 Same type, two ways of handling failure",
         lines: [
           { code: "pub struct Config {", note: "假設這是我們提供給別人使用的函式庫型別。" },
           { code: "    port: u16,", note: "一個欄位。" },
@@ -355,7 +355,7 @@ panic 版把可恢復錯誤變成中止(語意完全不同);給 0 的版本把�
 效能(無堆疊展開)是真實但次要的紅利;Rust 沒有 try/catch;Result 的 E 是完整型別,裝多少資訊隨你設計(自訂錯誤型別在進階課)——「只能錯誤代碼」的說法不成立。`,
       walkthrough: [
         {
-          label: "🔷 C# 的簽名對失敗隻字不提",
+          label: "🔷 C#'s signature says nothing about failure",
           lang: "csharp",
           lines: [
             { code: "string Read(string path) { ... }", note: "簽名只說「回傳字串」。會不會失敗?失敗長什麼樣?看不出來,文件沒寫就只能猜。" },
@@ -363,7 +363,7 @@ panic 版把可恢復錯誤變成中止(語意完全不同);給 0 的版本把�
           ],
         },
         {
-          label: "✅ Rust 把失敗寫進回傳型別",
+          label: "√ Rust puts failure in the return type",
           lines: [
             { code: "fn read(path: &str) -> Result<String, std::io::Error> {", note: "這行簽名同時說了兩件事:「會失敗」以及「失敗長什麼樣」。它是編譯器檢查得到的契約,不是文件註解。" },
             { code: "    std::fs::read_to_string(path)", note: "直接把底層的 Result 當回傳值。" },

@@ -6,8 +6,8 @@
  *  4. 題目 id 不得重複
  *  5. 詳解不得出現「選項 A/B/C/D」字母指涉(選項會洗牌,字母對不上)
  *  6. walkthrough(逐行說明):有程式碼的題目必須有、每行程式碼都要有註解、
- *     code 不得含換行、反面案例(❌)必須同時附上正確寫法(✅)
- *  7. ✅ 區塊裡的 Rust 程式碼必須完整可編譯(含 fn main 或測試模組),
+ *     code 不得含換行、反面案例(X)必須同時附上正確寫法(√)
+ *  7. √ 區塊裡的 Rust 程式碼必須完整可編譯(含 fn main 或測試模組),
  *     讀者要能整段複製去跑
  *  8. 🔧 去糖區塊:錯誤訊息提到讀者沒親手寫過的去糖識別字(Add / From /
  *     IntoIterator / Deref / Display / Ord …)時,該題要附 🔧 區塊把糖攤開
@@ -139,19 +139,19 @@ function validateWalkthrough(tag, q, errors) {
 
   // 反面案例必須附上可直接編譯執行的正確寫法
   const labels = blocks.map(b => b.label || "");
-  if (labels.some(l => l.startsWith("❌")) && !labels.some(l => l.startsWith("✅")))
-    errors.push(`${tag}: 有 ❌ 區塊卻沒有 ✅ 正確寫法區塊`);
+  if (labels.some(l => l.startsWith("X")) && !labels.some(l => l.startsWith("√")))
+    errors.push(`${tag}: 有 X 區塊卻沒有 √ 正確寫法區塊`);
 
-  // ✅ 區塊的 Rust 程式碼要能整段複製去跑,不能只給片段
+  // √ 區塊的 Rust 程式碼要能整段複製去跑,不能只給片段
   blocks.forEach(b => {
-    if (!(b.label || "").startsWith("✅")) return;
+    if (!(b.label || "").startsWith("√")) return;
     if (b.lang && b.lang !== "rust") return; // bash / ini / csharp 不適用
     const code = b.lines.map(l => l.code).join("\n");
     const isRustItem = /\bfn\s|\bimpl\s|\bstruct\s|\benum\s|\btrait\s/.test(code);
     if (!isRustItem) return; // 不是 Rust 定義(例如純設定檔或指令)就不檢查
     const runnable = /fn main\s*\(|#\[cfg\(test\)\]|#\[test\]/.test(code);
     if (!runnable)
-      errors.push(`${tag}: ✅ 區塊「${b.label}」缺少 fn main,不是完整可執行的程式`);
+      errors.push(`${tag}: √ 區塊「${b.label}」缺少 fn main,不是完整可執行的程式`);
   });
 }
 
@@ -160,7 +160,7 @@ function validateDesugar(tag, q, sink) {
   const blocks = Array.isArray(q.walkthrough) ? q.walkthrough
     : (q.walkthrough ? [q.walkthrough] : []);
   const labels = blocks.map(b => b.label || "");
-  if (!labels.some(l => l.startsWith("❌"))) return;      // 只管反面案例
+  if (!labels.some(l => l.startsWith("X"))) return;       // 只管反面案例
   if (labels.some(l => l.startsWith("🔧"))) return;       // 已經攤開了
   if (q.desugarChecked) return;                           // 人工複核過:錯誤訊息沒有隱藏的去糖概念
 

@@ -1,7 +1,7 @@
 /* 出題慣例見專案根目錄 AUTHORING.md:
  *   - answer 一律為 0(正確答案寫在第一個選項),顯示順序由 quiz.js 依題目 id 洗牌
  *   - 詳解禁止用「選項 A/B/C」字母指涉,必須直接描述選項內容
- *   - 有程式碼的題目一律附 walkthrough(逐行說明);反面案例必須同時附上 ✅ 正確寫法 */
+ *   - 有程式碼的題目一律附 walkthrough(逐行說明);反面案例必須同時附上 √ 正確寫法 */
 window.RUST_LESSONS = window.RUST_LESSONS || {};
 window.RUST_LESSONS["lesson1-15"] = {
   id: "lesson1-15",
@@ -24,7 +24,7 @@ HashMap 不在清單上,所以要自己引入。至於「型別參數」那個�
 判斷原則很單純:編譯器說 cannot find ... in this scope,就是少了一行 use。`,
       walkthrough: [
         {
-          label: "❌ 題目程式碼(無法編譯)",
+          label: "X Question code (won't compile)",
           lines: [
             { code: "fn main() {", note: "程式進入點。" },
             { code: "    let mut names = Vec::new();", note: "Vec 的完整路徑其實是 std::vec::Vec,但它在 prelude 裡,所以直接寫 Vec 就好。" },
@@ -36,7 +36,7 @@ HashMap 不在清單上,所以要自己引入。至於「型別參數」那個�
           ],
         },
         {
-          label: "✅ 正確寫法",
+          label: "√ Correct version",
           lines: [
             { code: "use std::collections::HashMap;", note: "改動處:補上這一行,把 HashMap 這個名字帶進當前作用域。Vec 不用補,prelude 已經引入了。" },
             { code: "", note: "" },
@@ -70,7 +70,7 @@ use 做的唯一一件事,是把路徑末端的名字綁到當前作用域,讓�
 實務上的取捨:只用一兩次就寫完整路徑,用很多次才 use。這段如果要改寫得清爽,慣例是 use std::fmt;,然後寫 fmt::Display、fmt::Formatter、fmt::Result——留一層模組名當語境。`,
       walkthrough: [
         {
-          label: "🔍 逐行說明(可正常編譯執行)",
+          label: "🔍 Walkthrough (compiles and runs normally)",
           lines: [
             { code: "struct Point {", note: "定義一個自訂型別。" },
             { code: "    x: i32,", note: "欄位。" },
@@ -108,7 +108,7 @@ use 做的唯一一件事,是把路徑末端的名字綁到當前作用域,讓�
 至於「Display 在 std::string」的說法:String 這個型別確實住在 std::string,但它是格式化的「結果」,不是格式化的「規格」。`,
       walkthrough: [
         {
-          label: "🔍 逐行說明(可正常編譯執行)",
+          label: "🔍 Walkthrough (compiles and runs normally)",
           lines: [
             { code: "use std::fmt;", note: "只引入模組本身,不引入裡面的個別名字。這是 std::fmt 的慣用寫法:留一層 fmt:: 當語境,讀的人一眼知道 Result 是哪個 Result。" },
             { code: "", note: "" },
@@ -143,7 +143,7 @@ Dictionary<K,V> → HashMap;HashSet<T> → HashSet;SortedDictionary<K,V> → BTr
 三個干擾寫法各有問題:Vec 的 remove(0) 要把後面全部往前搬,是 O(n),資料一多就痛;LinkedList 在 Rust 幾乎沒人用(指標跳躍對快取極不友善,官方文件自己都建議先考慮 VecDeque);BinaryHeap 是優先佇列,pop 出來的是「最大的」而不是「最早進來的」。`,
       walkthrough: [
         {
-          label: "🔍 VecDeque 的典型用法(可正常編譯執行)",
+          label: "🔍 Typical VecDeque usage (compiles and runs normally)",
           lines: [
             { code: "use std::collections::VecDeque;", note: "collections 底下的東西一律要自己引入,prelude 不含它們。" },
             { code: "", note: "" },
@@ -179,7 +179,7 @@ lesson1-14 已經看過單層的 use std::io::{self, Write};,這裡只是同一�
 實務建議:std、外部 crate、自己的 crate 分三段寫,同一段裡收成一組巢狀 use,是社群最常見的排版。`,
       walkthrough: [
         {
-          label: "🔍 巢狀寫法怎麼拆",
+          label: "🔍 How to unpack the nested version",
           lines: [
             { code: "use std::{", note: "外層共同前綴是 std,底下每一項都會被貼上這個前綴。" },
             { code: "    collections::HashMap,", note: "貼上前綴後是 std::collections::HashMap。" },
@@ -189,7 +189,7 @@ lesson1-14 已經看過單層的 use std::io::{self, Write};,這裡只是同一�
           ],
         },
         {
-          label: "🔍 完全等價的展開寫法",
+          label: "🔍 The fully expanded, equivalent version",
           lines: [
             { code: "use std::collections::HashMap;", note: "第一個名字。" },
             { code: "use std::fs::File;", note: "第二個名字。" },
@@ -230,7 +230,7 @@ lesson1-14 已經看過單層的 use std::io::{self, Write};,這裡只是同一�
 順帶一提:如果只是要把整個檔案讀成字串,std 有現成的一行版本 std::fs::read_to_string("config.toml"),連 Read 都不用引入。上面那種寫法是為了示範 trait 與型別的分工。`,
       walkthrough: [
         {
-          label: "🔍 逐行說明(可正常編譯執行)",
+          label: "🔍 Walkthrough (compiles and runs normally)",
           lines: [
             { code: "use std::fs::File;", note: "引入「檔案」這個型別。fs 管的是檔案系統裡的實體。" },
             { code: "use std::io::Read;", note: "引入「能讀」這個 trait。少了這行,下面的 read_to_string 就叫不到——這是最常見的 std 新手坑。" },
@@ -264,7 +264,7 @@ lesson1-14 已經看過單層的 use std::io::{self, Write};,這裡只是同一�
 真的要做 CLI,實務上不會手刻:用 clap crate(對應 C# 的 System.CommandLine),自動處理旗標、預設值與 --help。`,
       walkthrough: [
         {
-          label: "🔍 逐行說明(可正常編譯執行)",
+          label: "🔍 Walkthrough (compiles and runs normally)",
           lines: [
             { code: "use std::env;", note: "引入模組本身而不是個別函式——env::args() 這種讀法比單獨一個 args() 清楚得多。" },
             { code: "", note: "" },
@@ -299,7 +299,7 @@ lesson1-14 已經看過單層的 use std::io::{self, Write};,這裡只是同一�
 至於用 format! 以斜線串接:它在 Windows 大多數情況下確實能跑(Win32 API 接受正斜線),但你會失去 join 對絕對路徑、UNC 路徑與非 UTF-8 檔名的處理,而且拿到的是 String,傳給需要 &Path 的 API 時還得再轉一手——沒有任何理由不用 PathBuf。`,
       walkthrough: [
         {
-          label: "✅ 正確寫法",
+          label: "√ Correct version",
           lines: [
             { code: "use std::path::PathBuf;", note: "引入有所有權的路徑型別。Path(借用版)通常不用特地引入,它多半以 &Path 的形式出現在函式簽名裡。" },
             { code: "", note: "" },
@@ -315,7 +315,7 @@ lesson1-14 已經看過單層的 use std::io::{self, Write};,這裡只是同一�
           outro: "也有一行版本:let p = PathBuf::from(\"data\").join(\"config\").join(\"app.toml\");——join 回傳新的 PathBuf 適合串接,push 就地修改適合在迴圈裡累積。",
         },
         {
-          label: "❌ 三個錯誤寫法錯在哪",
+          label: "X What's wrong with the three versions",
           lines: [
             { code: "let p = format!(\"{}/{}/{}\", \"data\", \"config\", \"app.toml\");", note: "編得過也大多跑得動,但拿到的是 String 而不是 PathBuf,失去 join 對絕對路徑、UNC 路徑與非 UTF-8 檔名的處理,傳給吃 &Path 的 API 還要再轉一手。" },
             { code: "let p = \"data\".to_string() + \"\\\\\" + \"config\" + \"\\\\\" + \"app.toml\";", note: "把 Windows 的反斜線寫死,在 Linux 與 macOS 上這整串會被當成「一個含有反斜線的檔名」,檔案永遠找不到。" },
@@ -323,7 +323,7 @@ lesson1-14 已經看過單層的 use std::io::{self, Write};,這裡只是同一�
           ],
         },
         {
-          label: "🔧 去糖後(編譯器眼中的樣子)",
+          label: "🔧 Desugared (what the compiler sees)",
           intro: "錯誤訊息 cannot add `&str` to `&Path` 裡沒有出現 trait 的名字,但它講的就是 trait:",
           lines: [
             { code: "Path::new(\"data\") + \"/config\"", note: "你寫的運算式。" },
@@ -355,7 +355,7 @@ Instant 的「單調」是關鍵保證:它只會往前走,不受使用者改時�
 這裡要標出一條 std 的邊界:std 沒有日期時間的「格式化」與「時區」。沒有 ToString("yyyy-MM-dd"),沒有月份、沒有星期幾。要做這些事得用 chrono 或 time crate。std::time 的定位只是「量時間」,不是「處理日期」。`,
       walkthrough: [
         {
-          label: "🔍 逐行說明(可正常編譯執行)",
+          label: "🔍 Walkthrough (compiles and runs normally)",
           lines: [
             { code: "use std::thread;", note: "引入執行緒模組,這裡只用它的 sleep。" },
             { code: "use std::time::{Duration, Instant};", note: "巢狀 use,一行引入兩個型別。" },
@@ -391,7 +391,7 @@ Instant 的「單調」是關鍵保證:它只會往前走,不受使用者改時�
 順帶記住 std::cmp 的另外兩個常客:Ordering(Less / Equal / Greater 這個 enum,是所有比較函式的回傳型別)以及 cmp::min / cmp::max。至於 vec! 不接受浮點數的說法完全沒這回事,錯誤訊息也明確指向 Ord。`,
       walkthrough: [
         {
-          label: "❌ 題目程式碼(無法編譯)",
+          label: "X Question code (won't compile)",
           lines: [
             { code: "fn main() {", note: "程式進入點。" },
             { code: "    let mut xs = vec![3.2, 1.5, 2.8];", note: "建立 Vec<f64>。浮點數字面值預設就是 f64,這行完全合法。" },
@@ -401,7 +401,7 @@ Instant 的「單調」是關鍵保證:它只會往前走,不受使用者改時�
           ],
         },
         {
-          label: "✅ 正確寫法",
+          label: "√ Correct version",
           lines: [
             { code: "fn main() {", note: "程式進入點。" },
             { code: "    let mut xs = vec![3.2, 1.5, 2.8];", note: "同樣的 Vec<f64>,資料沒變。" },
@@ -415,7 +415,7 @@ Instant 的「單調」是關鍵保證:它只會往前走,不受使用者改時�
           ],
         },
         {
-          label: "🔧 去糖後(編譯器眼中的樣子)",
+          label: "🔧 Desugared (what the compiler sees)",
           intro: "你只寫了 xs.sort(),錯誤訊息卻在講 Ord。那個字是從方法簽名來的:",
           lines: [
             { code: "xs.sort();", note: "你寫的這一行,看不到任何 trait。" },
@@ -451,7 +451,7 @@ Instant 的「單調」是關鍵保證:它只會往前走,不受使用者改時�
 這一題在 lesson2-9 會再展開(泛型約束裡的 T: Add<Output = T>),現在只要記住「運算子背後是 trait」這個地圖位置。`,
       walkthrough: [
         {
-          label: "🔍 逐行說明(可正常編譯執行)",
+          label: "🔍 Walkthrough (compiles and runs normally)",
           lines: [
             { code: "use std::ops::Add;", note: "引入 + 對應的 trait。不 use 也行,那就得寫 impl std::ops::Add for Money。" },
             { code: "", note: "" },
@@ -495,7 +495,7 @@ Instant 的「單調」是關鍵保證:它只會往前走,不受使用者改時�
 順帶一提,失敗版本的 TryFrom 對應 C# 的 TryParse 那一族;lesson1-10 用過的 ? 自動轉換錯誤型別,靠的也是 From。至於 Copy——它跟型別轉換完全沒有關係。`,
       walkthrough: [
         {
-          label: "🔍 逐行說明(可正常編譯執行)",
+          label: "🔍 Walkthrough (compiles and runs normally)",
           lines: [
             { code: "struct Celsius(f64);", note: "攝氏溫度,用 newtype 包一個 f64——這樣攝氏與華氏在型別上就分得開,不會互相傳錯。" },
             { code: "struct Fahrenheit(f64);", note: "華氏溫度,同樣的手法。" },
@@ -531,7 +531,7 @@ Instant 的「單調」是關鍵保證:它只會往前走,不受使用者改時�
 三個干擾寫法:直接搬移會得到 cannot move out of \`self.buffer\` which is behind a mutable reference,這是每個 Rust 開發者都會撞一次的錯誤;clone 加 clear 能跑,但白白複製了一整份資料,資料量大時就是實實在在的浪費;至於 std::ptr::read——它確實能「繞過」借用檢查,但那是 unsafe 的原始指標操作,這裡會造成同一份資料被釋放兩次(double free)。std::ptr 是補充教材 Unsafe Rust 的地盤,日常寫 Rust 不該碰到它。`,
       walkthrough: [
         {
-          label: "✅ 正確寫法",
+          label: "√ Correct version",
           lines: [
             { code: "struct Logger {", note: "一個累積訊息的型別,用來示範情境。" },
             { code: "    buffer: Vec<String>,", note: "訊息暫存區。Vec 實作了 Default(空 Vec),所以可以用 mem::take。" },
@@ -552,7 +552,7 @@ Instant 的「單調」是關鍵保證:它只會往前走,不受使用者改時�
           outro: "想換成別的值而不是預設值,就用 std::mem::replace(&mut self.buffer, Vec::with_capacity(16));——take 只是 replace 搭配 Default 的便利版本。",
         },
         {
-          label: "❌ 三個錯誤寫法錯在哪",
+          label: "X What's wrong with the three versions",
           lines: [
             { code: "let old = self.buffer;", note: "⛔ 編譯失敗:cannot move out of `self.buffer` which is behind a mutable reference。搬走欄位會讓 self 殘缺,借用檢查器不接受。" },
             { code: "let old = self.buffer.clone();", note: "編得過,但把整個 Vec 連同裡面每個 String 都複製了一份——資料一多就是純粹的浪費。" },
@@ -580,7 +580,7 @@ Rc 與 Arc 的內部邏輯幾乎一樣,差別只在計數用不用原子指令�
 記住這組拆分:Arc 解決「誰擁有它」,Mutex 解決「誰能改它」,兩個問題分開處理,所以才寫成 Arc<Mutex<T>>。細節在 lesson2-7 展開。`,
       walkthrough: [
         {
-          label: "🔍 逐行說明(可正常編譯執行)",
+          label: "🔍 Walkthrough (compiles and runs normally)",
           lines: [
             { code: "use std::sync::{Arc, Mutex};", note: "一行引入兩個工具:共享所有權與互斥鎖。" },
             { code: "use std::thread;", note: "引入執行緒模組。" },
@@ -625,7 +625,7 @@ output() 回傳 Output,裡面有 status、stdout、stderr 三個欄位,後兩者
 干擾說法裡最值得點名的是「output 只拿 stdout」:它兩個都拿,而 status() 是兩個都不拿(直接繼承父行程的終端機)。`,
       walkthrough: [
         {
-          label: "🔍 逐行說明(可正常編譯執行)",
+          label: "🔍 Walkthrough (compiles and runs normally)",
           lines: [
             { code: "use std::process::Command;", note: "引入行程建構器。" },
             { code: "", note: "" },
@@ -661,7 +661,7 @@ output() 回傳 Output,裡面有 status、stdout、stderr 三個欄位,後兩者
 實務上這一套通常不手寫:應用程式用 anyhow(等同強化版的 Box<dyn Error>),函式庫用 thiserror(自動生成 Display 與 Error 實作)。lesson2-6 會展開。`,
       walkthrough: [
         {
-          label: "🔍 逐行說明(可正常編譯執行)",
+          label: "🔍 Walkthrough (compiles and runs normally)",
           lines: [
             { code: "use std::error::Error;", note: "引入錯誤的共同介面。" },
             { code: "use std::fmt;", note: "引入格式化模組,因為待會要實作 Display。" },
@@ -704,7 +704,7 @@ output() 回傳 Output,裡面有 status、stdout、stderr 三個欄位,後兩者
 什麼時候該用它:寫函式庫、處理大量字串、而且「需要修改」是少數情況。一般應用程式碼直接回傳 String 通常就夠了,不必過早優化。`,
       walkthrough: [
         {
-          label: "🔍 逐行說明(可正常編譯執行)",
+          label: "🔍 Walkthrough (compiles and runs normally)",
           lines: [
             { code: "use std::borrow::Cow;", note: "引入這個 enum。std::borrow 裡還有 Borrow 與 ToOwned 兩個 trait,是 Cow 背後的機制。" },
             { code: "", note: "" },
@@ -742,7 +742,7 @@ std::net 只有最底層的 TcpListener、TcpStream、UdpSocket、SocketAddr—�
 常用對照:HttpClient → reqwest;System.Text.Json → serde + serde_json;Task / async → tokio;ILogger → tracing 或 log;System.CommandLine → clap;Regex → regex;DateTime → chrono。唯一的例外是 LINQ——它對應的 Iterator 就在 std 裡,而且是標準庫最強大的部分之一(lesson2-2 的主題)。`,
       walkthrough: [
         {
-          label: "🔍 實務上這件事怎麼做",
+          label: "🔍 How this is done in practice",
           lang: "ini",
           lines: [
             { code: "# Cargo.toml", note: "所有外部相依都宣告在這裡,對應 .NET 的 PackageReference。" },
@@ -773,7 +773,7 @@ std::net 只有最底層的 TcpListener、TcpStream、UdpSocket、SocketAddr—�
 cargo doc --open 的價值在於:它產生的文件包含你專案用到的每一個 crate,版本跟你鎖定的完全一致——不會發生「照網站文件寫卻對不上」的情況。至於 cargo search 是用來找套件的,rustc --help 則只列編譯器旗標。`,
       walkthrough: [
         {
-          label: "🔍 三個查文件的指令",
+          label: "🔍 Three commands for looking up documentation",
           lang: "bash",
           lines: [
             { code: "rustup doc --std", note: "開啟離線版標準庫文件,版本與你安裝的工具鏈一致。沒有網路也能查,而且不會誤看到不同版本的頁面。" },

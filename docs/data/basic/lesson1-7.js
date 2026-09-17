@@ -1,7 +1,7 @@
 /* 出題慣例見專案根目錄 AUTHORING.md:
  *   - answer 一律為 0(正確答案寫在第一個選項),顯示順序由 quiz.js 依題目 id 洗牌
  *   - 詳解禁止用「選項 A/B/C」字母指涉,必須直接描述選項內容
- *   - 有程式碼的題目一律附 walkthrough(逐行說明);反面案例必須同時附上 ✅ 正確寫法 */
+ *   - 有程式碼的題目一律附 walkthrough(逐行說明);反面案例必須同時附上 √ 正確寫法 */
 window.RUST_LESSONS = window.RUST_LESSONS || {};
 window.RUST_LESSONS["lesson1-7"] = {
   id: "lesson1-7",
@@ -22,7 +22,7 @@ window.RUST_LESSONS["lesson1-7"] = {
 用分號分隔欄位、new 關鍵字、class 關鍵字都不是 Rust 語法;具名欄位的 struct 實例化時也必須寫欄位名,不能只按順序給值(那是 tuple struct 的行為,後面會考)。`,
       walkthrough: [
         {
-          label: "✅ 正確寫法逐行說明",
+          label: "√ Correct version — walkthrough",
           lines: [
             { code: "struct User {", note: "用 struct 關鍵字定義一個具名欄位的結構體。" },
             { code: "    username: String,", note: "欄位格式是「名稱: 型別」,結尾用「逗號」分隔(不是分號)。這個欄位擁有一份 heap 字串。" },
@@ -39,7 +39,7 @@ window.RUST_LESSONS["lesson1-7"] = {
           ],
         },
         {
-          label: "❌ 三個錯誤寫法錯在哪",
+          label: "X What's wrong with the three versions",
           lines: [
             { code: "    username: String;", note: "用分號分隔欄位是語法錯誤,Rust 的 struct 欄位一律用逗號。" },
             { code: "let u = new User(\"derek\", true);", note: "Rust 沒有 new 關鍵字,也沒有建構子語法;而且具名欄位的 struct 實例化必須寫欄位名。" },
@@ -65,7 +65,7 @@ window.RUST_LESSONS["lesson1-7"] = {
 修法:第一行改成 let mut user = ...。`,
       walkthrough: [
         {
-          label: "❌ 題目程式碼(無法編譯)",
+          label: "X Question code (won't compile)",
           lines: [
             { code: "struct User {", note: "定義 struct。" },
             { code: "    email: String,", note: "欄位定義本身不帶可變性資訊——Rust 沒有「欄位層級的 mut」。" },
@@ -82,7 +82,7 @@ window.RUST_LESSONS["lesson1-7"] = {
           ],
         },
         {
-          label: "✅ 正確寫法(把整個實例宣告成 mut)",
+          label: "√ Correct version (declare the whole instance as mut)",
           lines: [
             { code: "struct User {", note: "struct 定義完全不用改。" },
             { code: "    email: String,", note: "同樣的欄位。" },
@@ -119,7 +119,7 @@ window.RUST_LESSONS["lesson1-7"] = {
 寫 username: username 本身合法(編譯器只會提醒可簡寫),但那個版本尾端多了分號——運算式變陳述式,函式拿不到回傳值,編譯錯誤(lesson1-3 的老朋友)。new 關鍵字不存在;把 User 當物件直接賦值欄位更不是 Rust 語法。`,
       walkthrough: [
         {
-          label: "✅ 正確且慣用的寫法(完整可執行)",
+          label: "√ Correct, idiomatic version (complete, runnable)",
           lines: [
             { code: "struct User {", note: "題目給的 struct 定義,補進來讓整段可以直接編譯。" },
             { code: "    username: String,", note: "欄位。" },
@@ -140,7 +140,7 @@ window.RUST_LESSONS["lesson1-7"] = {
           ],
         },
         {
-          label: "❌ 錯誤寫法一:尾端多了分號",
+          label: "X Wrong version 1: an extra semicolon at the end",
           lines: [
             { code: "fn build_user(username: String) -> User {", note: "簽名沒問題。" },
             { code: "    User {", note: "開始建構。" },
@@ -151,7 +151,7 @@ window.RUST_LESSONS["lesson1-7"] = {
           ],
         },
         {
-          label: "❌ 錯誤寫法二:用了 new 關鍵字",
+          label: "X Wrong version 2: used the new keyword",
           lines: [
             { code: "fn build_user(username: String) -> User {", note: "簽名沒問題。" },
             { code: "    return new User(username, true);", note: "⛔ Rust 沒有 new 關鍵字(new 只是慣用的關聯函式名稱),而且具名欄位的 struct 不能按順序給值,必須寫欄位名。" },
@@ -159,7 +159,7 @@ window.RUST_LESSONS["lesson1-7"] = {
           ],
         },
         {
-          label: "❌ 錯誤寫法三:對「型別」賦值欄位",
+          label: "X Wrong version 3: assigning fields on the 'type' itself",
           lines: [
             { code: "fn build_user(username: String) -> User {", note: "簽名沒問題。" },
             { code: "    User.username = username;", note: "⛔ User 是「型別」不是「實例」,不能對型別賦值欄位——必須先用 User { ... } 建立實例才有欄位可寫。" },
@@ -186,7 +186,7 @@ window.RUST_LESSONS["lesson1-7"] = {
 所以第一個 println(active)合法、第二個(username)編譯錯誤。這題把 lesson1-4 的 Copy/move 規則落到 struct 場景——搬移永遠是逐欄位判定的。`,
       walkthrough: [
         {
-          label: "❌ 題目程式碼(最後一行編譯失敗)",
+          label: "X Question code (last line won't compile)",
           lines: [
             { code: "struct User {", note: "定義 struct。" },
             { code: "    username: String,", note: "非 Copy 欄位。" },
@@ -210,7 +210,7 @@ window.RUST_LESSONS["lesson1-7"] = {
           ],
         },
         {
-          label: "✅ 想保留 user1 就先 clone",
+          label: "√ Clone first if you want to keep user1",
           lines: [
             { code: "#[derive(Clone)]", note: "改動處:讓 User 可以深複製(每個欄位都會被 clone)。" },
             { code: "struct User {", note: "struct 定義其餘不變。" },
@@ -251,7 +251,7 @@ window.RUST_LESSONS["lesson1-7"] = {
       explanation: `tuple struct 是「有名字的 tuple」:欄位沒有名字,用 .0、.1 存取。適合欄位意義不言自明的場景(Point 的 x、y)。
 單欄位的 Meters(i32) 是 newtype 模式:給 i32 一個獨立型別,讓「公尺」和「秒」即使底層都是 i32 也不能混用——編譯器幫你擋掉單位錯誤,零執行期成本。這個模式在 Rust 生態使用頻率很高。`,
       walkthrough: {
-        label: "🔍 題目程式碼逐行說明(可正常執行)",
+        label: "🔍 Question code — walkthrough (runs successfully)",
         lines: [
           { code: "struct Point(i32, i32);", note: "tuple struct:欄位只寫型別、不寫名稱,像是「有名字的 tuple」。適合欄位意義不言自明的場景。" },
           { code: "struct Meters(i32);", note: "單欄位的 tuple struct = newtype 模式:給 i32 包一層獨立型別,讓「公尺」和「秒」即使底層都是 i32 也不能互相混用。" },
@@ -280,7 +280,7 @@ window.RUST_LESSONS["lesson1-7"] = {
 方法直接寫進 struct 大括號、用 this 當關鍵字、用「型別.方法名」在外面定義,都不是 Rust 語法。一個型別可以有多個 impl 區塊(常用來分組方法或配合泛型)。`,
       walkthrough: [
         {
-          label: "✅ 正確寫法(完整可執行)",
+          label: "√ Correct version (complete, runnable)",
           lines: [
             { code: "struct Rectangle {", note: "struct 區塊「只放資料」,這是 Rust 與 C# class 的第一個結構差異。" },
             { code: "    width: u32,", note: "欄位。" },
@@ -300,7 +300,7 @@ window.RUST_LESSONS["lesson1-7"] = {
           ],
         },
         {
-          label: "❌ 錯誤寫法一:方法寫進 struct 大括號",
+          label: "X Wrong version 1: put the method inside the struct's braces",
           lines: [
             { code: "struct Rectangle {", note: "struct 區塊只能放欄位定義。" },
             { code: "    width: u32,", note: "欄位。" },
@@ -313,7 +313,7 @@ window.RUST_LESSONS["lesson1-7"] = {
           ],
         },
         {
-          label: "❌ 錯誤寫法二:用了 this 當接收者",
+          label: "X Wrong version 2: used this as the receiver",
           lines: [
             { code: "impl Rectangle {", note: "impl 區塊本身沒問題。" },
             { code: "    fn area(this) -> u32 {", note: "⛔ Rust 沒有 this 關鍵字,接收者一律叫 self,而且要寫成 &self / &mut self / self 三種形式之一;寫成 this 會被當成一個「缺少型別標註的普通參數」而報錯。" },
@@ -323,7 +323,7 @@ window.RUST_LESSONS["lesson1-7"] = {
           ],
         },
         {
-          label: "❌ 錯誤寫法三:在 impl 外面定義方法",
+          label: "X Wrong version 3: defined the method outside impl",
           lines: [
             { code: "fn Rectangle.area(&self) -> u32 {", note: "⛔ 語法錯誤:不能用「型別.方法名」在外面定義方法,這個語法在 Rust 不存在;而且 &self 只有在 impl 區塊內才有意義。" },
             { code: "    self.width * self.height", note: "函式本體。" },
@@ -348,7 +348,7 @@ window.RUST_LESSONS["lesson1-7"] = {
 「拿走 self」的方法是刻意的設計手段:表示「這個物件到此為止,轉換成別的東西」——例如 builder 的 build(self) 防止蓋完房子還改藍圖。兩種接收者並存於同一個 impl 完全合法。`,
       walkthrough: [
         {
-          label: "❌ 題目程式碼(無法編譯)",
+          label: "X Question code (won't compile)",
           lines: [
             { code: "struct Counter {", note: "定義 struct。" },
             { code: "    n: i32,", note: "單一欄位。" },
@@ -372,7 +372,7 @@ window.RUST_LESSONS["lesson1-7"] = {
           ],
         },
         {
-          label: "✅ 正確寫法(把消耗自己的方法放到最後)",
+          label: "√ Correct version (put the self-consuming method last)",
           lines: [
             { code: "fn main() {", note: "struct 與 impl 完全不用改,只調整呼叫順序。" },
             { code: "    let c = Counter { n: 5 };", note: "c 擁有實例。" },
@@ -400,7 +400,7 @@ window.RUST_LESSONS["lesson1-7"] = {
       explanation: `沒有 self 參數的函式叫「關聯函式」,掛在型別上、用 Rectangle::square(3) 呼叫(:: 而非 .)。impl 區塊裡 Self 就是當前型別的別名,回傳型別與建構處都能用。
 Rust 沒有建構子語法,new 只是「最常見的關聯函式名字」,不是關鍵字——square、from_size、with_capacity 都是合法慣用的建構名,一個型別可以有很多個。`,
       walkthrough: {
-        label: "🔍 題目程式碼逐行說明(可正常執行)",
+        label: "🔍 Question code — walkthrough (runs successfully)",
         lines: [
           { code: "struct Rectangle {", note: "定義 struct。" },
           { code: "    width: u32,", note: "欄位。" },
@@ -441,7 +441,7 @@ Rust 沒有建構子語法,new 只是「最常見的關聯函式名字」,不是
 逐行說明裡會出現 impl std::fmt::Display——那一串冒號只是「路徑」:std 是標準函式庫,fmt 是它底下負責格式化的模組,Display 是模組裡的 trait。路徑與 use 的規則在 lesson1-14,標準函式庫有哪些模組則在 lesson1-15,現在照抄即可,不影響本題重點。`,
       walkthrough: [
         {
-          label: "❌ 題目程式碼(無法編譯)",
+          label: "X Question code (won't compile)",
           lines: [
             { code: "#[derive(Debug)]", note: "要求編譯器自動生成 Debug 實作——注意它只提供「給開發者看的」格式,也就是 {:?}。" },
             { code: "struct Rectangle {", note: "定義 struct。" },
@@ -456,7 +456,7 @@ Rust 沒有建構子語法,new 只是「最常見的關聯函式名字」,不是
           ],
         },
         {
-          label: "✅ 兩種正確寫法",
+          label: "√ Two correct versions",
           lines: [
             { code: "#[derive(Debug)]", note: "保留 Debug。" },
             { code: "struct Rectangle {", note: "struct 定義不變。" },
@@ -494,7 +494,7 @@ Rust 沒有建構子語法,new 只是「最常見的關聯函式名字」,不是
       explanation: `兩個根本差異:(1)沒有實作繼承——Rust 沒有基底類別、沒有 virtual/override,共享行為用 trait(介面 + 預設實作)、共享資料用組合,直接跳過「繼承階層深不可測」的老問題。(2)記憶體語意——C# class 實例是 GC 堆上的共享參考;Rust struct 是「值」,擁有它的變數遵守 move/borrow 規則。
 struct 當然能有方法(impl 區塊);struct 本體在 stack 但欄位可以擁有 heap 資料(String、Vec 的緩衝區在 heap,由 struct 擁有並隨之 drop)。`,
       walkthrough: {
-        label: "🔍 沒有繼承,用組合 + trait 取代",
+        label: "🔍 No inheritance — composition + trait instead",
         lines: [
           { code: "trait Greet {", note: "trait 定義「共享的行為」,角色接近 C# 的介面(而且可以有預設實作)。" },
           { code: "    fn hello(&self) -> String;", note: "宣告方法簽名,由各型別自己實作。" },

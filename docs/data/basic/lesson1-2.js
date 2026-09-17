@@ -1,7 +1,7 @@
 /* 出題慣例見專案根目錄 AUTHORING.md:
  *   - answer 一律為 0(正確答案寫在第一個選項),顯示順序由 quiz.js 依題目 id 洗牌
  *   - 詳解禁止用「選項 A/B/C」字母指涉,必須直接描述選項內容
- *   - 有程式碼的題目一律附 walkthrough(逐行說明);反面案例必須同時附上 ✅ 正確寫法 */
+ *   - 有程式碼的題目一律附 walkthrough(逐行說明);反面案例必須同時附上 √ 正確寫法 */
 window.RUST_LESSONS = window.RUST_LESSONS || {};
 window.RUST_LESSONS["lesson1-2"] = {
   id: "lesson1-2",
@@ -23,7 +23,7 @@ window.RUST_LESSONS["lesson1-2"] = {
 這是刻意的語言設計:大部分變數其實一輩子只被賦值一次,把「會變」標成例外(mut),讀程式碼時就能一眼看出哪些值可能在中途被改動。`,
       walkthrough: [
         {
-          label: "❌ 題目程式碼(無法編譯)",
+          label: "X Question code (won't compile)",
           lines: [
             { code: "fn main() {", note: "程式進入點。" },
             { code: "    let x = 5;", note: "宣告變數 x 並初始化為 5。let 預設「不可變」——沒有 mut,x 綁定之後就不能再被賦值。" },
@@ -33,7 +33,7 @@ window.RUST_LESSONS["lesson1-2"] = {
           ],
         },
         {
-          label: "✅ 正確寫法(加上 mut)",
+          label: "√ Correct version (add mut)",
           lines: [
             { code: "fn main() {", note: "程式進入點。" },
             { code: "    let mut x = 5;", note: "改動處:加上 mut,明確宣告「這個變數之後會被改」。讀程式碼的人一眼就知道 x 是會變動的。" },
@@ -60,7 +60,7 @@ window.RUST_LESSONS["lesson1-2"] = {
 mut let 的關鍵字順序寫反了;var 是 C#/JS 的關鍵字,Rust 沒有;:= 是 Go 的宣告語法。`,
       walkthrough: [
         {
-          label: "✅ 正確寫法逐行說明",
+          label: "√ Correct version — walkthrough",
           lines: [
             { code: "fn main() {", note: "把選項補成完整程式。" },
             { code: "    let mut x = 5;", note: "關鍵字順序是固定的:let 在前、mut 在中、變數名在後。加了 mut 的變數才能重新賦值。" },
@@ -70,7 +70,7 @@ mut let 的關鍵字順序寫反了;var 是 C#/JS 的關鍵字,Rust 沒有;:= �
           ],
         },
         {
-          label: "❌ 三個錯誤寫法錯在哪",
+          label: "X What's wrong with the three versions",
           lines: [
             { code: "mut let x = 5;", note: "關鍵字順序寫反了,直接是語法錯誤;正確順序是 let mut x。" },
             { code: "var x = 5;", note: "var 是 C#/JavaScript 的關鍵字,Rust 沒有這個關鍵字,宣告一律用 let。" },
@@ -94,7 +94,7 @@ mut let 的關鍵字順序寫反了;var 是 C#/JS 的關鍵字,Rust 沒有;:= �
       explanation: `這叫 shadowing(遮蔽):用 let 重新宣告同名變數,新變數「遮住」舊變數。計算過程:5 → 5+1=6 → 6*2=12。
 注意這不是修改——每次 let 都建立一個全新的變數,舊的還在只是取不到了。這與 mut 不同:shadowing 不需要 mut,而且(見下一題)連型別都可以換。`,
       walkthrough: {
-        label: "🔍 題目程式碼逐行說明(可正常執行)",
+        label: "🔍 Question code — walkthrough (runs successfully)",
         lines: [
           { code: "fn main() {", note: "程式進入點。" },
           { code: "    let x = 5;", note: "宣告第一個 x,值是 5(不可變)。" },
@@ -121,7 +121,7 @@ mut let 的關鍵字順序寫反了;var 是 C#/JS 的關鍵字,Rust 沒有;:= �
 其餘三段都卡在同一件事——變數的「型別」終生不變:mut 允許改「值」,但把 usize 賦給 &str 型別的變數是 mismatched types 編譯錯誤;連 mut 都沒有的那段連重新賦值都不行;三行的那段前兩行合法(mut 變數換成另一個 &str 沒問題),第三行想塞 usize 進 &str 變數,一樣編譯錯誤。`,
       walkthrough: [
         {
-          label: "✅ 可以編譯的那一段",
+          label: "√ The version that compiles",
           lines: [
             { code: "fn main() {", note: "把選項補成完整程式。" },
             { code: "    let spaces = \"   \";", note: "第一個 spaces,型別是 &str(字串切片)。" },
@@ -131,7 +131,7 @@ mut let 的關鍵字順序寫反了;var 是 C#/JS 的關鍵字,Rust 沒有;:= �
           ],
         },
         {
-          label: "❌ 三個錯誤寫法錯在哪",
+          label: "X What's wrong with the three versions",
           lines: [
             { code: "let mut spaces = \"   \";", note: "宣告一個可變的 &str 變數。mut 放寬的是「值」,不是「型別」——變數的型別終生固定。" },
             { code: "spaces = spaces.len();", note: "⛔ 編譯失敗:mismatched types, expected `&str`, found `usize`。想把 usize 塞進 &str 型別的變數。" },
@@ -162,7 +162,7 @@ mut let 的關鍵字順序寫反了;var 是 C#/JS 的關鍵字,Rust 沒有;:= �
 const 在編譯期求值、可宣告在任何作用域(包括全域),慣例命名全大寫蛇形。沒寫型別的 const 會編譯錯誤;let const 這種組合語法不存在;#define 是 C 語言的前置處理器。`,
       walkthrough: [
         {
-          label: "✅ 正確寫法逐行說明",
+          label: "√ Correct version — walkthrough",
           lines: [
             { code: "const MAX_POINTS: u32 = 100_000;", note: "const 宣告常數:必須「明確標註型別」(: u32),這是它和 let 的硬性差別;值必須能在編譯期求值。數字裡的底線只是可讀性分隔,100_000 等於 100000。慣例命名用全大寫蛇形。" },
             { code: "", note: "" },
@@ -172,7 +172,7 @@ const 在編譯期求值、可宣告在任何作用域(包括全域),慣例命�
           ],
         },
         {
-          label: "❌ 三個錯誤寫法錯在哪",
+          label: "X What's wrong with the three versions",
           lines: [
             { code: "const MAX_POINTS = 100_000;", note: "⛔ 編譯失敗:missing type for `const` item。const 不像 let 可以靠推斷,型別一定要寫出來。" },
             { code: "let const MAX_POINTS: u32 = 100_000;", note: "let 和 const 是兩個互斥的宣告方式,不能疊在一起,直接是語法錯誤。" },
@@ -197,7 +197,7 @@ const 在編譯期求值、可宣告在任何作用域(包括全域),慣例命�
 「編譯錯誤」的選項有一半道理——若寫成字面值 let x: u8 = 256; 編譯器確實會直接報錯,但這裡的加法是執行期運算,編譯器不會攔(除非能 const 求值)。想要明確行為可用 wrapping_add / checked_add / saturating_add。`,
       walkthrough: [
         {
-          label: "🔍 題目程式碼逐行說明(debug 版執行期 panic)",
+          label: "🔍 Question code — walkthrough (panics at runtime in debug builds)",
           lines: [
             { code: "fn main() {", note: "程式進入點。" },
             { code: "    let x: u8 = 255;", note: "明確標註型別 u8(8 位元無號整數,範圍 0~255)。255 剛好是上限,這一行完全合法。" },
@@ -208,7 +208,7 @@ const 在編譯期求值、可宣告在任何作用域(包括全域),慣例命�
           outro: "「編譯錯誤」這個干擾選項有一半道理:若寫成字面值 let x: u8 = 256;,編譯器確實會直接報錯(literal out of range),因為那是編譯期就能求值的常數。",
         },
         {
-          label: "✅ 想要行為明確就用專用方法",
+          label: "√ Use a dedicated method when you want explicit behavior",
           lines: [
             { code: "fn main() {", note: "程式進入點。" },
             { code: "    let x: u8 = 255;", note: "同樣的 u8 上限值。" },
@@ -236,7 +236,7 @@ const 在編譯期求值、可宣告在任何作用域(包括全域),慣例命�
 雙引號的 "a" 是 &str(字串)不是 char;'ab' 在單引號裡放兩個字元不合法;let c: char = 97 也不行,Rust 不會把整數隱式轉成 char(可用 97 as char 或 char::from(97u8) 顯式轉)。`,
       walkthrough: [
         {
-          label: "✅ 合法的 char 字面值",
+          label: "√ Valid char literals",
           lines: [
             { code: "fn main() {", note: "把選項補成完整程式。" },
             { code: "    let c = '狗';", note: "char 用「單引號」包住剛好一個字元。Rust 的 char 是 4 bytes 的 Unicode 純量值,中文、emoji 都各算一個合法的 char。" },
@@ -245,7 +245,7 @@ const 在編譯期求值、可宣告在任何作用域(包括全域),慣例命�
           ],
         },
         {
-          label: "❌ 三個錯誤寫法錯在哪",
+          label: "X What's wrong with the three versions",
           lines: [
             { code: "let c = \"a\";", note: "雙引號是字串字面值,型別是 &str 而不是 char——雖然只有一個字元,型別仍然不同。" },
             { code: "let c = 'ab';", note: "⛔ 編譯失敗:character literal may only contain one codepoint。單引號裡只能放剛好一個字元。" },
@@ -269,7 +269,7 @@ const 在編譯期求值、可宣告在任何作用域(包括全域),慣例命�
       explanation: `tuple 有兩種取法:解構 let (a, b, c) = t; 一次拆開,或用索引 t.0、t.1、t.2 取單一元素。t.2 是第三個元素 'x',所以印出 500 x。
 變數名前綴底線(_b、_c)是告訴編譯器「我知道沒用到」,壓掉 unused variable 警告。tuple 可以混裝不同型別,長度固定。`,
       walkthrough: {
-        label: "🔍 題目程式碼逐行說明(可正常執行)",
+        label: "🔍 Question code — walkthrough (runs successfully)",
         lines: [
           { code: "fn main() {", note: "程式進入點。" },
           { code: "    let t = (500, 6.4, 'x');", note: "建立一個 tuple,型別是 (i32, f64, char)。tuple 可以混裝不同型別,長度在編譯期固定。" },
@@ -296,7 +296,7 @@ const 在編譯期求值、可宣告在任何作用域(包括全域),慣例命�
 這就是 Rust 記憶體安全的體現:C/C++ 在這裡是未定義行為(可能讀到垃圾、可能 crash),Rust 保證乾淨地失敗。注意:若索引是編譯期常數(如 a[10]),編譯器甚至能直接在編譯期報錯。`,
       walkthrough: [
         {
-          label: "🔍 題目程式碼逐行說明(執行期 panic)",
+          label: "🔍 Question code — walkthrough (panics at runtime)",
           lines: [
             { code: "fn main() {", note: "程式進入點。" },
             { code: "    let a = [1, 2, 3, 4, 5];", note: "建立陣列,型別是 [i32; 5]——長度是型別的一部分,在編譯期固定,資料放在 stack 上。" },
@@ -307,7 +307,7 @@ const 在編譯期求值、可宣告在任何作用域(包括全域),慣例命�
           outro: "若把索引改成編譯期常數 a[10],編譯器甚至能直接在編譯期報錯,不必等到執行。這正是 Rust 記憶體安全的體現:C/C++ 在這裡是未定義行為(可能讀到垃圾、可能 crash),Rust 保證乾淨地失敗。",
         },
         {
-          label: "✅ 想要「可能失敗的存取」就用 get",
+          label: "√ Use get for access that might fail",
           lines: [
             { code: "fn main() {", note: "程式進入點。" },
             { code: "    let a = [1, 2, 3, 4, 5];", note: "同樣的陣列。" },
@@ -337,7 +337,7 @@ const 在編譯期求值、可宣告在任何作用域(包括全域),慣例命�
 整數同理:i32 + i64 也不行,必須用 as 或 From 顯式轉換,例如 x + (y as f64)。這是 Rust 消滅「隱式轉換造成的精度陷阱」的手段——所有型別轉換都必須看得見。`,
       walkthrough: [
         {
-          label: "❌ 題目程式碼(無法編譯)",
+          label: "X Question code (won't compile)",
           lines: [
             { code: "fn main() {", note: "程式進入點。" },
             { code: "    let x = 2.0;", note: "浮點字面值沒有標註型別時,預設推斷為 f64。所以 x 是 f64。" },
@@ -348,7 +348,7 @@ const 在編譯期求值、可宣告在任何作用域(包括全域),慣例命�
           ],
         },
         {
-          label: "✅ 正確寫法(顯式轉換)",
+          label: "√ Correct version (explicit conversion)",
           lines: [
             { code: "fn main() {", note: "程式進入點。" },
             { code: "    let x = 2.0;", note: "f64。" },
@@ -379,7 +379,7 @@ const 在編譯期求值、可宣告在任何作用域(包括全域),慣例命�
 另外兩個「編譯錯誤」的說法都是把可讀性語法誤當成語法錯誤,而「原樣保留」則搞錯了層次:底線與括號都只存在於原始碼,編譯後不留痕跡。`,
       walkthrough: [
         {
-          label: "🔍 逐行說明(可正常編譯執行)",
+          label: "🔍 Walkthrough (compiles and runs normally)",
           lines: [
             { code: "fn main() {", note: "程式進入點。" },
             { code: "    let population = 1_000_000;", note: "底線是視覺分隔符,編譯期直接被忽略——這個值就是 1000000,型別推斷為 i32。" },

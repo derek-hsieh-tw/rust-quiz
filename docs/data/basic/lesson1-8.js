@@ -1,7 +1,7 @@
 /* 出題慣例見專案根目錄 AUTHORING.md:
  *   - answer 一律為 0(正確答案寫在第一個選項),顯示順序由 quiz.js 依題目 id 洗牌
  *   - 詳解禁止用「選項 A/B/C」字母指涉,必須直接描述選項內容
- *   - 有程式碼的題目一律附 walkthrough(逐行說明);反面案例必須同時附上 ✅ 正確寫法 */
+ *   - 有程式碼的題目一律附 walkthrough(逐行說明);反面案例必須同時附上 √ 正確寫法 */
 window.RUST_LESSONS = window.RUST_LESSONS || {};
 window.RUST_LESSONS["lesson1-8"] = {
   id: "lesson1-8",
@@ -21,7 +21,7 @@ window.RUST_LESSONS["lesson1-8"] = {
       explanation: `Rust enum 的每個變體(variant)都可以「攜帶資料」,而且各變體攜帶的形狀可以不同:Quit 不帶資料、Move 帶具名欄位、Write 帶一個 String、ChangeColor 帶三個 i32——一個型別安全地表達「這個值是四種情況之一,每種情況有自己的資料」。這在型別理論叫「和型別(sum type)」。
 只有純變體或指定整數值的 enum,C# 也能寫——那只是整數常數的集合。帶資料的 enum 才是 Rust 的招牌,Option 和 Result 都是靠這個能力建成的。`,
       walkthrough: {
-        label: "✅ 展現「C# enum 做不到」的定義",
+        label: "√ A definition that shows what a C# enum can't do",
         lines: [
           { code: "enum Message {", note: "定義一個和型別(sum type):這個型別的值一定是底下四種情況之「一」。" },
           { code: "    Quit,", note: "不帶任何資料的變體,長得像 C# 的 enum 成員。" },
@@ -58,7 +58,7 @@ window.RUST_LESSONS["lesson1-8"] = {
 換句話說:在 Rust,「忘記檢查 null」不是執行期炸彈,而是編譯錯誤。billion-dollar mistake(null 參考)被型別系統直接封印。`,
       walkthrough: [
         {
-          label: "❌ 題目程式碼(無法編譯)",
+          label: "X Question code (won't compile)",
           lines: [
             { code: "fn main() {", note: "程式進入點。" },
             { code: "    let x: i8 = 5;", note: "型別是 i8:語意是「保證有值」。" },
@@ -69,7 +69,7 @@ window.RUST_LESSONS["lesson1-8"] = {
           ],
         },
         {
-          label: "✅ 正確寫法(先處理 None 再運算)",
+          label: "√ Correct version (handle None before computing)",
           lines: [
             { code: "fn main() {", note: "程式進入點。" },
             { code: "    let x: i8 = 5;", note: "保證有值。" },
@@ -100,7 +100,7 @@ window.RUST_LESSONS["lesson1-8"] = {
       explanation: `match 到 Coin::Quarter(state) 分支時,變體攜帶的 String 被「綁定」到變數 state,分支區塊裡就能使用——這是 enum 帶資料與 match 的合體技:分辨是哪種情況「同時」取出該情況的資料,一步完成。
 分支可以是單一運算式,也可以是 { } 區塊(區塊尾端運算式 25 就是該分支的值)。輸出兩行:State: Alaska、25。`,
       walkthrough: {
-        label: "🔍 題目程式碼逐行說明(可正常執行)",
+        label: "🔍 Question code — walkthrough (runs successfully)",
         lines: [
           { code: "enum Coin {", note: "定義一個帶資料的 enum。" },
           { code: "    Penny,", note: "不帶資料的變體。" },
@@ -141,7 +141,7 @@ window.RUST_LESSONS["lesson1-8"] = {
 這與 lesson1-3 的整數 match 同一條規則,但在 enum 上才顯出真正威力:未來幫 enum 加新變體時,專案裡所有漏掉新變體的 match 會被編譯器逐一點名——重構的安全網。`,
       walkthrough: [
         {
-          label: "❌ 題目程式碼(無法編譯)",
+          label: "X Question code (won't compile)",
           lines: [
             { code: "fn plus_one(x: Option<i32>) -> Option<i32> {", note: "接收一個可能沒有值的整數,回傳同樣可能沒有值的整數。" },
             { code: "    match x {", note: "⛔ 編譯失敗的起點:non-exhaustive patterns: `None` not covered。" },
@@ -155,7 +155,7 @@ window.RUST_LESSONS["lesson1-8"] = {
           ],
         },
         {
-          label: "✅ 正確寫法(補上 None 分支)",
+          label: "√ Correct version (add the None arm)",
           lines: [
             { code: "fn plus_one(x: Option<i32>) -> Option<i32> {", note: "簽名不變。" },
             { code: "    match x {", note: "現在這個 match 是窮盡的。" },
@@ -188,7 +188,7 @@ window.RUST_LESSONS["lesson1-8"] = {
 None 時 panic 的版本語意不同(if let 靜默跳過,不會炸);Some(3) 的版本只匹配「值恰好是 3」,不是綁定任意值;用 != None 判斷後直接印 config_max 則印出的是 Some(3) 而非 3,而且失去了「取出內部值」的能力。if let 也可以接 else 區塊處理其餘情況。`,
       walkthrough: [
         {
-          label: "🔍 題目的 if let 逐行說明",
+          label: "🔍 Question code (the if let) — walkthrough",
           lines: [
             { code: "let config_max = Some(3u8);", note: "建立一個 Option<u8>,值是 Some(3)。" },
             { code: "if let Some(max) = config_max {", note: "if let 是「只關心一種模式」的語法糖:模式 Some(max) 匹配成功就把內部值綁定到 max 並執行區塊;不成功就整個跳過。" },
@@ -197,7 +197,7 @@ None 時 panic 的版本語意不同(if let 靜默跳過,不會炸);Some(3) 的�
           ],
         },
         {
-          label: "✅ 等價的 match 寫法",
+          label: "√ The equivalent match version",
           lines: [
             { code: "match config_max {", note: "同樣對 Option 做匹配。" },
             { code: "    Some(max) => println!(\"max is {}\", max),", note: "和 if let 的區塊做同一件事。" },
@@ -206,7 +206,7 @@ None 時 panic 的版本語意不同(if let 靜默跳過,不會炸);Some(3) 的�
           ],
         },
         {
-          label: "❌ 另外三個寫法為什麼不等價",
+          label: "X Why the other three versions aren't equivalent",
           lines: [
             { code: "    None => panic!(\"no value\"),", note: "語意不同:if let 遇到 None 是靜靜跳過,不會讓程式炸掉。" },
             { code: "    Some(3) => println!(\"max is 3\"),", note: "語意不同:這是「值恰好等於 3」才匹配的字面值模式,而不是「有值就綁定出來」。" },
@@ -232,7 +232,7 @@ None 時 panic 的版本語意不同(if let 靜默跳過,不會炸);Some(3) 的�
 安全的替代品:unwrap_or(0) 給預設值、unwrap_or_else 惰性計算預設值、expect("說明") 是 panic 訊息更清楚的 unwrap(至少除錯時知道賭輸在哪)。正式程式碼裡裸的 unwrap 通常是 code review 的紅旗,除非你能證明不可能是 None。`,
       walkthrough: [
         {
-          label: "❌ 題目程式碼(執行期 panic)",
+          label: "X Question code (panics at runtime)",
           lines: [
             { code: "fn main() {", note: "程式進入點。" },
             { code: "    let x: Option<i32> = None;", note: "明確建立一個「沒有值」的 Option。" },
@@ -242,7 +242,7 @@ None 時 panic 的版本語意不同(if let 靜默跳過,不會炸);Some(3) 的�
           ],
         },
         {
-          label: "✅ 三種安全的替代寫法",
+          label: "√ Three safe alternatives",
           lines: [
             { code: "fn main() {", note: "程式進入點。" },
             { code: "    let x: Option<i32> = None;", note: "同樣是沒有值。" },
@@ -273,7 +273,7 @@ None 時 panic 的版本語意不同(if let 靜默跳過,不會炸);Some(3) 的�
       explanation: `match 是運算式,每個分支的值就是整個 match 的值,直接當函式回傳值。1..=9 是「range 模式」:匹配 1 到 9(含),所以 5 落在 single digit;42 沒被前兩個分支接住,落到萬用的 _。
 三個分支的型別必須一致(都是 &'static str)——和 if 運算式同一條規則。分支由上往下依序嘗試,第一個匹配的獲勝。`,
       walkthrough: {
-        label: "🔍 題目程式碼逐行說明(可正常執行)",
+        label: "🔍 Question code — walkthrough (runs successfully)",
         lines: [
           { code: "fn describe(n: i32) -> &'static str {", note: "回傳字串字面值的參考;'static 表示它活得跟整個程式一樣久(字面值編譯進執行檔)。" },
           { code: "    match n {", note: "match 是運算式,它的值就是函式的回傳值(尾端沒有分號)。分支由上往下依序嘗試,第一個匹配的獲勝。" },
@@ -304,7 +304,7 @@ None 時 panic 的版本語意不同(if let 靜默跳過,不會炸);Some(3) 的�
       explanation: `Vec::pop 從「尾端」取出元素,回傳 Option<T>:有元素給 Some(值),空了給 None。while let 的語意:模式匹配成功就繼續迴圈,失敗(None)就結束——所以依序印出 3 2 1,棧空後乾淨地停下。
 這是「用型別驅動迴圈終止」的漂亮示範:不用先檢查 is_empty 再取值,pop 的回傳型別本身就攜帶了「還有沒有」的資訊。`,
       walkthrough: {
-        label: "🔍 題目程式碼逐行說明(可正常執行)",
+        label: "🔍 Question code — walkthrough (runs successfully)",
         lines: [
           { code: "fn main() {", note: "程式進入點。" },
           { code: "    let mut stack = vec![1, 2, 3];", note: "建立可變的 Vec,當成堆疊使用。" },
@@ -332,7 +332,7 @@ None 時 panic 的版本語意不同(if let 靜默跳過,不會炸);Some(3) 的�
 家族還有:unwrap_or_default()(用型別的 Default,i32 是 0)、unwrap_or_else(|| 昂貴計算)(只在 None 時才執行計算)。先用 match/if let 思考,熟了之後這些方法讓程式碼更精簡。`,
       walkthrough: [
         {
-          label: "🔍 題目程式碼逐行說明(可正常執行)",
+          label: "🔍 Question code — walkthrough (runs successfully)",
           lines: [
             { code: "fn main() {", note: "程式進入點。" },
             { code: "    let a: Option<i32> = Some(5);", note: "有值的 Option。" },
@@ -342,7 +342,7 @@ None 時 panic 的版本語意不同(if let 靜默跳過,不會炸);Some(3) 的�
           ],
         },
         {
-          label: "🔍 同一家族的其他成員",
+          label: "🔍 Other members of the same family",
           lines: [
             { code: "let b: Option<i32> = None;", note: "同樣是沒有值。" },
             { code: "let v1 = b.unwrap_or_default();", note: "用型別的 Default 當預設值,i32 的預設是 0——不必自己寫那個 0。" },
@@ -369,7 +369,7 @@ None 時 panic 的版本語意不同(if let 靜默跳過,不會炸);Some(3) 的�
 檢查全部發生在編譯期,「執行期檢查比較慢」的說法正好說反。`,
       walkthrough: [
         {
-          label: "🔷 C# 的做法:可以編譯,但保護是「可選的」",
+          label: "🔷 C#'s approach: it compiles, but the protection is optional",
           lang: "csharp",
           lines: [
             { code: "string? name = GetName();", note: "NRT 註記說「這個字串可能是 null」——但這只是給編譯器的提示。" },
@@ -378,7 +378,7 @@ None 時 panic 的版本語意不同(if let 靜默跳過,不會炸);Some(3) 的�
           ],
         },
         {
-          label: "✅ Rust 的做法:不處理 None 就編譯不過",
+          label: "√ Rust's approach: it won't compile until you handle None",
           lines: [
             { code: "fn get_name() -> Option<String> {", note: "回傳型別直接說明「可能沒有」,不需要額外註記機制,而且沒有例外——所有型別預設都不可為空。" },
             { code: "    None", note: "這次回傳沒有值。" },
@@ -415,7 +415,7 @@ None 時 panic 的版本語意不同(if let 靜默跳過,不會炸);Some(3) 的�
 「let 後面不能接 else」在 1.65 之前確實如此,現在是穩定語法;而「一律走 else」則是把它跟 else 的一般語意搞混了——比對成功時 else 整段不會執行。`,
       walkthrough: [
         {
-          label: "🔍 題目程式碼(可正常編譯執行)",
+          label: "🔍 Question code (compiles and runs successfully)",
           lines: [
             { code: "fn parse_port(text: &str) -> u16 {", note: "回傳一個埠號。" },
             { code: "    let Ok(port) = text.parse::<u16>() else {", note: "parse 回傳 Result<u16, _>。比對成功就把裡面的 u16 綁給 port,而且 port 活在「這個函式」的作用域,不是活在下面的大括號裡。" },
@@ -432,7 +432,7 @@ None 時 panic 的版本語意不同(if let 靜默跳過,不會炸);Some(3) 的�
           ],
         },
         {
-          label: "❌ else 區塊如果正常結束會怎樣",
+          label: "X What happens if the else block finishes normally",
           lines: [
             { code: "fn parse_port(text: &str) -> u16 {", note: "同一個函式。" },
             { code: "    let Ok(port) = text.parse::<u16>() else {", note: "一樣的比對。" },
@@ -444,7 +444,7 @@ None 時 panic 的版本語意不同(if let 靜默跳過,不會炸);Some(3) 的�
           ],
         },
         {
-          label: "✅ 想要預設值的話,該用的是別的工具",
+          label: "√ If you want a default value, use a different tool",
           lines: [
             { code: "fn parse_port(text: &str) -> u16 {", note: "改寫版本。" },
             { code: "    text.parse::<u16>().unwrap_or(8080)", note: "改動處:「失敗時換一個值」本來就是 unwrap_or 的工作,一行就夠,根本不需要 let-else。" },
@@ -465,7 +465,7 @@ None 時 panic 的版本語意不同(if let 靜默跳過,不會炸);Some(3) 的�
           ],
         },
         {
-          label: "🔧 去糖後(編譯器眼中的樣子)",
+          label: "🔧 Desugared (what the compiler sees)",
           intro: "為什麼 else 非離開不可?把糖攤開就一目了然:",
           lines: [
             { code: "let Ok(port) = text.parse::<u16>() else { return 8080; };", note: "你寫的這一行。" },

@@ -1,7 +1,7 @@
 /* 出題慣例見專案根目錄 AUTHORING.md:
  *   - answer 一律為 0(正確答案寫在第一個選項),顯示順序由 quiz.js 依題目 id 洗牌
  *   - 詳解禁止用「選項 A/B/C」字母指涉,必須直接描述選項內容
- *   - 有程式碼的題目一律附 walkthrough(逐行說明);反面案例必須同時附上 ✅ 正確寫法 */
+ *   - 有程式碼的題目一律附 walkthrough(逐行說明);反面案例必須同時附上 √ 正確寫法 */
 window.RUST_LESSONS = window.RUST_LESSONS || {};
 window.RUST_LESSONS["lesson1-14"] = {
   id: "lesson1-14",
@@ -23,7 +23,7 @@ window.RUST_LESSONS["lesson1-14"] = {
 點號是方法呼叫的語法,不用於模組路徑;跳過中間層直接寫 hosting:: 找不到(hosting 不在 main 的這一層);import 不是 Rust 關鍵字(引入用 use,而且 use 也不是呼叫的必要條件——完整路徑隨時可用)。`,
       walkthrough: [
         {
-          label: "✅ 正確寫法逐行說明",
+          label: "√ Correct version — walkthrough",
           lines: [
             { code: "mod front_of_house {", note: "宣告一個模組。模組會組成一棵樹,樹根叫 crate。" },
             { code: "    pub mod hosting {", note: "巢狀模組;加 pub 才能被外面看見(下一題細講隱私規則)。" },
@@ -38,7 +38,7 @@ window.RUST_LESSONS["lesson1-14"] = {
           ],
         },
         {
-          label: "❌ 三個錯誤寫法錯在哪",
+          label: "X What's wrong with the three versions",
           lines: [
             { code: "front_of_house.hosting.add_to_waitlist();", note: "點號是「方法呼叫/欄位存取」的語法,不能用於模組路徑;模組路徑一律用 ::。" },
             { code: "hosting::add_to_waitlist();", note: "⛔ 編譯失敗:failed to resolve: use of undeclared crate or module `hosting`。hosting 不在 main 這一層,不能跳過中間的 front_of_house。" },
@@ -63,7 +63,7 @@ window.RUST_LESSONS["lesson1-14"] = {
 修法:pub fn cook。這個預設方向是刻意的:公開介面必須顯式聲明,重構私有內容永遠不會破壞外部使用者。`,
       walkthrough: [
         {
-          label: "❌ 題目程式碼(無法編譯)",
+          label: "X Question code (won't compile)",
           lines: [
             { code: "mod kitchen {", note: "宣告模組。模組是「隱私邊界」——裡面的一切預設私有。" },
             { code: "    fn cook() {", note: "⛔ 問題所在:沒有 pub,這個函式只有 kitchen 自己與它的子孫模組看得到。" },
@@ -77,7 +77,7 @@ window.RUST_LESSONS["lesson1-14"] = {
           ],
         },
         {
-          label: "✅ 正確寫法(顯式對外開放)",
+          label: "√ Correct version (explicitly make it public)",
           lines: [
             { code: "mod kitchen {", note: "模組宣告不變。" },
             { code: "    pub fn cook() {", note: "改動處:加上 pub,把這個函式列入模組的公開介面。" },
@@ -109,7 +109,7 @@ window.RUST_LESSONS["lesson1-14"] = {
 順帶一提,pub enum 則是一人得道全家公開(變體全部 pub)——變體藏起來的 enum 沒有使用意義,語言直接定了規則。`,
       walkthrough: [
         {
-          label: "❌ 題目程式碼(最後一行編譯失敗)",
+          label: "X Question code (last line won't compile)",
           lines: [
             { code: "mod menu {", note: "宣告模組。" },
             { code: "    pub struct Breakfast {", note: "pub 只公開「型別本身」,不代表欄位跟著公開。" },
@@ -135,7 +135,7 @@ window.RUST_LESSONS["lesson1-14"] = {
           ],
         },
         {
-          label: "✅ 正確寫法(想開放就補 pub,或提供方法)",
+          label: "√ Correct version (add pub to expose it, or provide a method)",
           lines: [
             { code: "mod menu {", note: "模組宣告不變。" },
             { code: "    pub struct Breakfast {", note: "型別公開。" },
@@ -178,7 +178,7 @@ window.RUST_LESSONS["lesson1-14"] = {
 引函式到最深「能編譯」但丟失來源資訊;萬用字元 * 讓讀者無從追蹤名字來源,慣例只用於 prelude 模式與測試;完整路徑寫到天荒地老則沒人受得了——use 存在就是為了消這個。`,
       walkthrough: [
         {
-          label: "✅ 慣用寫法逐行說明",
+          label: "√ Idiomatic version — walkthrough",
           lines: [
             { code: "use crate::front_of_house::hosting;", note: "「函式」引到「父模組」為止。" },
             { code: "hosting::add_to_waitlist();", note: "呼叫處保留 hosting:: 一層,讀者一眼看出「這不是本地函式,來自 hosting 模組」——來源資訊沒有被 use 抹掉。" },
@@ -188,7 +188,7 @@ window.RUST_LESSONS["lesson1-14"] = {
           ],
         },
         {
-          label: "❌ 另外三個寫法的問題",
+          label: "X What's wrong with the other three versions",
           lines: [
             { code: "use crate::front_of_house::hosting::add_to_waitlist;", note: "能編譯,但呼叫處變成裸的 add_to_waitlist(),讀者分不出它是本地函式還是外來的——來源資訊被丟失。" },
             { code: "use crate::front_of_house::*;", note: "萬用字元讓所有名字憑空出現,無從追蹤來源,還可能撞名。慣例只用於 prelude 模式與測試模組(use super::*;)。" },
@@ -213,7 +213,7 @@ window.RUST_LESSONS["lesson1-14"] = {
       explanation: `super:: 是「上一層模組」(類比檔案系統的 ..):back_of_house 的父層是 crate 根,super::deliver_order() 正確指到。cook_order 同模組內互相呼叫,不需要 pub。
 關鍵的隱私方向:「子模組可以使用祖先模組的私有項目」(小孩看得到家裡的東西),pub 管的是反方向與旁系——所以沒 pub 的 deliver_order 被子模組呼叫完全合法。連結錯誤發生在編譯期,Rust 沒有「執行期找不到函式」這種事。`,
       walkthrough: {
-        label: "🔍 題目程式碼逐行說明(可正常執行)",
+        label: "🔍 Question code — walkthrough (runs successfully)",
         lines: [
           { code: "fn deliver_order() {", note: "定義在 crate 根,而且「沒有」pub——它是根模組的私有項目。" },
           { code: "    println!(\"delivered\");", note: "函式內容。" },
@@ -252,7 +252,7 @@ window.RUST_LESSONS["lesson1-14"] = {
 它不是 #include(不能指任意路徑、不是文字貼上);外部套件走 Cargo.toml + use,與 mod 無關;模組內容也只能由被宣告的那個檔案提供,不能四散各處。`,
       walkthrough: [
         {
-          label: "🔍 拆檔後的專案長相",
+          label: "🔍 What the project looks like after splitting into files",
           lang: "bash",
           lines: [
             { code: "src/", note: "所有原始碼的固定位置。" },
@@ -263,7 +263,7 @@ window.RUST_LESSONS["lesson1-14"] = {
           ],
         },
         {
-          label: "✅ 三個檔案的內容",
+          label: "√ The contents of the three files",
           lines: [
             { code: "// src/main.rs", note: "crate 根檔案。" },
             { code: "mod garden;", note: "分號結尾 = 「這裡有個 garden 模組,內容在對應檔案裡」。模組樹仍然由這行宣告構成,只是本體搬到別的檔案。" },
@@ -298,7 +298,7 @@ window.RUST_LESSONS["lesson1-14"] = {
       explanation: `一般 use 只是「本模組內的別名」,對外不可見;加上 pub 之後,這個名字成為當前模組公開介面的一部分——外部使用者看到的路徑是 my_crate::hosting,內部的 front_of_house 完全隱形。之後內部怎麼重組(改名、搬層),只要 pub use 這行跟著調,外部 API 紋絲不動。
 沒有任何程式碼被複製——匯出的是「名字」,指向同一個實體。實務上大量函式庫的 lib.rs 就是一串 pub use,精心設計「使用者看到的形狀」。`,
       walkthrough: {
-        label: "🔍 pub use 讓「內部結構」與「對外 API」解耦",
+        label: "🔍 pub use decouples internal structure from the public API",
         lines: [
           { code: "// src/lib.rs", note: "函式庫的根。" },
           { code: "mod front_of_house {", note: "注意這個模組「沒有」pub——它是內部組織,不打算讓使用者看見。" },
@@ -330,7 +330,7 @@ window.RUST_LESSONS["lesson1-14"] = {
       explanation: `兩個工具:(1)as 別名——fmt::Result 與 io::Result 撞名,第二個取名 IoResult 就相安無事(這正是「函式引到父模組」慣例想避免的問題的另一個解法);(2)巢狀 use 的 self——use std::io::{self, Write} 等於 use std::io; 加 use std::io::Write; 兩行,self 代表「路徑本身」。
 use 的 as 純粹是命名(與轉型運算子 as 撞關鍵字但無關);這裡的 self 也不是方法裡的 self。`,
       walkthrough: {
-        label: "🔍 題目三行 use 逐行說明",
+        label: "🔍 Question code (three use lines) — walkthrough",
         lines: [
           { code: "use std::fmt::Result;", note: "引入格式化模組的 Result,之後可以直接寫 Result。" },
           { code: "use std::io::Result as IoResult;", note: "io 也有一個叫 Result 的型別,直接引入會撞名。as 給它取個別名 IoResult,兩者就能共存——注意這個 as 純粹是「命名」,和型別轉換的 as 運算子只是撞關鍵字。" },
@@ -354,7 +354,7 @@ use 的 as 純粹是命名(與轉型運算子 as 撞關鍵字但無關);這裡�
       explanation: `可見性光譜:私有(預設,本模組+子孫)< pub(crate)(整個 crate)< pub(全世界)。pub(crate) 的定位是「內部共用工具」:跨模組要用、但不想寫進公開 API 的東西——函式庫尤其重要,pub 出去的東西就是對使用者的承諾,不能隨便改。
 另有更細的 pub(super)、pub(in path) 可指定範圍。「整個 crate 可用」不等於「只有根模組可用」,也與檔案邊界無關——Rust 的可見性單位永遠是模組。`,
       walkthrough: {
-        label: "🔍 可見性光譜:三個等級各看一眼",
+        label: "🔍 The visibility spectrum: a look at each of the three levels",
         lines: [
           { code: "mod util {", note: "一個內部模組。" },
           { code: "    fn only_here() {}", note: "等級一(預設):私有——只有 util 自己與它的子孫模組看得到。" },
@@ -385,7 +385,7 @@ use 的 as 純粹是命名(與轉型運算子 as 撞關鍵字但無關);這裡�
       explanation: `本課總結,mod 一肩挑三職:(1)命名空間(路徑);(2)隱私邊界(pub 以模組為單位,層層把關);(3)編譯結構(mod 宣告決定哪些檔案參與編譯、放在哪)。C# 的 namespace 只做第一件事——任何檔案任意宣告、不設防、與編譯單位無關,封裝粒度只有 assembly 一刀(internal)。
 mod 當然能跨檔案(mod xxx; 拆檔那題);功能是多了不是少了。`,
       walkthrough: {
-        label: "🔍 mod 一肩挑三職",
+        label: "🔍 mod does three jobs at once",
         lines: [
           { code: "// src/main.rs", note: "crate 根。" },
           { code: "mod kitchen;", note: "職責三(編譯結構):這行決定了 src/kitchen.rs 會被編譯、而且掛在模組樹的哪個位置。沒有這行,那個檔案在編譯器眼中不存在——C# 的 namespace 完全不管這件事。" },

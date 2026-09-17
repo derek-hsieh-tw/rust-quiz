@@ -15,7 +15,7 @@
   --vsc-list-active: #37373d;
   --vsc-code-bg: #1e1e1e;
   --vsc-code-border: #454545;
-  --vsc-green: #4ec9b0;
+  --vsc-green: #57A64A; /* VS 的註解綠;對 #232323 約 5.2:1,與答案區壓低的內文同一個帶 */
   --vsc-red: #f48771;
   --vsc-yellow: #dcdcaa;
   --vsc-blue: #569cd6;

@@ -1,7 +1,7 @@
 /* 出題慣例見專案根目錄 AUTHORING.md:
  *   - answer 一律為 0(正確答案寫在第一個選項),顯示順序由 quiz.js 依題目 id 洗牌
  *   - 詳解禁止用「選項 A/B/C」字母指涉,必須直接描述選項內容
- *   - 有程式碼的題目一律附 walkthrough(逐行說明);反面案例必須同時附上 ✅ 正確寫法 */
+ *   - 有程式碼的題目一律附 walkthrough(逐行說明);反面案例必須同時附上 √ 正確寫法 */
 window.RUST_LESSONS = window.RUST_LESSONS || {};
 window.RUST_LESSONS["lesson1-16"] = {
   id: "lesson1-16",
@@ -23,7 +23,7 @@ window.RUST_LESSONS["lesson1-16"] = {
 [TestClass]/Assert.AreEqual 是 C#/MSTest 語法;只靠 test_ 開頭命名不會被執行(Rust 認屬性不認名字,函式還會被回報為 dead code);main 是程式進入點,不能兼任測試。`,
       walkthrough: [
         {
-          label: "✅ 正確寫法逐行說明",
+          label: "√ Correct version — walkthrough",
           lines: [
             { code: "pub fn add(a: i32, b: i32) -> i32 {", note: "被測的函式,和測試住在同一個檔案。" },
             { code: "    a + b", note: "函式本體。" },
@@ -41,7 +41,7 @@ window.RUST_LESSONS["lesson1-16"] = {
           ],
         },
         {
-          label: "❌ 三個錯誤寫法錯在哪",
+          label: "X What's wrong with the three versions",
           lines: [
             { code: "[TestClass]", note: "這是 C#/MSTest 的屬性語法;Rust 的屬性要寫成 #[...],而且沒有 TestClass 這種東西。" },
             { code: "fn test_it_works() {", note: "只靠 test_ 開頭的命名不會被執行——Rust 認屬性不認名字;沒有 #[test] 的話,這個函式還會被回報為 dead code。" },
@@ -67,7 +67,7 @@ window.RUST_LESSONS["lesson1-16"] = {
       explanation: `測試框架的判定規則:測試函式沒 panic = 通過,panic = 失敗。assert_eq! 失敗時 panic 並印出 left = 4, right = 5 幫你對帳。每個測試跑在獨立執行緒,一個炸了不拖累別人(預設還是並行執行),最後總結 1 passed; 1 failed。
 編譯器不會幫你算 assert 的對錯(那是執行期的事);assert 家族失敗從來不是「警告」,就是 panic。`,
       walkthrough: {
-        label: "🔍 題目程式碼逐行說明(一過一敗)",
+        label: "🔍 Question code — walkthrough (one passes, one fails)",
         lines: [
           { code: "#[cfg(test)]", note: "只在測試建置時編譯。" },
           { code: "mod tests {", note: "測試模組。" },
@@ -100,7 +100,7 @@ window.RUST_LESSONS["lesson1-16"] = {
       explanation: `#[should_panic] 反轉判定:panic = 通過、安然返回 = 失敗——專測「錯誤路徑真的會炸」。不帶 expected 有個陷阱:測試中「任何」panic 都算過(可能是別的 bug 先炸了),加上 expected = "..." 要求 panic 訊息包含該子字串,把驗證釘在你設計的那個 panic 上。
 跳過測試另有屬性(#[ignore]);它是行為改變不是註記;panic 的世界沒有「回傳值」可言。`,
       walkthrough: {
-        label: "🔍 題目程式碼逐行說明(panic 才算通過)",
+        label: "🔍 Question code — walkthrough (only passes if it panics)",
         lines: [
           { code: "pub fn set_age(age: u32) {", note: "被測函式。" },
           { code: "    if age > 150 {", note: "防衛性檢查:超出合理範圍代表呼叫端有 bug。" },
@@ -137,7 +137,7 @@ window.RUST_LESSONS["lesson1-16"] = {
       explanation: `/// 附著在下一個項目上成為它的文件:cargo doc --open 生成與標準庫同款的 HTML。殺手級特性是最後半句——文件裡的程式碼範例是「doc test」,cargo test 會真的編譯執行它:範例過時(API 改了)測試就紅,文件永遠不會爛掉。
 # Examples 只是 Markdown 標題慣例,不影響編譯;文件註解是給 rustdoc 的,不是執行期輸出;另有 //! 寫在模組/crate 開頭,記述「這整個模組是幹嘛的」。`,
       walkthrough: {
-        label: "🔍 文件註解逐行說明",
+        label: "🔍 Doc comments — walkthrough",
         lines: [
           { code: "/// 將兩數相加。", note: "三斜線是「文件註解」,附著在「下一個項目」上成為它的說明;內容支援 Markdown。一般的 // 只是給人看的註解,rustdoc 不會理它。" },
           { code: "///", note: "空行分隔摘要與後續段落,和 Markdown 一樣。" },
@@ -169,7 +169,7 @@ window.RUST_LESSONS["lesson1-16"] = {
 main 不會被執行(它不是測試)。輸出報告也會分三段呈現。`,
       walkthrough: [
         {
-          label: "🔍 三類測試各住哪裡",
+          label: "🔍 Where each of the three test kinds lives",
           lang: "bash",
           lines: [
             { code: "my_crate/", note: "專案根目錄。" },
@@ -180,7 +180,7 @@ main 不會被執行(它不是測試)。輸出報告也會分三段呈現。`,
           ],
         },
         {
-          label: "✅ 整合測試檔案長什麼樣",
+          label: "√ What an integration test file looks like",
           lines: [
             { code: "// tests/api_test.rs", note: "獨立 crate,不需要也不能寫 #[cfg(test)](這整個檔案本來就只在測試時編譯)。" },
             { code: "use my_crate::add;", note: "像外部使用者一樣,用 crate 名稱引入「公開」項目;私有項目在這裡碰不到。" },
@@ -209,7 +209,7 @@ main 不會被執行(它不是測試)。輸出報告也會分三段呈現。`,
       explanation: `Circle(1.0) 面積 3.14、Rect(2.0, 3.0) 面積 6.0,合計 9.14({:.2} 控制兩位小數)。
 借用鏈完全正確:for s in &shapes 迭代借用,s 就是 &Shape,原樣傳給 area——shapes 全程沒被 move,迴圈後還能用。match 對 &Shape 匹配時自動把 r、w、h 綁定為欄位的參考(match ergonomics),浮點運算對參考直接可用。Shape 只有兩個變體且都列出,窮盡性滿足,不需要 _。`,
       walkthrough: {
-        label: "🔍 題目程式碼逐行說明(可正常執行)",
+        label: "🔍 Question code — walkthrough (runs successfully)",
         lines: [
           { code: "#[derive(Debug)]", note: "讓 {:?} 可以印(這題沒用到,但慣例會加)。" },
           { code: "enum Shape {", note: "帶資料的 enum(lesson1-8)。" },
@@ -251,7 +251,7 @@ main 不會被執行(它不是測試)。輸出報告也會分三段呈現。`,
       explanation: `find_user(2) 走 Err 路徑。match 當運算式用:Err 分支先印警告,區塊尾端的 String::from("guest") 是分支值——兩個分支都給出 String,型別一致,name 得到 "guest"。輸出兩行。
 這題是基礎篇錯誤處理哲學的縮影:錯誤是值,用 match 接住、印個警告、給預設值,程式優雅降級繼續走——沒有 unwrap、沒有 panic、沒有 try/catch。所有權細節:n 和 e 都是從 Result 裡 move 出來的 String,拿到就是你的。`,
       walkthrough: {
-        label: "🔍 題目程式碼逐行說明(可正常執行)",
+        label: "🔍 Question code — walkthrough (runs successfully)",
         lines: [
           { code: "fn find_user(id: u32) -> Result<String, String> {", note: "簽名誠實地說:這件事會失敗,而且成功與失敗都帶一段訊息。" },
           { code: "    if id == 1 {", note: "判斷。" },
@@ -291,7 +291,7 @@ main 不會被執行(它不是測試)。輸出報告也會分三段呈現。`,
 這正是 lesson1-9「持有元素參考時 push」的方法版:push 可能擴容搬家,f 會懸空,借用檢查器在編譯期擋下(所以「執行期失效」的選項永遠沒機會發生)。修法:先 println!("{:?}", inv.first()) 用完再 add,或 add 之後再取。`,
       walkthrough: [
         {
-          label: "❌ 題目程式碼(無法編譯)",
+          label: "X Question code (won't compile)",
           lines: [
             { code: "struct Inventory {", note: "定義型別。" },
             { code: "    items: Vec<String>,", note: "擁有一個集合。" },
@@ -319,7 +319,7 @@ main 不會被執行(它不是測試)。輸出報告也會分三段呈現。`,
           outro: "借用檢查器在編譯期就擋下了——push 擴容會讓 f 指向的舊位置失效,所以「執行期才失效」的情況永遠沒機會發生。",
         },
         {
-          label: "✅ 正確寫法(讓兩個借用錯開)",
+          label: "√ Correct version (stagger the two borrows)",
           lines: [
             { code: "fn main() {", note: "struct 與 impl 完全不用改。" },
             { code: "    let mut inv = Inventory {", note: "建立實例。" },
@@ -349,7 +349,7 @@ main 不會被執行(它不是測試)。輸出報告也會分三段呈現。`,
 &numbers(&Vec<i32>)傳給 &[i32] 靠 deref coercion 自動轉(lesson1-6 &String→&str 的同族機制)。順帶:把簽名改成回傳 &T 就能去掉 Copy bound,String 版也能用——bound 的鬆緊跟著實作需求走。`,
       walkthrough: [
         {
-          label: "❌ 題目程式碼(第二次呼叫編譯失敗)",
+          label: "X Question code (second call won't compile)",
           lines: [
             { code: "fn largest<T: PartialOrd + Copy>(list: &[T]) -> T {", note: "簽名要求兩個能力:PartialOrd(能比較)「且」Copy(能按位元複製)。為什麼要 Copy?因為函式體要把元素「複製出來」。" },
             { code: "    let mut largest = list[0];", note: "這一行就是 Copy 的來源:把元素從 slice 裡複製一份出來當初始值。若 T 不是 Copy,這裡會是 cannot move out of index。" },
@@ -370,7 +370,7 @@ main 不會被執行(它不是測試)。輸出報告也會分三段呈現。`,
           ],
         },
         {
-          label: "✅ 正確寫法(改回傳參考,鬆綁 Copy)",
+          label: "√ Correct version (return a reference instead, drop the Copy requirement)",
           lines: [
             { code: "fn largest<T: PartialOrd>(list: &[T]) -> &T {", note: "改動處:回傳 &T,bound 只留 PartialOrd——實作不再需要複製元素,約束自然可以放寬。bound 的鬆緊永遠跟著實作需求走。" },
             { code: "    let mut largest = &list[0];", note: "改動處:改成取「參考」當初始值,不搬動任何資料。" },
@@ -406,7 +406,7 @@ main 不會被執行(它不是測試)。輸出報告也會分三段呈現。`,
       explanation: `基礎篇的三根柱子:(1)所有權——唯一擁有者、move 語意、作用域結束即 drop(lesson1-4);(2)借用——多個唯讀「或」一個可寫、參考不活過資料(lesson1-5、1-13);(3)錯誤即值——Option/Result + match/? 強制處理(lesson1-8、1-10)。全部在編譯期執行,這就是無 GC、無例外、卻記憶體安全的完整拼圖。
 Rust 沒有任何形式的 GC,所有權是硬規則不是提示;借用規則單執行緒同樣全額生效(1-5、1-9 一路都在單執行緒裡吃編譯錯誤);unwrap 是「明知可能炸」的快捷方式,match/? 才是正規軍。`,
       walkthrough: {
-        label: "🔍 一支程式回顧三根柱子",
+        label: "🔍 One program that revisits all three pillars",
         lines: [
           { code: "fn main() {", note: "程式進入點。" },
           { code: "    let a = String::from(\"own\");", note: "柱子一(所有權):這份 heap 資料有唯一的擁有者 a。" },

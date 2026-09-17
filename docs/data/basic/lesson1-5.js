@@ -1,7 +1,7 @@
 /* 出題慣例見專案根目錄 AUTHORING.md:
  *   - answer 一律為 0(正確答案寫在第一個選項),顯示順序由 quiz.js 依題目 id 洗牌
  *   - 詳解禁止用「選項 A/B/C」字母指涉,必須直接描述選項內容
- *   - 有程式碼的題目一律附 walkthrough(逐行說明);反面案例必須同時附上 ✅ 正確寫法 */
+ *   - 有程式碼的題目一律附 walkthrough(逐行說明);反面案例必須同時附上 √ 正確寫法 */
 window.RUST_LESSONS = window.RUST_LESSONS || {};
 window.RUST_LESSONS["lesson1-5"] = {
   id: "lesson1-5",
@@ -52,7 +52,7 @@ window.RUST_LESSONS["lesson1-5"] = {
 正確版本要改三個地方:函式參數 s: &mut String、呼叫端 change(&mut s)、變數本身 let mut s。三處缺一不可——「這個值可變、我要借可變的、函式收可變的」意圖在每一層都明明白白。`,
       walkthrough: [
         {
-          label: "❌ 題目程式碼(無法編譯)",
+          label: "X Question code (won't compile)",
           lines: [
             { code: "fn change(s: &String) {", note: "參數是不可變參考:只借到讀取權。" },
             { code: "    s.push_str(\", world\");", note: "⛔ 編譯失敗:cannot borrow `*s` as mutable, as it is behind a `&` reference。push_str 的簽名是 fn push_str(&mut self, ...),需要可變借用,而 s 只是 &。" },
@@ -66,7 +66,7 @@ window.RUST_LESSONS["lesson1-5"] = {
           ],
         },
         {
-          label: "✅ 正確寫法(三個地方都要標可變)",
+          label: "√ Correct version (mark all three places as mutable)",
           lines: [
             { code: "fn change(s: &mut String) {", note: "改動處一:參數改成 &mut String,函式明確宣告「我會修改借來的東西」。" },
             { code: "    s.push_str(\", world\");", note: "透過可變參考呼叫 push_str,直接改到呼叫端那份字串。" },
@@ -97,7 +97,7 @@ window.RUST_LESSONS["lesson1-5"] = {
 為什麼?兩個可變參考代表兩條路徑能同時改同一份資料——單執行緒下會產生難追的別名(aliasing)bug,多執行緒下就是資料競爭。Rust 選擇在編譯期禁止,而不是等執行期出事。`,
       walkthrough: [
         {
-          label: "❌ 題目程式碼(無法編譯)",
+          label: "X Question code (won't compile)",
           lines: [
             { code: "fn main() {", note: "程式進入點。" },
             { code: "    let mut s = String::from(\"hello\");", note: "s 擁有 heap 字串,並宣告為可變。" },
@@ -108,7 +108,7 @@ window.RUST_LESSONS["lesson1-5"] = {
           ],
         },
         {
-          label: "✅ 正確寫法(讓兩個可變借用錯開時間)",
+          label: "√ Correct version (stagger the two mutable borrows in time)",
           lines: [
             { code: "fn main() {", note: "程式進入點。" },
             { code: "    let mut s = String::from(\"hello\");", note: "s 擁有 heap 字串。" },
@@ -138,7 +138,7 @@ window.RUST_LESSONS["lesson1-5"] = {
 直覺:讀者可以很多個(反正沒人改),但只要有人要寫,就不准任何其他人同時在讀——不然讀者可能讀到改到一半的狀態。注意「不可變借用最多一個」是錯的:唯讀借用數量不限,「最多一個」的限制只針對可變借用。`,
       walkthrough: [
         {
-          label: "❌ 題目程式碼(無法編譯)",
+          label: "X Question code (won't compile)",
           lines: [
             { code: "fn main() {", note: "程式進入點。" },
             { code: "    let mut s = String::from(\"hello\");", note: "s 擁有 heap 字串,宣告為可變。" },
@@ -150,7 +150,7 @@ window.RUST_LESSONS["lesson1-5"] = {
           ],
         },
         {
-          label: "✅ 正確寫法(讀者先用完,寫者再進場)",
+          label: "√ Correct version (let the readers finish before the writer steps in)",
           lines: [
             { code: "fn main() {", note: "程式進入點。" },
             { code: "    let mut s = String::from(\"hello\");", note: "s 擁有 heap 字串。" },
@@ -181,7 +181,7 @@ window.RUST_LESSONS["lesson1-5"] = {
       explanation: `借用的存活範圍不是到 } 為止,而是到「最後一次被使用」為止——這叫 NLL(non-lexical lifetimes)。r1、r2 在第一個 println 之後不再被用,借用即告結束,r3 建立時已無衝突。
 所以借錯順序時常常只要「調整使用順序」就能過編譯,不必真的重構。「要到作用域結尾 } 才失效」描述的是 2018 年以前的舊行為。`,
       walkthrough: {
-        label: "🔍 題目程式碼逐行說明(可正常執行)",
+        label: "🔍 Question code — walkthrough (runs successfully)",
         lines: [
           { code: "fn main() {", note: "程式進入點。" },
           { code: "    let mut s = String::from(\"hello\");", note: "s 擁有 heap 字串,宣告為可變。" },
@@ -216,7 +216,7 @@ window.RUST_LESSONS["lesson1-5"] = {
 這也給了一條實用的判斷準則:資料是函式「生出來要給呼叫端」的,就回傳值(交出去);資料是呼叫端「本來就有、只是給函式看一下」的,才回傳參考(借出去)——後者之所以安全,正是因為擁有者在呼叫端的作用域裡,還沒結束。C/C++ 這裡是未定義行為的重災區,Rust 讓它根本無法編譯。`,
       walkthrough: [
         {
-          label: "❌ 題目程式碼(無法編譯)",
+          label: "X Question code (won't compile)",
           intro: "先看「借出去」為什麼救不了這份資料。",
           lines: [
             { code: "fn dangle() -> &String {", note: "⛔ 編譯失敗的起點:missing lifetime specifier。回傳型別是參考,但參數列裡沒有任何參考可以當來源,編譯器無法推導「這個參考該活多久」。更根本的問題是:這個函式想「借出」一份它自己即將銷毀的資料。" },
@@ -232,7 +232,7 @@ window.RUST_LESSONS["lesson1-5"] = {
           outro: "一句話總結這個錯誤:作用域內的所有權想要存活,就只能交出去,而不是借出去,否則當作用域結束就被銷毀了。參考只是一張借據,借據不會讓債主活下來。",
         },
         {
-          label: "✅ 正確寫法(把所有權交出去,而不是借出去)",
+          label: "√ Correct version (hand over ownership instead of borrowing)",
           intro: "同一個函式,只改一件事:把「借出去」換成「交出去」。",
           lines: [
             { code: "fn no_dangle() -> String {", note: "改動處:回傳型別拿掉 &,改成擁有的 String——語意從「借你看一下我的東西」變成「我生一個值,整份交給你」。" },
@@ -266,7 +266,7 @@ window.RUST_LESSONS["lesson1-5"] = {
 這防住一個真實危險:push 可能觸發 Vec 擴容搬家(重新配置記憶體),迭代器手上的指標立刻變成懸空指標。C++ 的「iterator invalidation」未定義行為,在 Rust 是編譯錯誤。`,
       walkthrough: [
         {
-          label: "❌ 題目程式碼(無法編譯)",
+          label: "X Question code (won't compile)",
           lines: [
             { code: "fn main() {", note: "程式進入點。" },
             { code: "    let mut v = vec![1, 2, 3];", note: "建立可變的 Vec<i32>。" },
@@ -280,7 +280,7 @@ window.RUST_LESSONS["lesson1-5"] = {
           outro: "這條規則擋下的是真實危險:push 可能觸發 Vec 擴容、把資料搬到新的記憶體位置,迭代器手上的指標當場變成懸空指標(C++ 的 iterator invalidation)。",
         },
         {
-          label: "✅ 正確寫法(先蒐集要做的事,迴圈結束後再改)",
+          label: "√ Correct version (collect what needs doing first, mutate after the loop)",
           lines: [
             { code: "fn main() {", note: "程式進入點。" },
             { code: "    let mut v = vec![1, 2, 3];", note: "建立可變的 Vec<i32>。" },
@@ -313,7 +313,7 @@ window.RUST_LESSONS["lesson1-5"] = {
       explanation: `*r 是解參考(dereference):透過參考存取到 x 本體,*r += 1 改的就是 x,輸出 6。
 「Copy 型別不能建立可變參考」是干擾項:Copy 型別一樣可以被借用(& 和 &mut 都行),Copy 只影響「賦值時複製還是 move」。「println 時 r 仍持有借用」也不成立:*r += 1 是 r 的最後一次使用,借用在那之後就結束了(NLL,見前面的題目),println 用 x 沒有衝突。`,
       walkthrough: {
-        label: "🔍 題目程式碼逐行說明(可正常執行)",
+        label: "🔍 Question code — walkthrough (runs successfully)",
         lines: [
           { code: "fn main() {", note: "程式進入點。" },
           { code: "    let mut x = 5;", note: "建立可變變數 x,初始值為 5(i32,存在 stack 上)。" },
@@ -339,7 +339,7 @@ window.RUST_LESSONS["lesson1-5"] = {
       explanation: `原則:需要什麼權限就要什麼權限。只讀 → 不可變借用;要改 → &mut;要拿走存起來 → 才收所有權。
 收 String 所有權會逼呼叫端交出值或 clone;收 &mut String 誇大了權限(呼叫端還得把變數掛上 mut);「拿進來再還回去」則是所有權還沒學通的搬運寫法,又醜又煩。至於為何用 &str 不用 &String:&str 同時接受 String 的借用與字串字面值,通用性更大——細節在下一課(lesson1-6)。`,
       walkthrough: {
-        label: "✅ 正確寫法逐行說明",
+        label: "√ Correct version — walkthrough",
         lines: [
           { code: "fn print_it(s: &str) {", note: "參數是唯讀借用,而且用最通用的 &str:呼叫端傳 &String 或字串字面值都能接受(自動解參考轉換)。" },
           { code: "    println!(\"{}\", s);", note: "只讀取,不修改,權限剛好夠用。" },
@@ -372,7 +372,7 @@ window.RUST_LESSONS["lesson1-5"] = {
 C# 的 F(ref x, ref x) 合法,a 和 b 是同一變數的兩個別名(aliasing)——這種「看似兩個參數其實同一個」的情況會讓程式行為依賴呼叫方式,是隱蔽 bug 與編譯器無法最佳化的根源。Rust 的 &mut 保證獨占,編譯器和讀者都能放心假設參考之間互不重疊。`,
       walkthrough: [
         {
-          label: "🔷 C# 版逐行說明(合法,但埋著別名陷阱)",
+          label: "🔷 C# version — walkthrough (legal, but hides an aliasing trap)",
           lang: "csharp",
           lines: [
             { code: "static void F(ref int a, ref int b) { a += b; }", note: "兩個 ref 參數。作者多半假設 a 和 b 是不同的變數,但語言不保證這件事。" },
@@ -381,7 +381,7 @@ C# 的 F(ref x, ref x) 合法,a 和 b 是同一變數的兩個別名(aliasing)�
           ],
         },
         {
-          label: "❌ 逐字翻成 Rust(無法編譯)",
+          label: "X Translated word-for-word into Rust (won't compile)",
           lines: [
             { code: "fn f(a: &mut i32, b: &mut i32) {", note: "兩個可變參考參數。Rust 的型別系統直接保證:這兩個參考絕不會指向同一個位置。" },
             { code: "    *a += *b;", note: "解參考後相加。因為有 no-aliasing 保證,編譯器可以放心最佳化,讀者也能放心推理。" },
@@ -394,7 +394,7 @@ C# 的 F(ref x, ref x) 合法,a 和 b 是同一變數的兩個別名(aliasing)�
           ],
         },
         {
-          label: "✅ 正確寫法(真的要兩個目標,就給兩個變數)",
+          label: "√ Correct version (use two separate variables if you really need two targets)",
           lines: [
             { code: "fn f(a: &mut i32, b: &i32) {", note: "改動處:如果第二個參數只需要讀,就宣告成不可變借用——權限剛好夠用,而且可以和另一個 &mut 指向不同變數。" },
             { code: "    *a += *b;", note: "把 b 指向的值加到 a 指向的值上。" },
@@ -426,7 +426,7 @@ C# 的 F(ref x, ref x) 合法,a 和 b 是同一變數的兩個別名(aliasing)�
       explanation: `不可變借用可以有任意多個,因為沒有人會修改資料,大家讀到的內容必然一致——這正是「多個讀者」安全的原因。
 兩個常見誤解一起澄清:一、有不可變借用存在時,擁有者自己「讀」是完全合法的(只有可變借用存在時,擁有者才會被鎖住);二、借用不需要變數是 mut——mut 決定的是「能不能建立可變借用」,唯讀借用對不可變變數照樣成立。`,
       walkthrough: {
-        label: "🔍 題目程式碼逐行說明(可正常執行)",
+        label: "🔍 Question code — walkthrough (runs successfully)",
         lines: [
           { code: "fn main() {", note: "程式進入點。" },
           { code: "    let s = String::from(\"hello\");", note: "s 擁有 heap 字串;注意這裡沒有 mut,但不影響建立唯讀借用。" },
@@ -454,7 +454,7 @@ C# 的 F(ref x, ref x) 合法,a 和 b 是同一變數的兩個別名(aliasing)�
       explanation: `「同時只能有一個可變借用」的關鍵字是「同時」。第一次 add_one(&mut v) 建立的借用,在函式回傳的那一刻就結束了,第二次呼叫再建立一個全新的借用,兩者從不並存。
 會誤判成編譯錯誤,通常是把規則記成「一個值一輩子只能被可變借用一次」。實際上借用是短暫的租約,還了就能再借;真正被禁止的是「租約還沒到期又借給第二個人」。`,
       walkthrough: {
-        label: "🔍 題目程式碼逐行說明(可正常執行)",
+        label: "🔍 Question code — walkthrough (runs successfully)",
         lines: [
           { code: "fn add_one(v: &mut Vec<i32>) {", note: "參數是可變借用:函式可以修改呼叫端的 vector,但不擁有它。" },
           { code: "    v.push(1);", note: "透過可變參考推入一個元素,改的是呼叫端那個 vector 本體。" },
@@ -486,7 +486,7 @@ C# 的 F(ref x, ref x) 合法,a 和 b 是同一變數的兩個別名(aliasing)�
 關鍵在於「r 之後還有沒有被用到」。如果把 r.push_str("!") 刪掉,r 就在宣告的那一行結束借用,println! 印 s 反而合法——同一段程式碼,結論由借用的存活範圍決定,而不是宣告的先後順序。`,
       walkthrough: [
         {
-          label: "❌ 題目程式碼(無法編譯)",
+          label: "X Question code (won't compile)",
           lines: [
             { code: "fn main() {", note: "程式進入點。" },
             { code: "    let mut s = String::from(\"hello\");", note: "s 擁有 heap 字串,宣告為可變。" },
@@ -497,7 +497,7 @@ C# 的 F(ref x, ref x) 合法,a 和 b 是同一變數的兩個別名(aliasing)�
           ],
         },
         {
-          label: "✅ 正確寫法(讓可變借用先用完再讀擁有者)",
+          label: "√ Correct version (finish the mutable borrow before reading the owner)",
           lines: [
             { code: "fn main() {", note: "程式進入點。" },
             { code: "    let mut s = String::from(\"hello\");", note: "s 擁有 heap 字串。" },
@@ -525,7 +525,7 @@ C# 的 F(ref x, ref x) 合法,a 和 b 是同一變數的兩個別名(aliasing)�
       explanation: `Rust 在方法呼叫時會自動插入需要的 * 與 &(auto-deref / auto-ref),所以 r.len() 會自動變成 (*r).len(),兩種寫法完全等價,日常都寫前者。
 需要手動寫 * 的場合是「把參考當成值來運算」:*r == s(比較內容)、*r += 1(修改被指向的值)。至於 println!("{}", r) 不必寫 *,是因為格式化巨集對參考也有實作。`,
       walkthrough: {
-        label: "🔍 題目程式碼逐行說明(可正常執行)",
+        label: "🔍 Question code — walkthrough (runs successfully)",
         lines: [
           { code: "fn main() {", note: "程式進入點。" },
           { code: "    let s = String::from(\"hello\");", note: "s 擁有 heap 字串 \"hello\"。" },
@@ -551,7 +551,7 @@ C# 的 F(ref x, ref x) 合法,a 和 b 是同一變數的兩個別名(aliasing)�
       explanation: `參考只是「暫時的存取權」,不是資料本身;r1 在內層區塊結束時離開作用域,借用隨之結束,但它對 s 造成的修改是實實在在寫進 s 的。
 用區塊主動劃出借用範圍,是 NLL 之外另一個好用的技巧:當借用檢查器抱怨時,把用到參考的那段程式包進 { } 往往就解決了,而且對讀者來說「這段期間 s 被獨占」的意圖非常明確。`,
       walkthrough: {
-        label: "🔍 題目程式碼逐行說明(可正常執行)",
+        label: "🔍 Question code — walkthrough (runs successfully)",
         lines: [
           { code: "fn main() {", note: "程式進入點。" },
           { code: "    let mut s = String::from(\"hello\");", note: "s 擁有 heap 字串,宣告為可變。" },
@@ -583,7 +583,7 @@ C# 的 F(ref x, ref x) 合法,a 和 b 是同一變數的兩個別名(aliasing)�
 編譯器並不是不聰明,而是它無法從型別簽名推斷兩次索引一定不重疊(索引可能是變數、可能相同)。標準函式庫因此提供了專門的出口:split_at_mut 一次把切片切成兩段互不重疊的可變切片,或用 iter_mut() 走訪。`,
       walkthrough: [
         {
-          label: "❌ 題目程式碼(無法編譯)",
+          label: "X Question code (won't compile)",
           lines: [
             { code: "fn main() {", note: "程式進入點。" },
             { code: "    let mut v = vec![1, 2, 3];", note: "建立可變的 Vec<i32>。" },
@@ -596,7 +596,7 @@ C# 的 F(ref x, ref x) 合法,a 和 b 是同一變數的兩個別名(aliasing)�
           ],
         },
         {
-          label: "✅ 正確寫法(用 split_at_mut 切成互不重疊的兩段)",
+          label: "√ Correct version (use split_at_mut to get two non-overlapping slices)",
           lines: [
             { code: "fn main() {", note: "程式進入點。" },
             { code: "    let mut v = vec![1, 2, 3];", note: "建立可變的 Vec<i32>。" },
@@ -627,7 +627,7 @@ C# 的 F(ref x, ref x) 合法,a 和 b 是同一變數的兩個別名(aliasing)�
       explanation: `兩件事讓這段程式成立:一、deref coercion——傳 &String 給收 &str 的函式時,編譯器自動幫你轉換;二、字串字面值的型別本來就是 &'static str。
 所以參數寫 &str 比 &String 通用:兩種來源都收得下。而借用終究只是借,owned 從頭到尾沒有被 move,最後一行照樣可以印。這也是「參數用 &str、回傳用 String」成為 Rust 慣例的原因(細節見 lesson1-6)。`,
       walkthrough: {
-        label: "🔍 題目程式碼逐行說明(可正常執行)",
+        label: "🔍 Question code — walkthrough (runs successfully)",
         lines: [
           { code: "fn shout(s: &str) -> String {", note: "參數收最通用的唯讀字串切片;回傳擁有的 String,因為轉大寫必須產生一份新資料。" },
           { code: "    s.to_uppercase()", note: "讀取借來的內容,配置一份新的 String 並回傳其所有權;原字串完全沒有被修改。" },
@@ -659,7 +659,7 @@ C# 的 F(ref x, ref x) 合法,a 和 b 是同一變數的兩個別名(aliasing)�
 修法是加上生命週期參數:fn longest<'a>(a: &'a str, b: &'a str) -> &'a str,意思是「回傳的參考,壽命不長於 a 和 b 之中較短的那個」。注意這不會改變任何執行期行為,純粹是給編譯器看的約定——完整說明在 lesson1-13。`,
       walkthrough: [
         {
-          label: "❌ 題目程式碼(無法編譯)",
+          label: "X Question code (won't compile)",
           lines: [
             { code: "fn longest(a: &str, b: &str) -> &str {", note: "⛔ 編譯失敗:missing lifetime specifier。回傳的參考可能來自 a 也可能來自 b,編譯器無法自行決定它該和誰的壽命綁定,因此要求你標註。" },
             { code: "    if a.len() > b.len() { a } else { b }", note: "邏輯本身完全正確:比較長度後回傳較長的那個參考。問題純粹出在簽名缺少生命週期資訊。" },
@@ -673,7 +673,7 @@ C# 的 F(ref x, ref x) 合法,a 和 b 是同一變數的兩個別名(aliasing)�
           ],
         },
         {
-          label: "✅ 正確寫法(標註生命週期)",
+          label: "√ Correct version (annotate the lifetime)",
           lines: [
             { code: "fn longest<'a>(a: &'a str, b: &'a str) -> &'a str {", note: "改動處:宣告一個生命週期參數 'a,並把兩個參數與回傳值都標上它。語意是:「回傳的參考,壽命不長於 a 與 b 之中較短的那一個」——這是給編譯器的約定,不產生任何執行期成本。" },
             { code: "    if a.len() > b.len() { a } else { b }", note: "函式本體一字未改;有了標註,編譯器就能驗證回傳的參考在呼叫端仍然有效。" },
@@ -704,7 +704,7 @@ C# 的 F(ref x, ref x) 合法,a 和 b 是同一變數的兩個別名(aliasing)�
 其餘三段各踩一條規則:先建立不可變借用 r1、再建立可變借用 r2 且兩者同時被使用 → 讀寫互斥;for 迴圈走訪 &v 期間對 v 呼叫 push → 同樣是讀寫互斥,而且會讓迭代器指標失效;函式回傳指向區域變數的 &s → 懸空參考,編譯器要求生命週期而根本無法滿足。這三種正是借用檢查器最常見的三張紅牌。`,
       walkthrough: [
         {
-          label: "✅ 可以編譯的那一段",
+          label: "√ The version that compiles",
           lines: [
             { code: "fn main() {", note: "把選項補成完整程式。" },
             { code: "    let mut s = String::from(\"a\");", note: "s 擁有 heap 字串,宣告為可變。" },
@@ -717,7 +717,7 @@ C# 的 F(ref x, ref x) 合法,a 和 b 是同一變數的兩個別名(aliasing)�
           ],
         },
         {
-          label: "❌ 紅牌一:讀寫互斥(& 與 &mut 同時存活)",
+          label: "X Red card 1: read and write can't coexist (& and &mut alive at the same time)",
           lines: [
             { code: "let mut s = String::from(\"a\");", note: "s 擁有 heap 字串。" },
             { code: "let r1 = &s;", note: "不可變借用開始。" },
@@ -726,7 +726,7 @@ C# 的 F(ref x, ref x) 合法,a 和 b 是同一變數的兩個別名(aliasing)�
           ],
         },
         {
-          label: "❌ 紅牌二:走訪期間修改集合",
+          label: "X Red card 2: mutating the collection while iterating over it",
           lines: [
             { code: "let mut v = vec![1, 2];", note: "建立可變的 Vec<i32>。" },
             { code: "for x in &v {", note: "迭代器持有 v 的不可變借用,存活到整個迴圈結束。" },
@@ -735,7 +735,7 @@ C# 的 F(ref x, ref x) 合法,a 和 b 是同一變數的兩個別名(aliasing)�
           ],
         },
         {
-          label: "❌ 紅牌三:懸空參考",
+          label: "X Red card 3: a dangling reference",
           lines: [
             { code: "fn f() -> &String {", note: "⛔ 編譯失敗:missing lifetime specifier。沒有任何參考參數可以當回傳值的來源。" },
             { code: "    let s = String::from(\"a\");", note: "區域變數 s 擁有 heap 資料。" },
@@ -759,7 +759,7 @@ C# 的 F(ref x, ref x) 合法,a 和 b 是同一變數的兩個別名(aliasing)�
       explanation: `借用檢查器只做兩件事:(1) 別名與可變性互斥——任意多個讀者,或恰好一個寫者,不可並存;(2) 參考不得懸空——絕不允許參考活得比它指向的資料久。
 其他三種說法都各有錯誤:唯讀借用從來沒有數量上限;可變與不可變借用不可並存;而借用規則在單執行緒同樣強制執行,它防的不只是資料競爭,還有迭代器失效、別名造成的邏輯錯誤這類單執行緒 bug。本課所有題目都能歸回這兩條。`,
       walkthrough: {
-        label: "🔍 一支程式走完兩條規則",
+        label: "🔍 One program that walks through both rules",
         lines: [
           { code: "fn main() {", note: "程式進入點。" },
           { code: "    let mut s = String::from(\"hello\");", note: "s 擁有 heap 字串,宣告為可變(這樣才有資格被可變借用)。" },

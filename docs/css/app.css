@@ -67,6 +67,12 @@
   padding-left: 10px;
 }
 
+:root {
+  /* 錯誤訊號色刻意壓暗:相對 var(--vsc-red) 對 #232323 的 7.6:1,
+     這個值只有 4.5:1,剛好踩在 WCAG AA 門檻,不要再調亮。 */
+  --answer-red: #d16969;
+}
+
 /* ===== 題目卡 =====
    文字亮度刻意壓低:題幹 #a8a8a8、內文 #989898、程式碼基底 #a0a0a0,
    對卡片底色 #232323 的對比落在 5~6.6:1(WCAG AA 門檻是 4.5:1)。
@@ -175,24 +181,34 @@ pre.code-block code {
 .option .option-body pre.code-block { margin: 0; border: none; padding: 4px 0; }
 .option .option-text { line-height: 1.6; padding-top: 2px; white-space: pre-wrap; color: #a0a0a0; }
 
-.option.correct {
-  border-color: var(--vsc-green);
-  background: rgba(78, 201, 176, 0.08);
-}
+/* 答對的選項整段轉綠(含程式碼型選項),蓋掉語法上色是刻意的——
+   答案本身就是訊號,不需要再看 token 顏色。掛在 .line-content 而不是
+   .hljs,是為了避開行號:code.hljs 包住整個區塊,行號 .line-no 也在裡面,
+   一起轉綠會讓 gutter 跟著發亮。權重壓過 vendor 主題(最多兩層 class)。 */
+.option.correct .option-text,
+.option.correct .line-content,
+.option.correct .line-content * { color: var(--vsc-green); }
 .option.correct .option-label { color: var(--vsc-green); }
-.option.wrong {
-  border-color: var(--vsc-red);
-  background: rgba(244, 135, 113, 0.08);
+
+/* 答錯的選項不再整格變色(外框回到 .option 的中性色),改用 VS Code
+   error squiggle 風格的紅色波浪底線。同樣掛在 .line-content:底線由祖先
+   畫出,子元素關不掉,掛在 .option-body 會連行號一起畫進去。
+   底線會繼承到 hljs 的 span,用 text-decoration-color 釘住紅色。 */
+.option.wrong .option-text,
+.option.wrong .line-content {
+  text-decoration: underline wavy;
+  text-decoration-color: #f14c4c;
+  text-underline-offset: 3px;
+  text-decoration-skip-ink: none;
 }
-.option.wrong .option-label { color: var(--vsc-red); }
+.option.wrong .option-label { color: var(--answer-red); }
+
 .question-card.answered .option { cursor: default; }
 .question-card.answered .option:hover { background: transparent; }
-.question-card.answered .option.correct:hover { background: rgba(78, 201, 176, 0.08); }
-.question-card.answered .option.wrong:hover { background: rgba(244, 135, 113, 0.08); }
 
 .answer-feedback { font-size: 13px; margin: 4px 0 8px; font-weight: 600; }
 .answer-feedback.ok { color: var(--vsc-green); }
-.answer-feedback.ng { color: var(--vsc-red); }
+.answer-feedback.ng { color: var(--answer-red); }
 
 /* 詳解 */
 .explanation {
@@ -237,12 +253,6 @@ pre.code-block code {
   color: #8697a0;
   background: var(--vsc-code-bg); /* 蓋住捲動到底下的長程式碼 */
   padding: 0 16px 4px 0;
-  text-indent: -1.35em;
-  padding-left: 1.35em;
-}
-.note-line .note-content::before {
-  content: "↳ ";
-  color: #6a7a85;
 }
 
 .csharp-compare {

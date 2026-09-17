@@ -1,7 +1,7 @@
 /* 出題慣例見專案根目錄 AUTHORING.md:
  *   - answer 一律為 0(正確答案寫在第一個選項),顯示順序由 quiz.js 依題目 id 洗牌
  *   - 詳解禁止用「選項 A/B/C」字母指涉,必須直接描述選項內容
- *   - 有程式碼的題目一律附 walkthrough(逐行說明);反面案例必須同時附上 ✅ 正確寫法 */
+ *   - 有程式碼的題目一律附 walkthrough(逐行說明);反面案例必須同時附上 √ 正確寫法 */
 window.RUST_LESSONS = window.RUST_LESSONS || {};
 window.RUST_LESSONS["lesson1-11"] = {
   id: "lesson1-11",
@@ -22,7 +22,7 @@ window.RUST_LESSONS["lesson1-11"] = {
 template 是 C++ 語法。回傳 T(而非 &T)的版本問題更隱晦:list[0] 想把元素「搬出」slice,但 T 不保證是 Copy——cannot move out of index 編譯錯誤;回傳參考 &T 才對任何 T 都成立。`,
       walkthrough: [
         {
-          label: "✅ 正確寫法(完整可執行)",
+          label: "√ Correct version (complete, runnable)",
           lines: [
             { code: "fn first<T>(list: &[T]) -> &T {", note: "函式名後的 <T> 是「宣告型別參數」——先宣告,後面的參數與回傳型別才能使用 T。參數收 &[T](slice 的借用),回傳 &T(元素的參考)。" },
             { code: "    &list[0]", note: "取第一個元素的參考。回傳「參考」而不是值,對任何 T 都成立——不需要 T 是 Copy。" },
@@ -36,7 +36,7 @@ template 是 C++ 語法。回傳 T(而非 &T)的版本問題更隱晦:list[0] �
           ],
         },
         {
-          label: "❌ 錯誤寫法一:忘了宣告型別參數",
+          label: "X Wrong version 1: forgot to declare the type parameter",
           lines: [
             { code: "fn first(list: &[T]) -> &T {", note: "⛔ 編譯失敗:cannot find type `T` in this scope。函式名後面沒有 <T>,編譯器不知道 T 是誰——型別參數必須先宣告才能使用。" },
             { code: "    &list[0]", note: "函式本體本身沒問題,是簽名擋住了整個函式。" },
@@ -44,7 +44,7 @@ template 是 C++ 語法。回傳 T(而非 &T)的版本問題更隱晦:list[0] �
           ],
         },
         {
-          label: "❌ 錯誤寫法二:用了 C++ 的 template 語法",
+          label: "X Wrong version 2: used C++'s template syntax",
           lines: [
             { code: "template<typename T>", note: "⛔ 這是 C++ 的語法。Rust 沒有 template 與 typename 關鍵字,型別參數一律寫在函式名後的角括號裡。" },
             { code: "fn first(list: &[T]) -> &T {", note: "就算上一行被忽略,這裡的 T 依然沒有出處。" },
@@ -53,7 +53,7 @@ template 是 C++ 語法。回傳 T(而非 &T)的版本問題更隱晦:list[0] �
           ],
         },
         {
-          label: "❌ 錯誤寫法三:回傳值而不是參考",
+          label: "X Wrong version 3: returned a value instead of a reference",
           lines: [
             { code: "fn first<T>(list: &[T]) -> T {", note: "宣告沒問題,問題在回傳型別是 T(值)而不是 &T(參考)——這代表要把元素「搬出」slice。" },
             { code: "    list[0]", note: "⛔ 編譯失敗:cannot move out of index of `[T]`。slice 只是借來的視圖,不能把裡面的元素搬走;而且 T 不保證是 Copy,連複製都不見得行——這正是所有權系統滲進泛型設計的地方。" },
@@ -78,7 +78,7 @@ template 是 C++ 語法。回傳 T(而非 &T)的版本問題更隱晦:list[0] �
 想讓兩個欄位型別獨立,得宣告兩個參數:struct Point<T, U>(下一題)。泛型的每個參數在「單一實例」裡只能代表一個具體型別——這是型別推斷的一致性要求,不是限制彈性的 bug。`,
       walkthrough: [
         {
-          label: "❌ 題目程式碼(無法編譯)",
+          label: "X Question code (won't compile)",
           lines: [
             { code: "struct Point<T> {", note: "只宣告了「一個」型別參數 T。" },
             { code: "    x: T,", note: "第一個欄位用 T。" },
@@ -92,7 +92,7 @@ template 是 C++ 語法。回傳 T(而非 &T)的版本問題更隱晦:list[0] �
           ],
         },
         {
-          label: "✅ 修法一:讓兩個欄位型別一致",
+          label: "√ Fix 1: make the two fields the same type",
           lines: [
             { code: "struct Point<T> {", note: "struct 定義完全不用改。" },
             { code: "    x: T,", note: "欄位。" },
@@ -106,7 +106,7 @@ template 是 C++ 語法。回傳 T(而非 &T)的版本問題更隱晦:list[0] �
           ],
         },
         {
-          label: "✅ 修法二:宣告兩個型別參數",
+          label: "√ Fix 2: declare two type parameters",
           lines: [
             { code: "struct Point<T, U> {", note: "改動處:宣告兩個型別參數,讓兩個欄位型別各自獨立。" },
             { code: "    x: T,", note: "第一個欄位綁 T。" },
@@ -137,7 +137,7 @@ template 是 C++ 語法。回傳 T(而非 &T)的版本問題更隱晦:list[0] �
 T2 沒有被宣告過;| 分隔與 dynamic 關鍵字都不是 Rust 語法(Rust 沒有動態型別逃生門)。參數要幾個有幾個,但超過兩三個通常是重新設計的訊號。`,
       walkthrough: [
         {
-          label: "✅ 正確寫法(完整可執行)",
+          label: "√ Correct version (complete, runnable)",
           lines: [
             { code: "struct Point<T, U> {", note: "多個型別參數用逗號並列,兩個都在這裡宣告。" },
             { code: "    x: T,", note: "第一個欄位綁 T。" },
@@ -152,7 +152,7 @@ T2 沒有被宣告過;| 分隔與 dynamic 關鍵字都不是 Rust 語法(Rust �
           ],
         },
         {
-          label: "❌ 錯誤寫法一:用了沒宣告過的參數名",
+          label: "X Wrong version 1: used an undeclared parameter name",
           lines: [
             { code: "struct Point<T> {", note: "角括號裡只宣告了 T。" },
             { code: "    x: T,", note: "這個欄位沒問題。" },
@@ -161,7 +161,7 @@ T2 沒有被宣告過;| 分隔與 dynamic 關鍵字都不是 Rust 語法(Rust �
           ],
         },
         {
-          label: "❌ 錯誤寫法二:用 | 分隔型別參數",
+          label: "X Wrong version 2: separated type parameters with |",
           lines: [
             { code: "struct Point<T | U> {", note: "⛔ 語法錯誤:型別參數一律用逗號分隔,| 在型別位置沒有這個意義(它是模式匹配裡的「或」)。" },
             { code: "    x: T,", note: "欄位。" },
@@ -170,7 +170,7 @@ T2 沒有被宣告過;| 分隔與 dynamic 關鍵字都不是 Rust 語法(Rust �
           ],
         },
         {
-          label: "❌ 錯誤寫法三:想用動態型別逃生門",
+          label: "X Wrong version 3: tried to escape into dynamic typing",
           lines: [
             { code: "struct Point<dynamic> {", note: "⛔ Rust 沒有 dynamic 這個關鍵字。這裡其實會被當成一個「叫做 dynamic 的型別參數」,而下面兩個欄位又把它當型別用,語意完全不是作者想要的。" },
             { code: "    x: dynamic,", note: "兩個欄位綁同一個參數,等於回到單一型別參數的狀況,無法混裝。" },
@@ -195,7 +195,7 @@ T2 沒有被宣告過;| 分隔與 dynamic 關鍵字都不是 Rust 語法(Rust �
       explanation: `enum Option<T> { Some(T), None } 與 enum Result<T, E> { Ok(T), Err(E) }——你天天在用的東西就是「泛型 enum」的標準定義,一份定義服務所有型別;Vec<T>、HashMap<K, V> 則是泛型 struct。
 它們沒有編譯器魔法(除了 ? 運算子的語法支援),自己完全寫得出同樣的東西。學到這裡回頭看:前十課其實一直在使用泛型,本課只是揭開名字。`,
       walkthrough: {
-        label: "🔍 你天天在用的那些型別,定義長這樣",
+        label: "🔍 What the types you use every day actually look like",
         lines: [
           { code: "enum Option<T> {", note: "泛型 enum:一份定義服務所有型別,不是為每個型別各寫一份。" },
           { code: "    Some(T),", note: "有值的變體,攜帶一個 T。" },
@@ -229,7 +229,7 @@ T2 沒有被宣告過;| 分隔與 dynamic 關鍵字都不是 Rust 語法(Rust �
 看似重複寫兩次,其實各有職責——之後你會看到 impl Point<f32>(只為特定具現實作,下一題),那時 impl 後就不需要宣告參數,兩段的分工就清楚了。`,
       walkthrough: [
         {
-          label: "✅ 正確寫法(完整可執行)",
+          label: "√ Correct version (complete, runnable)",
           lines: [
             { code: "struct Point<T> {", note: "先有泛型 struct 的定義。" },
             { code: "    x: T,", note: "欄位。" },
@@ -250,7 +250,7 @@ T2 沒有被宣告過;| 分隔與 dynamic 關鍵字都不是 Rust 語法(Rust �
           ],
         },
         {
-          label: "❌ 錯誤寫法一:impl 後面少了 <T>",
+          label: "X Wrong version 1: missing <T> after impl",
           lines: [
             { code: "impl Point<T> {", note: "⛔ 編譯失敗:cannot find type `T` in this scope。impl 後面沒有宣告 <T>,這裡的 T 沒有出處。" },
             { code: "    fn x(&self) -> &T {", note: "方法本身沒問題,是 impl 那一行擋住了整個區塊。" },
@@ -260,7 +260,7 @@ T2 沒有被宣告過;| 分隔與 dynamic 關鍵字都不是 Rust 語法(Rust �
           ],
         },
         {
-          label: "❌ 錯誤寫法二:型別名後面少了 <T>",
+          label: "X Wrong version 2: missing <T> after the type name",
           lines: [
             { code: "impl<T> Point {", note: "⛔ 編譯失敗:Point 是泛型型別,少了 <T> 等於在為一個不存在的非泛型 Point 實作;而且宣告出來的 T 沒被用到,還會多一個 unused type parameter 的錯誤。" },
             { code: "    fn x(&self) -> &T {", note: "方法簽名裡的 T 因此也失去意義。" },
@@ -270,7 +270,7 @@ T2 沒有被宣告過;| 分隔與 dynamic 關鍵字都不是 Rust 語法(Rust �
           ],
         },
         {
-          label: "❌ 錯誤寫法三:想在 impl 外面定義方法",
+          label: "X Wrong version 3: tried to define the method outside impl",
           lines: [
             { code: "fn Point<T>::x(&self) -> &T {", note: "⛔ 語法錯誤:「型別::方法名」的外部定義語法在 Rust 不存在(那是 C++ 的寫法)。方法一律寫在 impl 區塊裡,而且 &self 只有在 impl 內才有意義。" },
             { code: "    &self.x", note: "函式本體。" },
@@ -296,7 +296,7 @@ T2 沒有被宣告過;| 分隔與 dynamic 關鍵字都不是 Rust 語法(Rust �
 這是合法且常用的能力:泛型型別可以「部分型別才有某些方法」(標準庫例子:Vec<T> 人人有 push,但 concat 之類的方法要元素滿足特定條件才出現)。Rust 沒有整數到浮點的隱式轉換,自動轉型的說法在 lesson1-2 就出局了。`,
       walkthrough: [
         {
-          label: "❌ 題目程式碼(無法編譯)",
+          label: "X Question code (won't compile)",
           lines: [
             { code: "struct Point<T> {", note: "泛型 struct。" },
             { code: "    x: T,", note: "欄位。" },
@@ -316,7 +316,7 @@ T2 沒有被宣告過;| 分隔與 dynamic 關鍵字都不是 Rust 語法(Rust �
           ],
         },
         {
-          label: "✅ 正確寫法(完整可執行)",
+          label: "√ Correct version (complete, runnable)",
           lines: [
             { code: "struct Point<T> {", note: "struct 定義不變。" },
             { code: "    x: T,", note: "欄位。" },
@@ -352,7 +352,7 @@ T2 沒有被宣告過;| 分隔與 dynamic 關鍵字都不是 Rust 語法(Rust �
       explanation: `單態化 = 編譯期把泛型「展開」:你寫一份 fn largest<T>,程式裡用到 i32 和 char 兩種,編譯器就默默生成 largest_i32 和 largest_char 兩份具體程式碼——執行起來與手寫兩份完全相同,這就是「零成本抽象」:抽象不花執行期的錢。
 沒有執行期型別查詢、沒有裝箱、沒有 runtime 代碼生成。代價在編譯期:用的型別多,編譯變慢、執行檔變大——成本被搬到編譯期一次付清。`,
       walkthrough: {
-        label: "🔍 你寫的一份,編譯器展開成幾份",
+        label: "🔍 One copy you wrote, several the compiler generates",
         lines: [
           { code: "fn largest<T: PartialOrd>(list: &[T]) -> &T {", note: "原始碼裡只有這一份泛型定義。" },
           { code: "    let mut m = &list[0];", note: "先假設第一個最大。" },
@@ -386,7 +386,7 @@ T2 沒有被宣告過;| 分隔與 dynamic 關鍵字都不是 Rust 語法(Rust �
 加了 bound 之後:能傳入的型別縮小到「實作了 PartialOrd 的」,函式體內就能安心用 >。這是泛型與 trait 的接合點:bound 是對呼叫端的要求,也是對函式體的授權——完整展開在下一課。`,
       walkthrough: [
         {
-          label: "❌ 題目程式碼(無法編譯)",
+          label: "X Question code (won't compile)",
           lines: [
             { code: "fn largest<T>(list: &[T]) -> &T {", note: "⛔ 問題根源:T 是「任意型別」,編譯器只允許你對它做「所有型別都保證會」的事。" },
             { code: "    let mut largest = &list[0];", note: "取第一個元素的參考當初始值,這一行沒問題。" },
@@ -400,7 +400,7 @@ T2 沒有被宣告過;| 分隔與 dynamic 關鍵字都不是 Rust 語法(Rust �
           ],
         },
         {
-          label: "✅ 正確寫法(完整可執行)",
+          label: "√ Correct version (complete, runnable)",
           lines: [
             { code: "fn largest<T: PartialOrd>(list: &[T]) -> &T {", note: "改動處:在型別參數上加約束。它同時做兩件事——對呼叫端是「要求」(只有實作了 PartialOrd 的型別才能傳進來),對函式體是「授權」(現在可以用 > 了)。" },
             { code: "    let mut largest = &list[0];", note: "初始值:第一個元素的參考。" },
@@ -437,7 +437,7 @@ T2 沒有被宣告過;| 分隔與 dynamic 關鍵字都不是 Rust 語法(Rust �
       explanation: `每個「呼叫點」獨立推斷:第一次 T = i32、第二次 T = &str,單態化各生成一份,互不干擾——「T 被第一次呼叫固定」混淆了「函式定義」與「呼叫實例」。
 turbofish(first::<i32>)只在推斷不出來時才需要(例如 collect 的目標型別),這裡參數型別明擺著,不用寫。回傳值是 &list[0](第一個元素的參考),不會是整個陣列。`,
       walkthrough: {
-        label: "🔍 題目程式碼逐行說明(可正常執行)",
+        label: "🔍 Question code — walkthrough (runs successfully)",
         lines: [
           { code: "fn first<T>(list: &[T]) -> &T {", note: "一份泛型定義。" },
           { code: "    &list[0]", note: "回傳第一個元素的參考。" },
@@ -466,7 +466,7 @@ turbofish(first::<i32>)只在推斷不出來時才需要(例如 collect 的目�
       explanation: `兩個記憶點:(1)機制——Rust 一律編譯期單態化,沒有 typeof(T)、沒有執行期反射泛型;C# 泛型保留執行期型別資訊,能 new T[]、能反射。(2)約束——T: PartialOrd + Clone 這種 trait bound 能要求運算子、關聯函式、甚至靜態方法,C# 的 where T : interface 直到 C# 11 的 static abstract members 才追上一部分。
 「執行期解析」說反了;「不支援約束」與上一題直接矛盾。`,
       walkthrough: {
-        label: "🔍 兩個記憶點:單態化與 trait bound",
+        label: "🔍 Two things to remember: monomorphization and trait bounds",
         lines: [
           { code: "use std::fmt::Display;", note: "引入一個 trait,準備當約束用。" },
           { code: "", note: "" },
@@ -500,7 +500,7 @@ turbofish(first::<i32>)只在推斷不出來時才需要(例如 collect 的目�
       explanation: `這正是標準函式庫 Option<T> 的定義方式——泛型 enum 沒有任何編譯器魔法,你自己就寫得出來。
 a 的具現是 MyOption<i32>、b 是 MyOption<String>,兩者是「不同的具體型別」,但共用同一份原始碼;編譯器單態化時各生成一份。第二個 match 走 None 分支,印的是 nothing 而不是空字串——None 變體根本不攜帶資料,沒有東西可以印。`,
       walkthrough: {
-        label: "🔍 題目程式碼逐行說明(可正常執行)",
+        label: "🔍 Question code — walkthrough (runs successfully)",
         lines: [
           { code: "enum MyOption<T> {", note: "泛型 enum:型別參數宣告在 enum 名稱之後,和泛型 struct 同一個位置。" },
           { code: "    Some(T),", note: "帶資料的變體,攜帶的型別就是 T——實際是什麼由使用端決定。" },
@@ -539,7 +539,7 @@ a 的具現是 MyOption<i32>、b 是 MyOption<String>,兩者是「不同的具�
       explanation: `型別參數有兩個層級:impl 上宣告的 <X1, Y1> 綁定 struct 本身,方法上宣告的 <X2, Y2> 只在這個方法的呼叫範圍內有效——所以一次呼叫可以牽涉四個不同型別。
 mixup 回傳 Point<X1, Y2>:x 取自 self(i32 的 5)、y 取自 other(char 的 'c'),印出 5 c。注意接收者是 self(按值)而不是 &self,所以 p1 與 p2 都在這次呼叫中被消耗掉了。`,
       walkthrough: {
-        label: "🔍 題目程式碼逐行說明(可正常執行)",
+        label: "🔍 Question code — walkthrough (runs successfully)",
         lines: [
           { code: "struct Point<X1, Y1> {", note: "兩個型別參數,兩個欄位各綁一個。" },
           { code: "    x: X1,", note: "第一個欄位。" },
@@ -581,7 +581,7 @@ mixup 回傳 Point<X1, Y2>:x 取自 self(i32 的 5)、y 取自 other(char 的 'c
 兩種標法:turbofish 寫在呼叫處 "42".parse::<i32>(),或標在變數上 let n: Result<i32, _> = "42".parse();。這類錯誤在 Rust 很常見,看到 type annotations needed 就是「泛型參數推不出來,請明說」。`,
       walkthrough: [
         {
-          label: "❌ 題目程式碼(無法編譯)",
+          label: "X Question code (won't compile)",
           lines: [
             { code: "fn main() {", note: "程式進入點。" },
             { code: "    let n = \"42\".parse();", note: "⛔ 編譯失敗:type annotations needed。parse 是泛型方法 fn parse<F: FromStr>(&self) -> Result<F, F::Err>,目標型別 F 由呼叫端決定,而且沒有預設值。" },
@@ -590,7 +590,7 @@ mixup 回傳 Point<X1, Y2>:x 取自 self(i32 的 5)、y 取自 other(char 的 'c
           ],
         },
         {
-          label: "✅ 正確寫法(兩種標註方式擇一)",
+          label: "√ Correct version (pick one of the two annotation styles)",
           lines: [
             { code: "fn main() {", note: "程式進入點。" },
             { code: "    let a = \"42\".parse::<i32>();", note: "改動處(寫法一,turbofish):::<i32> 直接在呼叫處指定泛型參數。那個 :: 是必要的——沒有它,parse<i32> 會被解析成「小於」運算子,turbofish 這個怪語法就是為了消除歧義。" },
@@ -618,7 +618,7 @@ mixup 回傳 Point<X1, Y2>:x 取自 self(i32 的 5)、y 取自 other(char 的 'c
 兩種標法:let doubled: Vec<i32> = ... 或 .collect::<Vec<i32>>()。這是 Rust 新手最常撞到的 type annotations needed 現場,原因和上一題的 parse 完全相同:泛型參數只出現在「回傳型別」上,推斷沒有其他線索。至於 |x| x * 2 對 &i32 做乘法是合法的(自動解參考),不是問題所在。`,
       walkthrough: [
         {
-          label: "❌ 題目程式碼(無法編譯)",
+          label: "X Question code (won't compile)",
           lines: [
             { code: "fn main() {", note: "程式進入點。" },
             { code: "    let nums = vec![1, 2, 3];", note: "來源集合,型別是 Vec<i32>。" },
@@ -628,7 +628,7 @@ mixup 回傳 Point<X1, Y2>:x 取自 self(i32 的 5)、y 取自 other(char 的 'c
           ],
         },
         {
-          label: "✅ 正確寫法(指定目標容器)",
+          label: "√ Correct version (specify the target container)",
           lines: [
             { code: "use std::collections::HashSet;", note: "為了示範第三種容器而引入。" },
             { code: "", note: "" },
@@ -660,7 +660,7 @@ mixup 回傳 Point<X1, Y2>:x 取自 self(i32 的 5)、y 取自 other(char 的 'c
 這題和 PartialOrd 那題是同一條原理,差別在於 bound 授權的是「關聯函式」而不是運算子:trait 可以要求方法、關聯函式、關聯型別、甚至運算子,表達力比 C# 的介面約束更廣。`,
       walkthrough: [
         {
-          label: "❌ 題目程式碼(無法編譯)",
+          label: "X Question code (won't compile)",
           lines: [
             { code: "fn make_default<T>() -> T {", note: "⛔ 問題根源:T 沒有任何約束,代表「任何型別」。泛型函式沒有參數是完全合法的,型別由呼叫端的回傳位置決定。" },
             { code: "    T::default()", note: "⛔ 編譯失敗:no function or associated item named `default` found for type parameter `T`。編譯器只允許你對裸的 T 做「所有型別都保證會」的事,而擁有 default() 這個關聯函式不是。訊息會建議 consider restricting type parameter `T`: `T: Default`。" },
@@ -673,7 +673,7 @@ mixup 回傳 Point<X1, Y2>:x 取自 self(i32 的 5)、y 取自 other(char 的 'c
           ],
         },
         {
-          label: "✅ 正確寫法(加上 Default bound)",
+          label: "√ Correct version (add a Default bound)",
           lines: [
             { code: "fn make_default<T: Default>() -> T {", note: "改動處:bound 同時做兩件事——對呼叫端是「只有實作了 Default 的型別才能用」,對函式體是「現在你可以叫 T::default() 了」。" },
             { code: "    T::default()", note: "合法:bound 保證 T 一定有這個關聯函式。" },
@@ -704,7 +704,7 @@ mixup 回傳 Point<X1, Y2>:x 取自 self(i32 的 5)、y 取自 other(char 的 'c
       explanation: `一個型別可以有任意多個 impl 區塊,而且每個區塊可以帶不同的 bound——這叫「條件式方法實作」:方法會不會出現在某個具現身上,取決於它滿不滿足該區塊的約束。
 所以 Pair<i32> 兩個方法都有(i32 滿足 Display + PartialOrd);而如果你定義一個沒實作 Display 的型別 Foo,Pair<Foo> 依然可以 new,只是身上不會長出 cmp_display——struct 本身完全不受限制。把 bound 寫在 struct 定義上反而是反模式:那會逼「所有」使用者都滿足約束,連只想存放資料的人也不例外。`,
       walkthrough: {
-        label: "🔍 題目程式碼逐行說明(可正常執行)",
+        label: "🔍 Question code — walkthrough (runs successfully)",
         lines: [
           { code: "use std::fmt::Display;", note: "引入 trait,才能在 bound 裡使用它的短名稱。" },
           { code: "", note: "" },
@@ -753,7 +753,7 @@ mixup 回傳 Point<X1, Y2>:x 取自 self(i32 的 5)、y 取自 other(char 的 'c
 根本原因還是缺少約束:編譯器沒被告知 T 會 clone,方法解析只好退而求其次找到 &T 身上的 clone。加上 T: Clone 之後,自動解參考就會正確地叫到 T 的 clone,回傳真正的兩份資料。`,
       walkthrough: [
         {
-          label: "❌ 題目程式碼(無法編譯)",
+          label: "X Question code (won't compile)",
           lines: [
             { code: "fn duplicate<T>(x: &T) -> (T, T) {", note: "⛔ 問題根源:T 沒有任何約束,編譯器不知道它會 clone。" },
             { code: "    (x.clone(), x.clone())", note: "⛔ 編譯失敗:mismatched types, expected type parameter `T`, found `&T`。關鍵在於 &T 本身「永遠」是 Clone 的(複製一根指標當然沒問題),所以呼叫本身沒炸,只是複製到的是參考、型別是 &T;接著要塞進宣告為 T 的回傳位置就對不上了。編譯器會提示 consider further restricting this bound: `T: Clone`。" },
@@ -767,7 +767,7 @@ mixup 回傳 Point<X1, Y2>:x 取自 self(i32 的 5)、y 取自 other(char 的 'c
           ],
         },
         {
-          label: "✅ 正確寫法(補上 Clone bound)",
+          label: "√ Correct version (add a Clone bound)",
           lines: [
             { code: "fn duplicate<T: Clone>(x: &T) -> (T, T) {", note: "改動處:加上 Clone 約束。現在編譯器知道 T 有自己的 clone,方法解析會透過自動解參考叫到 T 的版本,而不是退而求其次用 &T 的。" },
             { code: "    (x.clone(), x.clone())", note: "程式碼一字未改,但這兩次 clone 現在各配置一份新的 heap 資料,型別是 T,與回傳型別吻合。" },
@@ -799,7 +799,7 @@ mixup 回傳 Point<X1, Y2>:x 取自 self(i32 的 5)、y 取自 other(char 的 'c
 所以同一個 take 呼叫兩次,一次沒事一次編譯錯誤——move 與 copy 的分野由「實際型別」決定,和泛型與否無關。修法看需求:改成 take(&s) 借用,或之後只用 t 這個新擁有者。`,
       walkthrough: [
         {
-          label: "❌ 題目程式碼(最後一行編譯失敗)",
+          label: "X Question code (last line won't compile)",
           lines: [
             { code: "fn take<T>(x: T) -> T {", note: "參數按值收下,回傳同一個值——這個簽名對 T 是 Copy 或非 Copy 都成立,行為卻不同。" },
             { code: "    x", note: "把值原封不動交還給呼叫端。" },
@@ -817,7 +817,7 @@ mixup 回傳 Point<X1, Y2>:x 取自 self(i32 的 5)、y 取自 other(char 的 'c
           ],
         },
         {
-          label: "✅ 正確寫法(改成借用,或只用新的擁有者)",
+          label: "√ Correct version (borrow instead, or use only the new owner)",
           lines: [
             { code: "fn take<T>(x: T) -> T {", note: "函式完全不用改。" },
             { code: "    x", note: "回傳值。" },
@@ -853,7 +853,7 @@ mixup 回傳 Point<X1, Y2>:x 取自 self(i32 的 5)、y 取自 other(char 的 'c
 正確約束是 T: Add<Output = T>——Output 是 Add 的「關聯型別」,代表相加後產出什麼;寫成 Output = T 才能保證回傳值型別與參數一致(否則 T + T 的結果未必還是 T)。這一步順便展示了 trait bound 比 C# 介面約束強的地方:它能要求運算子,還能對關聯型別下條件。`,
       walkthrough: [
         {
-          label: "❌ 題目程式碼(無法編譯)",
+          label: "X Question code (won't compile)",
           lines: [
             { code: "fn sum<T>(a: T, b: T) -> T {", note: "⛔ 問題根源:T 沒有約束。兩個參數同型別完全合法,不是問題所在。" },
             { code: "    a + b", note: "⛔ 編譯失敗:cannot add `T` to `T`。Rust 的每個運算子背後都是 trait,+ 對應 std::ops::Add;編譯器只允許你對裸的 T 做所有型別都保證會的事。訊息會建議 consider restricting type parameter `T`。" },
@@ -865,7 +865,7 @@ mixup 回傳 Point<X1, Y2>:x 取自 self(i32 的 5)、y 取自 other(char 的 'c
           ],
         },
         {
-          label: "✅ 正確寫法(要求 Add,並指定 Output)",
+          label: "√ Correct version (require Add, and specify Output)",
           lines: [
             { code: "use std::ops::Add;", note: "改動處:引入運算子 trait,才能在 bound 裡寫短名稱。" },
             { code: "", note: "" },
@@ -881,7 +881,7 @@ mixup 回傳 Point<X1, Y2>:x 取自 self(i32 的 5)、y 取自 other(char 的 'c
           outro: "若不指定 Output = T,只寫 T: Add,函式體的 a + b 會產出型別 T::Output,與宣告的回傳型別 T 對不上,依然編譯失敗——這是 Add 這類「帶關聯型別的 trait」最常見的絆腳石。",
         },
         {
-          label: "🔧 去糖後(編譯器眼中的樣子)",
+          label: "🔧 Desugared (what the compiler sees)",
           intro: "錯誤訊息說 cannot add `T` to `T`,可是你只寫了一個加號。那個加號其實是一次方法呼叫:",
           lines: [
             { code: "a + b", note: "你寫的運算式。" },
@@ -913,7 +913,7 @@ mixup 回傳 Point<X1, Y2>:x 取自 self(i32 的 5)、y 取自 other(char 的 'c
       explanation: `兩句話總結本課:(1)機制——編譯期單態化,用到幾種型別就生成幾份具體程式碼,執行期沒有型別查詢、沒有裝箱,代價是編譯變慢、執行檔變大;(2)紀律——型別參數預設「什麼都不會」,每一項能力都要由 bound 明白授權,而 bound 同時是對呼叫端的要求與對函式體的許可。
 其餘三種說法都各有錯誤:型別擦除是 Java 的做法;bound 是硬性的編譯檢查而非註記;而 enum(自訂 MyOption 那題)與方法(mixup 那題)當然都支援型別參數。`,
       walkthrough: {
-        label: "🔍 一支程式走完本課",
+        label: "🔍 One program that walks through this whole lesson",
         lines: [
           { code: "use std::fmt::Display;", note: "引入待會要當約束用的 trait。" },
           { code: "", note: "" },
