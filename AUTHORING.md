@@ -224,7 +224,29 @@ walkthrough: {
 node scripts/validate-data.js
 ```
 
-這支腳本也是 CI 部署前的守門員(`.github/workflows`),失敗就不會部署。
+這支腳本也是 CI 部署前的守門員(`.github/workflows`),失敗就不會部署。**這個不帶參數的
+版本只驗 `docs/data/index.js` 裡 `available: true` 的課程**——新課程開發期間
+`available` 還是 `false`,這條指令驗不到你正在寫的檔案。
+
+### 新課程開發期間:用 `--lesson` 單獨驗證
+
+```bash
+node scripts/validate-data.js --lesson lesson2-1
+node scripts/validate-data.js --lesson lesson2-1,lesson2-2   # 逗號分隔多課
+```
+
+`--lesson` 指定的課程**不論 `available` 是 `true` 或 `false` 都會驗**,且只驗指定的那幾課
+(不會跑過全站,輸出比較短、比較快)。**建置進階類(`lesson2-1` ~ `lesson2-12`)等
+`available: false` 的新課程時,這是標準驗證指令**——把 `index.js` 的 `available` 改成
+`true` 之前,都應該用這個指令確認資料檔沒問題,而不是等上架後才被 CI 抓到。
+題目 `id` 的全站唯一性檢查一樣有效:腳本會先把其他 `available: true` 課程的 id
+灌進去,再驗你指定的課程,撞到既有 id 一樣會報錯。
+
+`--lesson` 可以跟 `--no-strict` 並用:
+
+```bash
+node scripts/validate-data.js --lesson lesson2-1 --no-strict
+```
 它自動檢查的項目:
 
 - 選項數為 4、`answer` 為 0、`explanation` 非空
@@ -411,6 +433,7 @@ surrogate pair、`"🦀".Length == 2` 這件事,**emoji 本身就是題目要教
 | 02 | `if let Some(x) = opt { .. }` | `match opt { Some(x) => { .. }, _ => () }` | 1-8 |
 | 03 | `while let Some(x) = it.next() { .. }` | `loop { match it.next() { Some(x) => { .. }, None => break } }` | 1-8 |
 | 04 | `let Some(x) = opt else { return; };` | `let x = match opt { Some(v) => v, None => return };` | 1-8 |
+| 51 | `?` 搭配回傳型別 `Box<dyn Error>` | 同 01 展開成 `match`,但 `Err(e) => return Err(From::from(e))` 這一步是透過 `impl<E: Error + 'static> From<E> for Box<dyn Error>` 把具體錯誤型別轉成 trait object | 規劃 2-6 |
 
 ### 二、變數與 struct 宣告
 
@@ -450,6 +473,9 @@ surrogate pair、`"🦀".Length == 2` 這件事,**emoji 本身就是題目要教
 | 20 | `a.b.c.clone()` | 連續的欄位位移與方法呼叫 | 規劃 2-2 |
 | 44 | `Box::new(5)` | 在 heap 配置空間並把值搬進去 | 規劃 2-3 |
 | 45 | `&arr[1..4]` | `Index::index(&arr, Range { start: 1, end: 4 })` | 1-6 |
+| 52 | `a + b`(自訂型別實作了 `Add`) | `Add::add(a, b)`(即 `std::ops::Add::add(self, rhs)`) | 規劃 2-5 |
+| 53 | `&dyn Shape` / `Box<dyn Shape>` | 胖指標:一個資料指標 + 一個指向 vtable 的指標(具體型別的 `&T`/`Box<T>` 是瘦指標,只有資料指標) | 規劃 2-5 |
+| 54 | `Rc::clone(&x)`(或 `x.clone()`) | 只把 `strong_count` 加一,不複製底層資料;計數歸零時才釋放 | 規劃 2-3 |
 
 ### 六、巨集與格式化
 
@@ -461,6 +487,7 @@ surrogate pair、`"🦀".Length == 2` 這件事,**emoji 本身就是題目要教
 | 24 | `matches!(opt, Some(1..=5))` | `match opt { Some(1..=5) => true, _ => false }` | 規劃 2-11 |
 | 38 | `todo!()` | `panic!("not yet implemented")`,型別是 never type `!` | 規劃 2-11 |
 | 39 | `dbg!(x)` | 印出檔名、行號、算式與值,再原值回傳 | 1-7 |
+| 55 | `macro_rules!` 裡的 `$($x:expr),*` | 對每個比對到的片段重複展開一次巨集本體,以逗號分隔(`vec![1, 2, 3]` 就是這樣展開成三次 `push`) | 規劃 2-11 |
 
 ### 七、範圍、列舉與迭代
 
@@ -477,6 +504,7 @@ surrogate pair、`"🦀".Length == 2` 這件事,**emoji 本身就是題目要教
 |---|---|---|---|
 | 28 | `fetch().await` | 生成狀態機,在 `Poll::Pending` 時交出執行權 | 規劃 2-8 |
 | 40 | `async move { .. }` | 把捕獲變數的所有權移進狀態機 | 規劃 2-8 |
+| 56 | `async fn f() -> T { .. }` | `fn f() -> impl Future<Output = T> { async move { .. } }`——函式簽名本身就是一層糖,回傳的是「會被驅動的狀態機」,不是 `T` | 規劃 2-8 |
 | 29 | `fn f(s: &str) -> &str` | `fn f<'a>(s: &'a str) -> &'a str`(省略三規則) | 1-13 |
 | 30 | `#[derive(Debug)]` | 編譯期生成對應的 `impl` 區塊 | 1-7 / 1-12 |
 

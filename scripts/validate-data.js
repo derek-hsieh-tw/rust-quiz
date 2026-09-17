@@ -12,6 +12,15 @@
  *  8. △ 去糖區塊:錯誤訊息提到讀者沒親手寫過的去糖識別字(Add / From /
  *     IntoIterator / Deref / Display / Ord …)時,該題要附 △ 區塊把糖攤開
  *     ——既有題目已補完,預設與其他規則一樣擋下部署(--no-strict 可降級為警告)。
+ *
+ * CLI 選項:
+ *   --lesson <id>[,<id>...]  只驗指定課程,忽略 index.js 的 available 旗標
+ *                            (新課程開發期間用這個——課程還沒上架也能驗自己的檔案)
+ *   --no-strict              △ 去糖檢查降級為警告,不擋部署(可與 --lesson 並用)
+ *
+ * 不帶 --lesson 時,行為與過去完全一致:只驗 index.js 裡 available: true 的課程
+ * ——CI 的 .github/workflows/deploy.yml 依賴這個預設行為,不能變。
+ *
  * 規範全文見專案根目錄 AUTHORING.md。
  */
 const fs = require("fs");
@@ -27,14 +36,44 @@ function loadScript(rel) {
   return true;
 }
 
+const argv = process.argv.slice(2);
 const errors = [];
 const warnings = [];
 const seenIds = new Set();
 
+/* --lesson 解析:支援 `--lesson id` 與 `--lesson=id`,逗號分隔可指定多課。
+ * 沒有帶 --lesson 時回傳 null,呼叫端會走「只驗 available: true」的舊行為。 */
+function parseLessonArg(list) {
+  let raw = null;
+  const eqArg = list.find(a => a.startsWith("--lesson="));
+  if (eqArg) {
+    raw = eqArg.slice("--lesson=".length);
+  } else {
+    const idx = list.indexOf("--lesson");
+    if (idx !== -1) raw = list[idx + 1];
+  }
+  if (raw === null) return null; // 沒有指定 --lesson,走預設行為
+
+  if (!raw || raw.startsWith("--")) {
+    console.error(
+      "✗ --lesson 需要指定課程 id,例如:--lesson lesson2-1 或 --lesson lesson2-1,lesson2-2"
+    );
+    process.exit(1);
+  }
+  const ids = raw.split(",").map(s => s.trim()).filter(Boolean);
+  if (ids.length === 0) {
+    console.error("✗ --lesson 的課程 id 清單是空的");
+    process.exit(1);
+  }
+  return ids;
+}
+
+const lessonFilter = parseLessonArg(argv);
+
 /* △ 去糖檢查(規範見 AUTHORING.md §4 與 §9)
  * 讀者學到的是語法糖,編譯器罵的是去糖後的東西。這些識別字一旦出現在錯誤訊息裡、
  * 而讀者在該題程式碼中從沒親手寫過,就是「糖底下露出來的實體」,必須攤開給他看。 */
-const DESUGAR_STRICT = !process.argv.includes("--no-strict"); // 既有題目已補完,預設硬擋
+const DESUGAR_STRICT = !argv.includes("--no-strict"); // 既有題目已補完,預設硬擋
 const DESUGAR_TOKENS = [
   [/\bAdd(Assign)?\b/,           "+ → Add::add(self, …)"],
   [/\bIndex(Mut)?\b/,            "v[i] → *v.index(i) / index_mut(i)"],
@@ -44,6 +83,9 @@ const DESUGAR_TOKENS = [
   [/\bDisplay\b/,                "{} → Display::fmt"],
   [/\bPartialOrd\b|\bOrd\b/,     "sort() / < → Ord 或 PartialOrd"],
   [/\bFnOnce\b|\bFnMut\b/,       "閉包 → Fn / FnMut / FnOnce"],
+  [/\bFuture\b|\bpoll\b/,        ".await → Future::poll(cx) 狀態機迴圈"],
+  [/\bSend\b|\bSync\b/,          "跨執行緒共享/搬移 → 編譯器自動推導的 Send/Sync"],
+  [/\bSized\b/,                  "dyn Trait → 動態大小型別,不是 Sized(?Sized)"],
 ];
 
 if (!loadScript("data/index.js")) {
@@ -51,53 +93,93 @@ if (!loadScript("data/index.js")) {
   process.exit(1);
 }
 
+// 課程 id → meta,不論 available 與否,供 --lesson 查表用
+const allLessons = new Map();
 for (const cat of window.RUST_INDEX.categories) {
   for (const meta of cat.lessons) {
-    if (!meta.available) continue;
+    allLessons.set(meta.id, meta);
+  }
+}
 
-    if (!loadScript(meta.file)) {
-      errors.push(`${meta.id}: 資料檔不存在(${meta.file})`);
-      continue;
+/* 驗證單一課程。資料檔不存在 / 未註冊 / 沒有題目時把錯誤塞進 errors 並返回,
+ * 不會拋例外——CLI 永遠是「清楚的錯誤訊息 + exit 非 0」,不是 crash。 */
+function validateLesson(meta) {
+  if (!loadScript(meta.file)) {
+    errors.push(`${meta.id}: 資料檔不存在(${meta.file})`);
+    return;
+  }
+  const lesson = window.RUST_LESSONS[meta.id];
+  if (!lesson) {
+    errors.push(`${meta.id}: 資料檔未註冊到 window.RUST_LESSONS["${meta.id}"]`);
+    return;
+  }
+  if (!lesson.questions || lesson.questions.length === 0) {
+    errors.push(`${meta.id}: 沒有任何題目`);
+    return;
+  }
+
+  for (const q of lesson.questions) {
+    const tag = `${meta.id} / ${q.id}`;
+    if (seenIds.has(q.id)) errors.push(`${tag}: 題目 id 重複`);
+    seenIds.add(q.id);
+
+    if (!Array.isArray(q.options) || q.options.length !== 4)
+      errors.push(`${tag}: 選項數必須為 4(目前 ${q.options ? q.options.length : 0})`);
+    if (q.answer !== 0)
+      errors.push(`${tag}: answer 必須為 0(正確答案寫在第一個選項,由前端洗牌)`);
+    if (!q.explanation || !q.explanation.trim())
+      errors.push(`${tag}: 缺少 explanation`);
+
+    (q.options || []).forEach((o, i) => {
+      const hasCode = o.code !== undefined;
+      const hasText = o.text !== undefined;
+      if (hasCode === hasText)
+        errors.push(`${tag}: 選項 ${i} 必須是 { code } 或 { text } 擇一`);
+    });
+
+    const letterRef = /選項\s*[A-D]|[A-D]\s*和\s*[A-D]\s*都/;
+    for (const field of ["explanation", "csharp"]) {
+      if (q[field] && letterRef.test(q[field]))
+        errors.push(`${tag}: ${field} 出現選項字母指涉(洗牌後字母會對不上)`);
     }
-    const lesson = window.RUST_LESSONS[meta.id];
-    if (!lesson) {
-      errors.push(`${meta.id}: 資料檔未註冊到 window.RUST_LESSONS["${meta.id}"]`);
-      continue;
-    }
-    if (!lesson.questions || lesson.questions.length === 0) {
-      errors.push(`${meta.id}: 沒有任何題目`);
-      continue;
-    }
 
-    for (const q of lesson.questions) {
-      const tag = `${meta.id} / ${q.id}`;
-      if (seenIds.has(q.id)) errors.push(`${tag}: 題目 id 重複`);
-      seenIds.add(q.id);
+    validateWalkthrough(tag, q, errors);
+    validateDesugar(tag, q, DESUGAR_STRICT ? errors : warnings);
+  }
+  console.log(`✓ ${meta.id}(${lesson.questions.length} 題)`);
+}
 
-      if (!Array.isArray(q.options) || q.options.length !== 4)
-        errors.push(`${tag}: 選項數必須為 4(目前 ${q.options ? q.options.length : 0})`);
-      if (q.answer !== 0)
-        errors.push(`${tag}: answer 必須為 0(正確答案寫在第一個選項,由前端洗牌)`);
-      if (!q.explanation || !q.explanation.trim())
-        errors.push(`${tag}: 缺少 explanation`);
-
-      (q.options || []).forEach((o, i) => {
-        const hasCode = o.code !== undefined;
-        const hasText = o.text !== undefined;
-        if (hasCode === hasText)
-          errors.push(`${tag}: 選項 ${i} 必須是 { code } 或 { text } 擇一`);
-      });
-
-      const letterRef = /選項\s*[A-D]|[A-D]\s*和\s*[A-D]\s*都/;
-      for (const field of ["explanation", "csharp"]) {
-        if (q[field] && letterRef.test(q[field]))
-          errors.push(`${tag}: ${field} 出現選項字母指涉(洗牌後字母會對不上)`);
+if (lessonFilter) {
+  // 只驗指定課程,忽略 available 旗標。但題目 id 唯一性要跟全站對齊,
+  // 所以先把所有 available: true 課程的 id 灌進 seenIds(目標課本身跳過,
+  // 避免它稍後正式驗證時跟「自己」誤判重複),新課撞到既有 id 才抓得到。
+  for (const cat of window.RUST_INDEX.categories) {
+    for (const meta of cat.lessons) {
+      if (!meta.available) continue;
+      if (lessonFilter.includes(meta.id)) continue;
+      if (!loadScript(meta.file)) continue;
+      const seedLesson = window.RUST_LESSONS[meta.id];
+      if (seedLesson && seedLesson.questions) {
+        for (const q of seedLesson.questions) seenIds.add(q.id);
       }
-
-      validateWalkthrough(tag, q, errors);
-      validateDesugar(tag, q, DESUGAR_STRICT ? errors : warnings);
     }
-    console.log(`✓ ${meta.id}(${lesson.questions.length} 題)`);
+  }
+
+  for (const id of lessonFilter) {
+    const meta = allLessons.get(id);
+    if (!meta) {
+      errors.push(`--lesson ${id}: docs/data/index.js 裡找不到這個課程 id`);
+      continue;
+    }
+    validateLesson(meta);
+  }
+} else {
+  // 預設行為(不變):只驗 available: true 的課程
+  for (const cat of window.RUST_INDEX.categories) {
+    for (const meta of cat.lessons) {
+      if (!meta.available) continue;
+      validateLesson(meta);
+    }
   }
 }
 
