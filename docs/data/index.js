@@ -41,7 +41,7 @@ window.RUST_INDEX = {
         { id: "lesson2-8",  title: "非同步 async/await",         file: "data/advanced/lesson2-8.js",  available: false },
         { id: "lesson2-9",  title: "型別轉換與轉換 Trait",       file: "data/advanced/lesson2-9.js",  available: true },
         { id: "lesson2-10", title: "模式匹配進階",               file: "data/advanced/lesson2-10.js", available: true },
-        { id: "lesson2-11", title: "巨集入門(Macros)",         file: "data/advanced/lesson2-11.js", available: false },
+        { id: "lesson2-11", title: "巨集入門(Macros)",         file: "data/advanced/lesson2-11.js", available: true },
         { id: "lesson2-12", title: "Cargo 生態與實戰慣用法",     file: "data/advanced/lesson2-12.js", available: false },
       ],
     },
