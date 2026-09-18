@@ -12,6 +12,8 @@
  *  8. △ 去糖區塊:錯誤訊息提到讀者沒親手寫過的去糖識別字(Add / From /
  *     IntoIterator / Deref / Display / Ord …)時,該題要附 △ 區塊把糖攤開
  *     ——既有題目已補完,預設與其他規則一樣擋下部署(--no-strict 可降級為警告)。
+ *  9. primer(課前導讀,選填):有的話格式要對(intro / examples 1~2 個 / csharp),
+ *     不得有未知欄位、選項字母指涉或 emoji(規範見 AUTHORING.md §1.1)
  *
  * CLI 選項:
  *   --lesson <id>[,<id>...]  只驗指定課程,忽略 index.js 的 available 旗標
@@ -117,6 +119,8 @@ function validateLesson(meta) {
     errors.push(`${meta.id}: 沒有任何題目`);
     return;
   }
+
+  if (lesson.primer !== undefined) validatePrimer(meta.id, lesson.primer, errors);
 
   for (const q of lesson.questions) {
     const tag = `${meta.id} / ${q.id}`;
@@ -235,6 +239,51 @@ function validateWalkthrough(tag, q, errors) {
     if (!runnable)
       errors.push(`${tag}: √ 區塊「${b.label}」缺少 fn main,不是完整可執行的程式`);
   });
+}
+
+/* primer(課前導讀,選填):基礎類課程沒有,不強制。規範見 AUTHORING.md §1.1 */
+function validatePrimer(lessonId, p, errors) {
+  // 常數放函式內:這支腳本在檔案中段就開始跑驗證,頂層 const 此時還在 TDZ
+  const PRIMER_KEYS = ["intro", "examples", "csharp"];
+  const PRIMER_EXAMPLE_KEYS = ["code", "note", "lang"];
+  const LETTER_REF = /選項\s*[A-D]|[A-D]\s*和\s*[A-D]\s*都/;
+  const EMOJI = /\p{Extended_Pictographic}/u;
+  const at = `${lessonId} / primer`;
+  const isText = v => typeof v === "string" && v.trim() !== "";
+  if (!p || typeof p !== "object" || Array.isArray(p)) {
+    errors.push(`${at}: 必須是物件 { intro, examples, csharp? }`);
+    return;
+  }
+  for (const k of Object.keys(p))
+    if (!PRIMER_KEYS.includes(k)) errors.push(`${at}: 未知欄位「${k}」`);
+  if (!isText(p.intro)) errors.push(`${at}: intro 必須是非空字串`);
+  if (p.csharp !== undefined && !isText(p.csharp))
+    errors.push(`${at}: csharp 有填就必須是非空字串`);
+
+  const texts = [["intro", p.intro], ["csharp", p.csharp]];
+  if (!Array.isArray(p.examples) || p.examples.length < 1 || p.examples.length > 2) {
+    errors.push(`${at}: examples 必須是 1~2 個元素的陣列`);
+  } else {
+    p.examples.forEach((ex, i) => {
+      const ea = `${at}.examples[${i}]`;
+      if (!ex || typeof ex !== "object" || Array.isArray(ex)) {
+        errors.push(`${ea}: 必須是物件 { code, note, lang? }`);
+        return;
+      }
+      for (const k of Object.keys(ex))
+        if (!PRIMER_EXAMPLE_KEYS.includes(k)) errors.push(`${ea}: 未知欄位「${k}」`);
+      if (!isText(ex.code)) errors.push(`${ea}: code 必須是非空字串`);
+      if (!isText(ex.note)) errors.push(`${ea}: note 必須是非空字串`);
+      if (ex.lang !== undefined && !isText(ex.lang)) errors.push(`${ea}: lang 有填就必須是非空字串`);
+      texts.push([`examples[${i}].note`, ex.note]);
+    });
+  }
+
+  for (const [field, v] of texts) {
+    if (typeof v !== "string") continue;
+    if (LETTER_REF.test(v)) errors.push(`${at}: ${field} 出現選項字母指涉`);
+    if (EMOJI.test(v)) errors.push(`${at}: ${field} 不可含 emoji`);
+  }
 }
 
 /* △ 去糖區塊:錯誤訊息提到讀者沒寫過的東西時,必須把糖攤開(AUTHORING.md §4) */

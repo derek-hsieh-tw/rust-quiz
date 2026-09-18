@@ -36,6 +36,9 @@ const Minimap = (() => {
   const TEXT_BLOCKS = [
     [".lesson-header h1", "#d8d8d8"],
     [".lesson-goal", "#7c7c7c"],
+    [".primer-label", "#c9c48f"],
+    [".primer-intro", "#8d8d8d"],
+    [".primer-note", "#8d8d8d"],
     [".question-title", "#c8c8c8"],
     [".option-text", "#a9a9a9"],
     [".answer-feedback", "#89b3a4"],

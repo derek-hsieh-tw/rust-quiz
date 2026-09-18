@@ -22,6 +22,50 @@ window.RUST_LESSONS["lesson1-4"] = {
 - 檔名、`id`、`docs/data/index.js` 的三處 id 必須一致。
 - 課程建置完成後,要把 `index.js` 中該課的 `available` 改成 `true`。
 
+### 1.1 `primer`:課前導讀(選填)
+
+給**第一次接觸這個主題**的讀者一個快速定向:這是什麼、Rust 為什麼需要它、最基本的
+長相。它是暖身,**不是一堂課**——真正的觀念與陷阱都留給題目。渲染在課程標題與第一題
+之間(標籤 `Primer`);沒有 `primer` 的課程(目前的基礎類)畫面完全不變。
+
+```js
+window.RUST_LESSONS["lesson2-1"] = {
+  id: "lesson2-1",
+  title: "閉包(Closures)",
+  goal: "……",
+  primer: {
+    intro: "閉包是可以捕獲周遭變數的匿名函式。Rust 沒有 GC,所以編譯器必須知道閉包是借用還是拿走了那些變數,這決定了它能被呼叫幾次、能活多久。",
+    examples: [
+      {
+        code: "fn main() {\n    let base = 10;\n    let add = |x: i32| x + base;\n    println!(\"{}\", add(5));\n}",
+        note: "add 借用了 base,呼叫時把傳入的 x 加上 base。",
+      },
+    ],
+    csharp: "寫法跟 C# 的 lambda 很像,差別在 C# 一律把被捕獲的變數提升到堆積上的物件,Rust 則由編譯器決定借用或搬移。",
+  },
+  questions: [ /* ... */ ],
+};
+```
+
+| 欄位 | 必填 | 長度 | 說明 |
+|---|---|---|---|
+| `intro` | ✅ | 2~4 句 | 這個概念是什麼、Rust 為什麼需要它 |
+| `examples` | ✅ | 1~2 個,每個程式碼 3~8 行 | `{ code, note, lang? }`;`code` 是多行字串(`\n` 換行),`note` 一句話;`lang` 預設 `rust` |
+| `csharp` | ⭕ | 1~2 句 | C# 對照,畫面上沿用題目的 `C# comparison` 區塊 |
+
+內容規則:
+
+- 文字一律**繁體中文**,其餘慣例同 §6。
+- 範例必須是**正確、夠完整**的 Rust(能照抄進 `fn main` 跑起來;最好本身就含 `fn main`)。
+- 範例只示範**最基本的正常用法**(happy path),不放陷阱、不放編譯錯誤——陷阱是題目的事。
+- **不得洩漏任何一題的答案**:寫完後逐題對照,導讀讀完不能直接答對某一題。
+- 不放 emoji、不用「選項 A/B/C」字母指涉(`scripts/validate-data.js` 會擋)。
+- 不需要 `walkthrough`:導讀的範例以 `note` 一句話帶過即可。
+
+`scripts/validate-data.js` 對 `primer` 的檢查:是物件、`intro` 非空字串、`examples` 為
+1~2 個 `{ code, note, lang? }` 且 `code`/`note` 非空、`csharp` 有填就非空、沒有未知欄位、
+文字不含 emoji 或選項字母指涉。句數與行數限制**腳本不檢查**,要自己把關。
+
 ## 2. 題目物件欄位
 
 | 欄位 | 必填 | 說明 |
@@ -258,6 +302,7 @@ node scripts/validate-data.js --lesson lesson2-1 --no-strict
 - 有 `X` 區塊時必定有 `√` 區塊
 - `√` 區塊裡的 Rust 程式碼是完整可執行的(含 `fn main`,或是測試模組)
 - 錯誤訊息提到讀者沒寫過的去糖識別字時,該題有沒有 `△` 區塊(見 §4)
+- 課程有 `primer` 時格式正確(見 §1.1)
 
 > ⚠️ **動符號的鐵則:改任何區塊標記符號,必須同步改 `scripts/validate-data.js`
 > 的判斷式與錯誤訊息,否則整批題目會驗不過。** 目前寫死依賴這些符號的位置(函式見
@@ -313,7 +358,7 @@ LC_ALL=C grep -oh $'[\xF0][\x9F][\x80-\xBF][\x80-\xBF]' docs/data/basic/*.js | s
 |---|---|---|---|
 | 題幹、課程標題 | `#a8a8a8` | `#232323` | 6.6:1 |
 | 選項文字 | `#a0a0a0` | `#232323` | 6.0:1 |
-| 詳解、逐行補述、C# 對照 | `#989898` | `#232323` | 5.5:1 |
+| 詳解、逐行補述、C# 對照、課前導讀(primer) | `#989898` | `#232323` | 5.5:1 |
 | 逐行註解 | `#8697a0` | `#1e1e1e` | 5.5:1 |
 | 程式碼基底字 | `#a0a0a0` | `#1e1e1e` | 6.4:1 |
 | 錯誤訊息(`.answer-feedback.ng`、`.option.wrong .option-label`) | `--answer-red` `#d16969` | `#232323` | 4.5:1 |
@@ -369,7 +414,7 @@ Studio 的註解綠),對 `#232323` 約 5.2:1。**這是全站的綠**——`.opt
 
 `Passed!` / `Failed — the answer is` 加選項字母(如 `Failed — the answer is B`,
 字母由 `LABELS[order.indexOf(q.answer)]` 決定)/ `Explanation` / `C# comparison` /
-`Walkthrough`(`wt-label` 省略 `label` 時的預設值,見 §4)/ `Show explanations` /
+`Walkthrough`(`wt-label` 省略 `label` 時的預設值,見 §4)/ `Primer`(課前導讀標籤,見 §1.1)/ `Show explanations` /
 `Hide explanations` / `Mark as done` / `Done — click to undo` / `Reset answers` /
 `Lesson: n/m correct (k questions)`。
 

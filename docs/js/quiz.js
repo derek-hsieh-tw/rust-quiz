@@ -166,12 +166,33 @@ const Quiz = (() => {
       (lesson.goal ? `<div class="lesson-goal">${escapeHtml(lesson.goal)}</div>` : "");
     content.appendChild(header);
 
+    if (lesson.primer) content.appendChild(buildPrimer(lesson.primer));
+
     lesson.questions.forEach((q, qi) => {
       content.appendChild(buildQuestionCard(lesson, q, qi));
     });
 
     content.appendChild(buildFooter(lesson));
     updateLessonStatus(lesson);
+  }
+
+  /* 課前導讀(primer,選填):{ intro, examples: [{ code, note, lang? }], csharp? }
+   * 放在課程標題與第一題之間;沒有 primer 的課程(基礎類)什麼都不畫。
+   * 規範見 AUTHORING.md §1.1。 */
+  function buildPrimer(primer) {
+    const section = document.createElement("section");
+    section.className = "lesson-primer";
+    let html = `<div class="primer-label">Primer</div>`;
+    if (primer.intro) html += `<div class="primer-intro">${escapeHtml(primer.intro)}</div>`;
+    (primer.examples || []).forEach(ex => {
+      html += codeBlock(ex.code, ex.lang);
+      if (ex.note) html += `<div class="primer-note">${escapeHtml(ex.note)}</div>`;
+    });
+    if (primer.csharp) {
+      html += `<div class="csharp-compare"><div class="cs-label">C# comparison</div><div class="cs-body">${escapeHtml(primer.csharp)}</div></div>`;
+    }
+    section.innerHTML = html;
+    return section;
   }
 
   function buildQuestionCard(lesson, q, qi) {

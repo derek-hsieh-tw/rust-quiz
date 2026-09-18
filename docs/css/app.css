@@ -267,6 +267,25 @@ pre.code-block code {
 .csharp-compare .cs-label { color: var(--vsc-green); font-weight: 700; margin-bottom: 4px; }
 .csharp-compare .cs-body { white-space: pre-wrap; color: #989898; line-height: 1.8; }
 
+/* ===== 課前導讀(primer,選填;只有進階類課程有)=====
+   底色與題目卡相同(#232323),內文沿用詳解的 #989898(5.5:1),
+   標籤跟 Explanation 一樣用黃色訊號。規範見 AUTHORING.md §1.1 與 §8。 */
+.lesson-primer {
+  background: #232323;
+  border: 1px solid var(--vsc-border);
+  border-left: 3px solid var(--vsc-yellow);
+  border-radius: 0 4px 4px 0;
+  padding: 12px 16px;
+  margin-bottom: 20px;
+  font-size: 13px;
+  line-height: 1.8;
+}
+.lesson-primer .primer-label { color: var(--vsc-yellow); font-weight: 700; margin-bottom: 4px; }
+.lesson-primer .primer-intro,
+.lesson-primer .primer-note { white-space: pre-wrap; color: #989898; }
+.lesson-primer pre.code-block { margin: 8px 0 4px; }
+.lesson-primer .primer-note { margin-bottom: 8px; }
+
 /* ===== 課程底部 ===== */
 .lesson-footer {
   display: flex;
@@ -311,6 +330,7 @@ pre.code-block code {
 /* ==================== RWD ==================== */
 @media (max-width: 800px) {
   .question-card { padding: 12px 14px; }
+  .lesson-primer { padding: 10px 12px; }
   pre.code-block { padding: 8px 10px; }
   pre.code-block code { font-size: 12px; }
 
