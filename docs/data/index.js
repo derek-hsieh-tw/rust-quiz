@@ -31,7 +31,7 @@ window.RUST_INDEX = {
       id: "advanced",
       title: "Advanced",
       lessons: [
-        { id: "lesson2-1",  title: "閉包(Closures)",           file: "data/advanced/lesson2-1.js",  available: false },
+        { id: "lesson2-1",  title: "閉包(Closures)",           file: "data/advanced/lesson2-1.js",  available: true },
         { id: "lesson2-2",  title: "迭代器(Iterators)",        file: "data/advanced/lesson2-2.js",  available: false },
         { id: "lesson2-3",  title: "智慧指標與內部可變性",       file: "data/advanced/lesson2-3.js",  available: false },
         { id: "lesson2-4",  title: "生命週期進階",               file: "data/advanced/lesson2-4.js",  available: false },

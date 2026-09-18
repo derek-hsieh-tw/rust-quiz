@@ -7,6 +7,20 @@ window.RUST_LESSONS["lesson2-1"] = {
   id: "lesson2-1",
   title: "閉包(Closures)",
   goal: "看懂閉包怎麼捕獲環境,以及 Fn / FnMut / FnOnce 的呼叫語意如何決定一個閉包能不能重複呼叫、能不能當參數或回傳值傳遞。",
+  primer: {
+    intro: "閉包是可以就地定義、存進變數再呼叫的匿名函式,而且它能直接使用定義處周遭的變數,這叫做「捕獲」環境。Rust 沒有垃圾回收,所以編譯器必須在編譯期弄清楚閉包對每個捕獲的變數是借用還是取得所有權。這個決定會影響原變數之後還能不能用,也會影響閉包本身能被呼叫幾次、能被傳到多遠——本課的題目就圍繞這些規則展開。",
+    examples: [
+      {
+        code: "fn main() {\n    let square = |x: i32| x * x;\n    println!(\"{}\", square(4));\n}",
+        note: "直立線 |x: i32| 包住參數,後面接本體;square 像一般函式一樣呼叫,印出 16。",
+      },
+      {
+        code: "fn main() {\n    let greeting = String::from(\"Hello\");\n    let greet = |name: &str| println!(\"{}, {}!\", greeting, name);\n    greet(\"Rust\");\n}",
+        note: "greet 的本體直接用到外層的 greeting,不必當參數傳進去,這就是捕獲;印出 Hello, Rust!。",
+      },
+    ],
+    csharp: "寫法和 C# 的 lambda(x => x * x)幾乎一樣,也同樣能直接使用外層變數;不同的是 C# 不過問你怎麼捕獲,Rust 則把捕獲方式納入編譯期的所有權與借用檢查。",
+  },
   questions: [
     {
       id: "2-1-01",
