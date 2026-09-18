@@ -31,7 +31,7 @@
 
 | 課 | 標題 | 批次 | 狀態 | 題數 | 上架 |
 |---|---|---|---|---|---|
-| 2-1 | 閉包(Closures) | pilot | ⬜ 未開始 | 0/20 | ❌ |
+| 2-1 | 閉包(Closures) | pilot | ✅ 已驗證（待使用者驗收風格） | 20/20 | ❌ |
 | 2-2 | 迭代器(Iterators) | A | ⬜ 未開始 | 0/20 | ❌ |
 | 2-10 | 模式匹配進階 | A | ⬜ 未開始 | 0/20 | ❌ |
 | 2-3 | 智慧指標與內部可變性 | B | ⬜ 未開始 | 0/20 | ❌ |
@@ -133,10 +133,30 @@ LC_ALL=C grep -oh $'[\xF0][\x9F][\x80-\xBF][\x80-\xBF]' docs/data/advanced/*.js 
 
 ## 7. Token 預算與段落機制
 
-- Session 額度：**15,000,000**
-- **段落門檻：剩餘降到 2,250,000（已用 85%）時停手**，不開新 agent，把當下進度寫回本文件，然後提示使用者 `/compact` 或 `/clear`。
-- 每完成一課就更新「進度總表」與「交棒紀錄」，不要累積到最後一次寫。
-- 寫題 agent 的回報一律只要「修改摘要 + 驗證結果」，不准貼完整程式碼或長 log。
+### 兩個要盯的額度
+
+| 額度 | 誰看得到 | 門檻 |
+|---|---|---|
+| Session token（15,000,000） | 模型每回合都收到剩餘量 | **剩 2,250,000（用掉 85%）準備停**；**剩 1,500,000（90%）完全停手** |
+| 5 小時滾動視窗 | **只有使用者在 CLI `/status` 看得到，模型查不到** | 使用者盯，逼近 85% 就通知模型收尾 |
+
+### 硬訊號
+
+**有 agent 因 rate limit 中止就是硬訊號** —— 立刻停下來做段落，不要重試。
+（曾發生過一次：兩個 agent 同時啟動都撞上 session 限額，工作區沒留半成品。）
+
+### 段落動作
+
+1. 不再派新 agent，讓進行中的跑完
+2. 把當下進度寫回 §2 進度總表與 §8 交棒紀錄
+3. commit
+4. 提示使用者 `/compact`（同一條路線繼續）或 `/clear`（全新 session 接手）
+
+### 日常紀律
+
+- **每完成一課就更新** §2 與 §8，不要累積到最後一次寫 —— 中途斷掉那一課的狀態就沒了
+- 寫題 agent 的回報一律只要「修改摘要 + 驗證結果」，不准貼完整程式碼或長 log
+- 主視窗不要自己讀題庫檔（單檔 ~900 行），要查狀態用 `grep` / `awk` 取統計數字
 
 ---
 
@@ -151,6 +171,31 @@ LC_ALL=C grep -oh $'[\xF0][\x9F][\x80-\xBF][\x80-\xBF]' docs/data/advanced/*.js 
 - `AUTHORING.md`：§7 補「新課程開發期間用 `--lesson`」小節；§9 去糖對照表新增條目 51-56（`?` 搭 `Box<dyn Error>`、自訂型別 `a + b` → `Add::add`、`dyn Trait` → 胖指標、`Rc::clone` → 只加計數、`macro_rules!` 重複展開、`async fn` → `impl Future`）。
 - `ADVANCED_OUTLINE.md`：新檔 550 行。已驗證每課確實 20 題、總計 240。題型分布：反面案例 94（39%）、輸出預測 106（44%）、設計選擇 39（16%）。標記需要 `△` 的 14 題。
 
-**尚未 commit**：`AUTHORING.md`、`scripts/validate-data.js` 已改動，`ADVANCED_OUTLINE.md` 未追蹤。
+**已 commit**：`ed68d27 Set up the scaffolding for the advanced course`（4 檔）。未 push。
 
 **下一步**：派 agent 寫 pilot `lesson2-1`（閉包，20 題），依據 `ADVANCED_OUTLINE.md` 第 11-32 行的骨架。完成後交使用者驗收風格，通過才開批次 A。
+
+---
+
+### 2026-09-17 — pilot lesson2-1 開工
+
+模型設定：使用者已把預設 model 切到 Opus 5，pilot agent 不覆寫 model，直接繼承。
+目的是先看品質上限，再決定量產批次要不要降到 sonnet。
+
+Session 額度開工時剩餘：約 14,996,000 / 15,000,000。
+
+---
+
+### 2026-09-18 — pilot lesson2-1 完成（前一個 session 寫完後、記錄前斷線，本次補記）
+
+**完成**：`docs/data/advanced/lesson2-1.js`，830 行，20 題。
+
+驗證結果：
+- `node --check` 通過
+- `node scripts/validate-data.js --lesson lesson2-1` → ✓ lesson2-1（20 題）
+- id `2-1-01` ~ `2-1-20` 齊全；`answer` 全為 0；emoji 0 個（`LC_ALL=C` 清點）
+- 「選項 A/B/C」字樣只出現在檔頭規範註解，題目內文無
+
+**尚未上架**（`index.js` 不動，等批次上架時一起開）。
+
+**下一步**：使用者驗收 pilot 風格 → 決定量產模型（Opus 5 / Sonnet）→ 開批次 A（2-2、2-10 並行）。
