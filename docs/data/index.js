@@ -35,7 +35,7 @@ window.RUST_INDEX = {
         { id: "lesson2-2",  title: "迭代器(Iterators)",        file: "data/advanced/lesson2-2.js",  available: true },
         { id: "lesson2-3",  title: "智慧指標與內部可變性",       file: "data/advanced/lesson2-3.js",  available: true },
         { id: "lesson2-4",  title: "生命週期進階",               file: "data/advanced/lesson2-4.js",  available: true },
-        { id: "lesson2-5",  title: "Trait 進階與 Trait 物件",    file: "data/advanced/lesson2-5.js",  available: false },
+        { id: "lesson2-5",  title: "Trait 進階與 Trait 物件",    file: "data/advanced/lesson2-5.js",  available: true },
         { id: "lesson2-6",  title: "錯誤處理進階",               file: "data/advanced/lesson2-6.js",  available: false },
         { id: "lesson2-7",  title: "並行程式設計",               file: "data/advanced/lesson2-7.js",  available: false },
         { id: "lesson2-8",  title: "非同步 async/await",         file: "data/advanced/lesson2-8.js",  available: false },
