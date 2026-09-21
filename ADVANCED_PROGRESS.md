@@ -51,7 +51,7 @@
 | 2-9 | 型別轉換與轉換 Trait | C | ✅ 已驗證（含 primer） | 20/20 | ✅ |
 | 2-11 | 巨集入門(Macros) | C | ✅ 已驗證（含 primer） | 20/20 | ✅ |
 | 2-7 | 並行程式設計 | D | ✅ 已驗證（含 primer） | 20/20 | ✅ |
-| 2-8 | 非同步 async/await | D | ⬜ 未開始 | 0/20 | ❌ |
+| 2-8 | 非同步 async/await | D | ✅ 已驗證（含 primer） | 20/20 | ✅ |
 | 2-12 | Cargo 生態與實戰慣用法 | D | ⬜ 未開始 | 0/20 | ❌ |
 
 **狀態圖例**：⬜ 未開始 · 🔄 進行中 · ✅ 已驗證 · ⚠️ 有問題待處理
@@ -248,3 +248,21 @@ Session 額度開工時剩餘：約 14,996,000 / 15,000,000。
 **進行中**：2-7（單獨跑，2-8 與 2-12 都依賴它）。
 
 **接下來**：2-7 上架 → 2-8、2-12 並行 → T17 全域驗證 + 跨課重複題偵測 + `COURSE_PLAN.md` 更新。
+
+---
+
+### 2026-09-21 — 2-8 上架
+
+**已上架並 push**：2-8（非同步 async/await）。累計 **11 課 / 220 題**上線。
+
+- 845 行、20 題，`△` 落在 `2-8-11`（`async fn` → `impl Future`）與 `2-8-12`（`.await` → `Future::poll`），與骨架預判一致。
+- agent 在 scratchpad 建 cargo 專案實測：19 支 `√`/正面程式編譯執行通過且輸出與預測逐字相符；6 個 `X` 編譯失敗案例 + 2 個「編得過但行為錯」案例（`2-8-02` 沒 `.await`、`2-8-17` 阻塞 runtime）確認。依實測修正 4 處錯誤訊息措辭（`2-8-11` 實際是 `expected i32, found future`、`2-8-12` 是 E0369、`2-8-13` 是 `moved due to this await`、`2-8-14` 是 E0505）。
+- **環境坑**：本機 GNU toolchain 缺 `dlltool.exe`、MSVC toolchain 缺 Windows SDK，`tokio` 開 `features = ["full"]` 會在 `windows-sys` / `parking_lot_core` 連結失敗。改用 `features = ["rt", "rt-multi-thread", "macros", "time", "sync"]` 即可涵蓋本課全部 API。**之後要編 tokio 程式的人直接照這組 feature 寫。**
+- 與 2-7 的區隔：第 9 題（`tokio::spawn` 捕獲非 `'static` 借用）改成「已經寫了 `async move` 卻仍然失敗」（move 進去的是參考本身），與 2-7 第 3 題「加 `move` 就好」明確區分，`√` 改用 `Arc`。第 19 題用 `tokio::sync::mpsc` 並對照 2-7 的 `std::sync::mpsc`。
+- 驗證腳本原本對 `2-8-02` 誤報去糖需求（`⛔` note 裡抄了 rustc 警告的 `poll them`），處理方式是把該引文移到 `explanation`（腳本不掃 explanation），**沒有用 `desugarChecked` 豁免**。
+- primer 範例 11 行，略超 `AUTHORING.md` 建議的 3~8 行，但 async 起手式需要 `#[tokio::main]` + 函式定義，且 2-4（9/14 行）、2-6（9 行）已有同樣情況，維持原樣。
+
+**進行中**：2-12（Cargo 生態，最後一課）。
+
+**接下來**：2-12 上架 → T17 全域驗證 + 跨課重複題偵測 + `COURSE_PLAN.md` 更新。
+
